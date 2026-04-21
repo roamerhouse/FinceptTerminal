@@ -101,7 +101,27 @@
 #include <DockWidget.h>
 #include <FloatingDockContainer.h>
 
+#include <algorithm>
+
 namespace fincept {
+
+int MainWindow::next_window_id() {
+    // Seed from the max of (persisted window IDs, live window IDs) so a new
+    // window never reuses an ID that already owns saved geometry/dock layout.
+    // Live IDs matter too: during a single session we may have deleted a
+    // secondary window without clearing its QSettings keys yet, and we still
+    // must not collide with any MainWindow currently on screen.
+    int max_id = 0;
+    const auto saved = SessionManager::instance().load_window_ids();
+    for (int id : saved)
+        max_id = std::max(max_id, id);
+    const auto top_widgets = QApplication::topLevelWidgets();
+    for (QWidget* w : top_widgets) {
+        if (auto* mw = qobject_cast<MainWindow*>(w))
+            max_id = std::max(max_id, mw->window_id());
+    }
+    return max_id + 1;
+}
 
 MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), window_id_(window_id) {
     // Show active profile in title bar when using a non-default profile
@@ -136,16 +156,48 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
     // Secondary windows (id > 0) restore their own saved geometry if available,
     // otherwise use smart multi-monitor placement (handled by the caller after show()).
     const QByteArray saved_geom = SessionManager::instance().load_geometry(window_id_);
-    if (!saved_geom.isEmpty()) {
-        restoreGeometry(saved_geom);
-    } else {
-        QScreen* screen = QApplication::primaryScreen();
-        if (screen) {
-            QRect geom = screen->availableGeometry();
+    bool geometry_applied = false;
+    if (!saved_geom.isEmpty() && restoreGeometry(saved_geom)) {
+        // Verify the restored frame actually intersects a currently-connected
+        // screen — if the user unplugged a monitor between sessions, Qt will
+        // happily hand back off-screen coordinates and the window becomes
+        // invisible/unreachable. Guard against that by falling through to
+        // smart placement if no intersection exists.
+        const QRect frame = frameGeometry();
+        bool on_some_screen = false;
+        const auto screens = QGuiApplication::screens();
+        for (QScreen* s : screens) {
+            if (s->availableGeometry().intersects(frame)) {
+                on_some_screen = true;
+                break;
+            }
+        }
+        geometry_applied = on_some_screen;
+    }
+
+    if (!geometry_applied) {
+        // Prefer the screen the window lived on last session (by name); fall
+        // back to primary if that screen is gone.
+        QScreen* target = nullptr;
+        const QString saved_screen = SessionManager::instance().load_screen_name(window_id_);
+        if (!saved_screen.isEmpty()) {
+            for (QScreen* s : QGuiApplication::screens()) {
+                if (s->name() == saved_screen) {
+                    target = s;
+                    break;
+                }
+            }
+        }
+        if (!target)
+            target = QApplication::primaryScreen();
+        if (target) {
+            QRect geom = target->availableGeometry();
             resize(geom.width() * 9 / 10, geom.height() * 9 / 10);
             // Only centre-place for the primary window; secondary windows
             // are positioned by the "new window" action after construction.
             if (window_id_ == 0)
+                move(geom.center() - rect().center());
+            else
                 move(geom.center() - rect().center());
         }
     }
@@ -172,7 +224,7 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
 
     // Lock screen signals
     connect(lock_screen_, &screens::LockScreen::unlocked, this, &MainWindow::on_terminal_unlocked);
-    connect(lock_screen_, &screens::LockScreen::reauth_requested, this, [this]() {
+    connect(lock_screen_, &screens::LockScreen::reauth_requested, this, []() {
         // Max PIN attempts exceeded — force full re-login
         auth::AuthManager::instance().logout();
     });
@@ -271,8 +323,8 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
             });
 
     // MCP navigation tool → dock_router (cross-thread safe)
-    EventBus::instance().subscribe("nav.switch_screen", [this](const QVariantMap& data) {
-        QString screen_id = data["screen_id"].toString();
+    EventBus::instance().subscribe("nav.switch_screen", [this](const QVariantMap& nav_data) {
+        QString screen_id = nav_data["screen_id"].toString();
         if (!screen_id.isEmpty())
             QMetaObject::invokeMethod(
                 dock_router_, [this, screen_id]() {
@@ -305,6 +357,9 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
     addAction(act_focus);
     connect(act_focus, &QAction::triggered, this, [this]() {
         if (locked_) return;
+        // Don't let the focus-mode shortcut toggle shell visibility while
+        // the user is on an auth screen — the toolbar must stay hidden.
+        if (stack_ && stack_->currentIndex() == 0) return;
         focus_mode_ = !focus_mode_;
         if (dock_toolbar_)
             dock_toolbar_->setVisible(!focus_mode_);
@@ -365,6 +420,47 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
             w->show();
             w->raise();
             w->activateWindow();
+        } else if (action.startsWith("move_to_monitor:")) {
+            // Move this window to the named monitor. We resolve by QScreen::name
+            // (not index) because index ordering flips on plug/unplug events.
+            const QString target_name = action.mid(QStringLiteral("move_to_monitor:").size());
+            QScreen* target = nullptr;
+            for (QScreen* s : QGuiApplication::screens()) {
+                if (s->name() == target_name) {
+                    target = s;
+                    break;
+                }
+            }
+            if (!target) {
+                LOG_WARN("MainWindow", QString("Move to monitor: screen '%1' not found").arg(target_name));
+                return;
+            }
+            if (screen() == target)
+                return; // already there
+
+            // Preserve maximised/fullscreen state across the move: Qt can't
+            // directly relocate a maximised window to a different screen, so
+            // we restore → move → re-apply the state.
+            const bool was_maximised = isMaximized();
+            const bool was_fullscreen = isFullScreen();
+            if (was_maximised || was_fullscreen)
+                showNormal();
+
+            const QRect sg = target->availableGeometry();
+            // Keep size if it fits, otherwise clamp to 90% of target screen.
+            QSize new_size = size();
+            if (new_size.width() > sg.width() || new_size.height() > sg.height())
+                new_size = QSize(sg.width() * 9 / 10, sg.height() * 9 / 10);
+            resize(new_size);
+            move(sg.center() - QPoint(new_size.width() / 2, new_size.height() / 2));
+
+            if (was_fullscreen)
+                showFullScreen();
+            else if (was_maximised)
+                showMaximized();
+
+            LOG_INFO("MainWindow", QString("Moved window %1 to monitor '%2'")
+                                       .arg(window_id_).arg(target_name));
         } else if (action.startsWith("panel_")) {
             // Float a screen — in ADS mode, navigate dock_router; in legacy, spawn window
             static const QMap<QString, QPair<QString, QString>> panel_map = {
@@ -442,6 +538,8 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
             else
                 showFullScreen();
         } else if (action == "focus_mode") {
+            // Auth screens must never reveal the shell via focus-mode toggle.
+            if (stack_ && stack_->currentIndex() == 0) return;
             focus_mode_ = !focus_mode_;
             if (dock_toolbar_)
                 dock_toolbar_->setVisible(!focus_mode_);
@@ -959,37 +1057,48 @@ void MainWindow::on_auth_state_changed() {
     }
 }
 
+// Centralised transition into the auth stack. Any path that shows a login /
+// register / forgot / pricing / info screen must go through here so the
+// privileged shell (menus, command bar, CHAT, LOGOUT, status ticker) cannot
+// be seen by an unauthenticated user. Title is also reset by set_shell_visible
+// so the last-visited screen name does not leak.
+void MainWindow::enter_auth_stack(int auth_index) {
+    set_shell_visible(false);
+    stack_->setCurrentIndex(0);
+    auth_stack_->setCurrentIndex(auth_index);
+}
+
 void MainWindow::show_login() {
-    auth_stack_->setCurrentIndex(0);
+    enter_auth_stack(0);
 }
 void MainWindow::show_register() {
-    auth_stack_->setCurrentIndex(1);
+    enter_auth_stack(1);
 }
 void MainWindow::show_forgot_password() {
-    auth_stack_->setCurrentIndex(2);
+    enter_auth_stack(2);
 }
 void MainWindow::show_pricing() {
-    auth_stack_->setCurrentIndex(3);
+    enter_auth_stack(3);
 }
 void MainWindow::show_info_contact() {
     info_stack_->setCurrentIndex(0);
-    auth_stack_->setCurrentIndex(4);
+    enter_auth_stack(4);
 }
 void MainWindow::show_info_terms() {
     info_stack_->setCurrentIndex(1);
-    auth_stack_->setCurrentIndex(4);
+    enter_auth_stack(4);
 }
 void MainWindow::show_info_privacy() {
     info_stack_->setCurrentIndex(2);
-    auth_stack_->setCurrentIndex(4);
+    enter_auth_stack(4);
 }
 void MainWindow::show_info_trademarks() {
     info_stack_->setCurrentIndex(3);
-    auth_stack_->setCurrentIndex(4);
+    enter_auth_stack(4);
 }
 void MainWindow::show_info_help() {
     info_stack_->setCurrentIndex(4);
-    auth_stack_->setCurrentIndex(4);
+    enter_auth_stack(4);
 }
 
 void MainWindow::show_lock_screen() {
@@ -1078,16 +1187,22 @@ void MainWindow::update_window_title() {
     if (profile != "default")
         title += QString(" [%1]").arg(profile);
 
-    if (WorkspaceManager::instance().has_current_workspace()) {
-        const QString ws = WorkspaceManager::instance().current_workspace_name();
-        if (!ws.isEmpty())
-            title += QString(" — %1").arg(ws);
-    }
+    // Workspace / screen name must never appear in the title while the user
+    // is on the auth or lock stack — that would leak the last-visited screen
+    // to an unauthenticated viewer.
+    const bool shell_visible = stack_ && stack_->currentIndex() == 1;
+    if (shell_visible) {
+        if (WorkspaceManager::instance().has_current_workspace()) {
+            const QString ws = WorkspaceManager::instance().current_workspace_name();
+            if (!ws.isEmpty())
+                title += QString(" — %1").arg(ws);
+        }
 
-    if (dock_router_) {
-        const QString id = dock_router_->current_screen_id();
-        if (!id.isEmpty())
-            title += QString(" — %1").arg(DockScreenRouter::title_for_id(id));
+        if (dock_router_) {
+            const QString id = dock_router_->current_screen_id();
+            if (!id.isEmpty())
+                title += QString(" — %1").arg(DockScreenRouter::title_for_id(id));
+        }
     }
 
     setWindowTitle(title);
@@ -1101,12 +1216,37 @@ void MainWindow::schedule_dock_layout_save() {
 void MainWindow::closeEvent(QCloseEvent* event) {
     WorkspaceManager::instance().save_workspace();
     SessionManager::instance().save_geometry(window_id_, saveGeometry(), saveState());
+    // Record the monitor this window is currently on so startup can place
+    // it back on the same screen even if saveGeometry's absolute coordinates
+    // would otherwise land off-screen (e.g. monitor disconnected, DPI changed).
+    if (QScreen* scr = screen())
+        SessionManager::instance().save_screen_name(window_id_, scr->name());
     if (dock_manager_) {
         SessionManager::instance().save_dock_layout(window_id_, dock_manager_->saveState());
         QSettings tmp;
         dock_manager_->savePerspectives(tmp);
         SessionManager::instance().save_perspectives(tmp);
     }
+
+    // Persist the set of still-open windows (this one minus itself, since
+    // we're about to be destroyed). On next launch, main.cpp will iterate
+    // this list and restore each secondary window. We also save the count
+    // for legacy callers.
+    QList<int> open_ids;
+    const auto top_widgets = QApplication::topLevelWidgets();
+    for (QWidget* w : top_widgets) {
+        if (auto* mw = qobject_cast<MainWindow*>(w); mw && mw != this)
+            open_ids.append(mw->window_id());
+    }
+    // Ensure this window is still saved for next run if it's the last one
+    // being closed — user would expect to land back in their last layout,
+    // including the primary window's dock state.
+    if (open_ids.isEmpty())
+        open_ids.append(window_id_);
+    std::sort(open_ids.begin(), open_ids.end());
+    SessionManager::instance().save_window_ids(open_ids);
+    SessionManager::instance().save_window_count(open_ids.size());
+
     event->accept();
 }
 

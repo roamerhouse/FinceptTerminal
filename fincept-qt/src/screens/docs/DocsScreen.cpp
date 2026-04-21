@@ -1405,17 +1405,17 @@ void DocsScreen::build_sidebar() {
     add_item(ai, "Alpha Arena", "alpha_arena");
 
     // ── Data Sources ─────────────────────────────────────────────────────────
-    auto* data = add_category("DATA SOURCES");
-    add_item(data, "DBnomics", "dbnomics");
-    add_item(data, "Economics", "economics");
-    add_item(data, "AkShare Data", "akshare");
-    add_item(data, "Government Data", "gov_data");
+    auto* data_cat = add_category("DATA SOURCES");
+    add_item(data_cat, "DBnomics", "dbnomics");
+    add_item(data_cat, "Economics", "economics");
+    add_item(data_cat, "AkShare Data", "akshare");
+    add_item(data_cat, "Government Data", "gov_data");
 
     // ── Geopolitics & Alt ────────────────────────────────────────────────────
     auto* geo = add_category("GEOPOLITICS & ALT");
     add_item(geo, "Geopolitics", "geopolitics");
     add_item(geo, "Maritime", "maritime");
-    add_item(geo, "Polymarket", "polymarket");
+    add_item(geo, "Prediction Markets", "polymarket");
     add_item(geo, "Alt Investments", "alt_investments");
 
     // ── Tools ────────────────────────────────────────────────────────────────

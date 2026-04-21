@@ -26,9 +26,14 @@
 #include "services/markets/MarketDataService.h"
 #include "services/news/NewsService.h"
 #include "services/polymarket/PolymarketWebSocket.h"
+#include "services/prediction/PredictionCredentialStore.h"
+#include "services/prediction/PredictionExchangeRegistry.h"
+#include "services/prediction/kalshi/KalshiAdapter.h"
+#include "services/prediction/polymarket/PolymarketAdapter.h"
 #include "services/relationship_map/RelationshipMapService.h"
 #include "trading/DataStreamManager.h"
 #include "trading/ExchangeService.h"
+#include "trading/ExchangeSessionManager.h"
 #include "storage/repositories/NewsArticleRepository.h"
 #include "storage/repositories/SettingsRepository.h"
 #include "storage/sqlite/CacheDatabase.h"
@@ -46,6 +51,8 @@
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUuid>
+
+#include <memory>
 
 #include <singleapplication.h>
 
@@ -111,10 +118,37 @@ int main(int argc, char* argv[]) {
     // Phase 2: register MarketDataService as the `market:quote:*` producer.
     fincept::datahub::register_metatypes();
     fincept::services::MarketDataService::instance().ensure_registered_with_hub();
-    // Phase 4: ExchangeService as the ws:kraken:* / ws:hyperliquid:* producer.
-    fincept::trading::ExchangeService::instance().ensure_registered_with_hub();
-    // Phase 4: PolymarketWebSocket as the polymarket:* producer.
+    // Phase 2 (multi-broker refactor): ExchangeSessionManager is the hub
+    // producer for `ws:kraken:*` / `ws:hyperliquid:*`. Individual sessions
+    // (created lazily by the manager) publish through its SessionPublisher
+    // seam. ExchangeService keeps a back-compat shim but no longer registers
+    // itself with the hub.
+    fincept::trading::ExchangeSessionManager::instance().ensure_registered_with_hub();
+    // Prediction Markets — multi-exchange tab (Polymarket, Kalshi, …).
+    // PolymarketWebSocket is the hub producer for `prediction:polymarket:*`;
+    // the adapter layer translates exchange-local types into the unified
+    // prediction::* data model for the screen.
     fincept::services::polymarket::PolymarketWebSocket::instance().ensure_registered_with_hub();
+    {
+        auto& reg = fincept::services::prediction::PredictionExchangeRegistry::instance();
+        reg.register_adapter(
+            std::make_unique<fincept::services::prediction::polymarket_ns::PolymarketAdapter>());
+        reg.register_adapter(
+            std::make_unique<fincept::services::prediction::kalshi_ns::KalshiAdapter>());
+
+        // Hydrate credentials from SecureStorage if previously saved. This
+        // has to happen after registration so the adapters exist.
+        if (auto* pm = dynamic_cast<fincept::services::prediction::polymarket_ns::PolymarketAdapter*>(
+                reg.adapter(QStringLiteral("polymarket")))) {
+            pm->reload_credentials();
+        }
+        if (auto* ks = dynamic_cast<fincept::services::prediction::kalshi_ns::KalshiAdapter*>(
+                reg.adapter(QStringLiteral("kalshi")))) {
+            if (auto creds = fincept::services::prediction::PredictionCredentialStore::load_kalshi()) {
+                ks->set_credentials(*creds);
+            }
+        }
+    }
     // Phase 5: NewsService as the news:general / news:symbol:* /
     // news:category:* / news:cluster:* producer.
     fincept::services::NewsService::instance().ensure_registered_with_hub();
@@ -134,7 +168,7 @@ int main(int argc, char* argv[]) {
     // Phase 9: AgentService as agent:* push-only producer (output/stream/status/routing/error).
     fincept::services::AgentService::instance().ensure_registered_with_hub();
 
-    // Create all application directories under %LOCALAPPDATA%\com.fincept.terminal\
+    // Create all application directories under %LOCALAPPDATA%/com.fincept.terminal
     fincept::AppPaths::ensure_all();
 
     // ── One-time migration from legacy %APPDATA% location ─────────────────
@@ -412,6 +446,23 @@ int main(int argc, char* argv[]) {
             window->setAttribute(Qt::WA_DeleteOnClose);
             window->show();
 
+            // Restore any secondary windows that were open at last shutdown so
+            // multi-monitor layouts survive across relaunches. Each window
+            // restores its own geometry + dock layout from SessionManager.
+            {
+                const QList<int> saved_ids =
+                    fincept::SessionManager::instance().load_window_ids();
+                for (int id : saved_ids) {
+                    if (id <= 0) continue; // 0 = primary, already created
+                    auto* w = new fincept::MainWindow(id);
+                    w->setAttribute(Qt::WA_DeleteOnClose);
+                    w->show();
+                }
+                if (!saved_ids.isEmpty())
+                    LOG_INFO("App", QString("Restored %1 secondary window(s) from last session")
+                                        .arg(saved_ids.size() > 0 ? saved_ids.size() - 1 : 0));
+            }
+
             // Wire new-window handler now that the primary window exists
             QObject::connect(&app, &SingleApplication::receivedMessage,
                              [](quint32 /*instanceId*/, QByteArray /*message*/) {
@@ -439,6 +490,23 @@ int main(int argc, char* argv[]) {
     // Python already set up — launch main window directly
     fincept::MainWindow window;
     window.show();
+
+    // Restore any secondary windows that were open at last shutdown. The
+    // primary window on the stack owns its own lifetime; restored secondaries
+    // use WA_DeleteOnClose and self-remove from QApplication::topLevelWidgets.
+    {
+        const QList<int> saved_ids =
+            fincept::SessionManager::instance().load_window_ids();
+        for (int id : saved_ids) {
+            if (id <= 0) continue; // 0 = primary, already created
+            auto* w = new fincept::MainWindow(id);
+            w->setAttribute(Qt::WA_DeleteOnClose);
+            w->show();
+        }
+        if (saved_ids.size() > 1)
+            LOG_INFO("App", QString("Restored %1 secondary window(s) from last session")
+                                .arg(saved_ids.size() - 1));
+    }
 
     // ── New-window handler: fires when the user re-launches the exe ──────────
     // The secondary instance sends "--new-window" and exits. We construct a new

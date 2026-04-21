@@ -210,7 +210,7 @@ ReportBuilderScreen::ReportBuilderScreen(QWidget* parent) : QWidget(parent) {
     connect(comp_toolbar_, &ComponentToolbar::font_changed, this,
             [this](const QString& family, int size, bool bold, bool italic) {
                 QTextCharFormat fmt;
-                fmt.setFontFamily(family);
+                fmt.setFontFamilies({family});
                 fmt.setFontPointSize(size);
                 fmt.setFontWeight(bold ? QFont::Bold : QFont::Normal);
                 fmt.setFontItalic(italic);
@@ -969,7 +969,7 @@ void ReportBuilderScreen::show_template_dialog() {
             });
 
     // Double-click accepts
-    connect(list, &QListWidget::itemDoubleClicked, dlg, [this, list, dlg, bb](QListWidgetItem* item) {
+    connect(list, &QListWidget::itemDoubleClicked, dlg, [this, dlg](QListWidgetItem* item) {
         if (!item || !(item->flags() & Qt::ItemIsSelectable))
             return;
         QString tname = item->data(Qt::UserRole).toString();

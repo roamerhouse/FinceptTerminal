@@ -36,10 +36,9 @@ class MainWindow : public QMainWindow {
     int window_id() const { return window_id_; }
 
     /// Returns the next unique window ID (thread-safe via Qt UI thread only).
-    static int next_window_id() {
-        static int s_id = 1;
-        return s_id++;
-    }
+    /// The allocator is seeded from saved state on first call so that IDs
+    /// never collide with orphaned saved layouts from a previous session.
+    static int next_window_id();
 
   protected:
     void closeEvent(QCloseEvent* event) override;
@@ -94,6 +93,9 @@ class MainWindow : public QMainWindow {
     void update_window_title();
     /// Show or hide the toolbar/status bar shell (hidden during auth screens).
     void set_shell_visible(bool visible);
+    /// Show the auth stack at the given index and hide the privileged shell.
+    /// All login/register/forgot/pricing/info transitions go through here.
+    void enter_auth_stack(int auth_index);
 
     // Info screens stack (Contact, Terms, Privacy, Trademarks, Help)
     QStackedWidget* info_stack_ = nullptr;

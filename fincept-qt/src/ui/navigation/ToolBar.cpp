@@ -7,9 +7,11 @@
 #include <QAction>
 #include <QDateTime>
 #include <QFontMetrics>
+#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QResizeEvent>
+#include <QScreen>
 
 namespace fincept::ui {
 
@@ -265,6 +267,29 @@ QMenu* ToolBar::build_file_menu() {
     auto* m = new QMenu("文件", this);
     m->setStyleSheet(popup_ss());
     m->addAction("新建窗口", this, [this]() { emit action_triggered("new_window"); });
+
+    // "移动到显示器" — 每次弹出时重建，以便动态反映显示器插拔
+    auto* monitors = m->addMenu("移动到显示器");
+    monitors->setStyleSheet(popup_ss());
+    connect(monitors, &QMenu::aboutToShow, this, [this, monitors]() {
+        monitors->clear();
+        const auto screens = QGuiApplication::screens();
+        if (screens.size() <= 1) {
+            auto* only = monitors->addAction("(单显示器模式)");
+            only->setEnabled(false);
+            return;
+        }
+        int idx = 1;
+        for (QScreen* s : screens) {
+            const QString name = s->name();
+            const QSize size = s->size();
+            const QString label =
+                QString("%1. %2  (%3×%4)").arg(idx++).arg(name).arg(size.width()).arg(size.height());
+            monitors->addAction(label, this, [this, name]() {
+                emit action_triggered(QString("move_to_monitor:%1").arg(name));
+            });
+        }
+    });
     m->addSeparator();
     m->addAction("新建工作区", this, [this]() { emit action_triggered("new_workspace"); });
     m->addAction("打开工作区", this, [this]() { emit action_triggered("open_workspace"); });
@@ -319,7 +344,7 @@ QMenu* ToolBar::build_navigate_menu() {
     auto* trd = add_sub("交易与持仓");
     nav(trd, "股票交易", "equity_trading");
     nav(trd, "阿尔法竞技场", "alpha_arena");
-    nav(trd, "多重预测市场", "polymarket");
+    nav(trd, "预测市场", "polymarket");
     nav(trd, "衍生品", "derivatives");
     nav(trd, "自选股", "watchlist");
 

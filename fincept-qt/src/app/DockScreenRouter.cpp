@@ -505,7 +505,7 @@ ads::CDockWidget* DockScreenRouter::create_dock_widget(const QString& id) {
     if (dock_widgets_.contains(id))
         return dock_widgets_[id];
 
-    auto* dw = new ads::CDockWidget(title_for_id(id));
+    auto* dw = new ads::CDockWidget(manager_, title_for_id(id));
     dw->setObjectName(id);
 
     // Pinnable is intentionally excluded: the auto-hide pin button converts panels

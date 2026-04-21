@@ -17,7 +17,9 @@
 #include "screens/settings/LlmConfigSection.h"
 #include "screens/settings/McpServersSection.h"
 #include "screens/settings/PythonEnvSection.h"
+#include "screens/settings/VoiceConfigSection.h"
 #include "services/notifications/NotificationService.h"
+#include "services/stt/SpeechService.h"
 #include "storage/StorageManager.h"
 #include "storage/cache/CacheManager.h"
 #include "storage/repositories/DataSourceRepository.h"
@@ -170,6 +172,7 @@ SettingsScreen::SettingsScreen(QWidget* parent) : QWidget(parent) {
     sections_->addWidget(build_keybindings());   // 10
     sections_->addWidget(build_python_env());    // 11
     sections_->addWidget(build_developer());     // 12
+    sections_->addWidget(new VoiceConfigSection); // 13
 
     QList<QPushButton*> nav_btns;
     auto make_btn = [&](const QString& text, int idx) {
@@ -206,6 +209,7 @@ SettingsScreen::SettingsScreen(QWidget* parent) : QWidget(parent) {
     make_btn("按键绑定", 10);
     make_btn("Python 环境", 11);
     make_btn("开发工具", 12);
+    make_btn("语音配置", 13);
 
     first->setChecked(true);
 
@@ -217,6 +221,12 @@ SettingsScreen::SettingsScreen(QWidget* parent) : QWidget(parent) {
     if (auto* llm = qobject_cast<LlmConfigSection*>(sections_->widget(5))) {
         connect(llm, &LlmConfigSection::config_changed, this,
                 []() { ai_chat::LlmService::instance().reload_config(); });
+    }
+
+    // Wire Voice config changes → reload STT service (picks up provider / API key / model)
+    if (auto* voice = qobject_cast<VoiceConfigSection*>(sections_->widget(13))) {
+        connect(voice, &VoiceConfigSection::config_changed, this,
+                []() { fincept::services::SpeechService::instance().reload_config(); });
     }
 
     connect(&ui::ThemeManager::instance(), &ui::ThemeManager::theme_changed, this,
@@ -366,7 +376,7 @@ QWidget* SettingsScreen::build_credentials() {
         save_btn->setStyleSheet(btn_primary_ss());
         bhl->addWidget(save_btn);
 
-        connect(save_btn, &QPushButton::clicked, this, [this, key, field, status_lbl]() {
+        connect(save_btn, &QPushButton::clicked, this, [key, field, status_lbl]() {
             QString val = field->text().trimmed();
             if (val.isEmpty()) {
                 SecureStorage::instance().remove(key);
@@ -1451,7 +1461,7 @@ QWidget* SettingsScreen::build_storage() {
 
         add_file_row(
             "Log Files", log_sz, "Clear Logs", "Clear all application log files?\nCurrent log data will be lost.",
-            [this]() {
+            []() {
                 StorageManager::instance().clear_log_files();
                 LOG_INFO("Settings", "Logs cleared");
             },
@@ -1460,7 +1470,7 @@ QWidget* SettingsScreen::build_storage() {
         add_file_row(
             "Workspace Files (.fwsp)", ws_sz, "Delete Workspaces",
             "Delete all saved workspace files?\nThis cannot be undone.",
-            [this]() {
+            []() {
                 StorageManager::instance().clear_workspace_files();
                 LOG_INFO("Settings", "Workspaces deleted");
             },
@@ -1470,7 +1480,7 @@ QWidget* SettingsScreen::build_storage() {
             "Window & UI State", qs_lbl, "Reset UI State",
             "Reset all window positions, dock layouts, and perspectives?\n"
             "Takes effect on next restart.",
-            [this]() {
+            []() {
                 StorageManager::instance().clear_qsettings();
                 LOG_INFO("Settings", "QSettings cleared");
             },
@@ -2465,7 +2475,7 @@ QWidget* SettingsScreen::build_logging() {
     add_btn->setStyleSheet(btn_secondary_ss());
     add_btn->setFixedHeight(30);
     add_btn->setFixedWidth(180);
-    connect(add_btn, &QPushButton::clicked, this, [this, add_tag_row]() mutable { add_tag_row({}, "Info"); });
+    connect(add_btn, &QPushButton::clicked, this, [add_tag_row]() mutable { add_tag_row({}, "Info"); });
     vl->addWidget(add_btn);
     vl->addWidget(make_sep());
 

@@ -44,10 +44,18 @@ endif()
 # Without this, CMake embeds build-tree rpaths (e.g. _deps/qgeoview-build/lib)
 # and CPack IFW fails trying to delete them after macdeployqt already rewrote them.
 if(APPLE)
+    # If not explicitly provided by the caller/preset, pin the minimum
+    # supported macOS version so builds on newer runners do not accidentally
+    # produce bundles that require that newer host OS at runtime.
+    if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET OR CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "")
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0" CACHE STRING
+            "Minimum macOS version supported by Fincept Terminal" FORCE)
+    endif()
     set(CMAKE_MACOSX_RPATH ON)
     set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks;@executable_path/../lib")
     set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+    message(STATUS "macOS deployment target: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
 endif()
 
 # Export compile_commands.json for clang-tidy
@@ -246,15 +254,21 @@ if(FINCEPT_HAS_PRIVATE_HEADERS)
 
     # QXlsx uses implicit const char* -> QString conversions which are banned
     # by Qt6's strict cast macros. Undefine them for this target only.
+    # Also silence upstream warnings so CI's -Werror doesn't fail on third-party
+    # code. /WX- is critical on MSVC: /W0 suppresses warnings but does NOT
+    # disable the directory-inherited /WX (warnings-as-errors) that promotes
+    # any surviving warning to a build-breaking error.
     if(MSVC)
         target_compile_options(QXlsx PRIVATE
             /UQT_NO_CAST_FROM_ASCII /UQT_NO_CAST_FROM_BYTEARRAY
             /UQT_NO_CAST_TO_ASCII   /UQT_NO_URL_CAST_FROM_STRING
+            /W0 /WX-
         )
     else()
         target_compile_options(QXlsx PRIVATE
             -UQT_NO_CAST_FROM_ASCII -UQT_NO_CAST_FROM_BYTEARRAY
             -UQT_NO_CAST_TO_ASCII   -UQT_NO_URL_CAST_FROM_STRING
+            -w -Wno-error
         )
     endif()
 else()
@@ -284,6 +298,18 @@ set_target_properties(md4c PROPERTIES UNITY_BUILD OFF)
 if(TARGET md4c-html)
     set_target_properties(md4c-html PROPERTIES UNITY_BUILD OFF)
 endif()
+# Silence upstream warnings so CI's -Werror doesn't fail on third-party code.
+# /WX- / -Wno-error needed in addition to /W0 / -w because CI adds -Werror (/WX)
+# at the directory level, which suppression flags alone don't override.
+foreach(_md4c_tgt md4c md4c-html md2html)
+    if(TARGET ${_md4c_tgt})
+        if(MSVC)
+            target_compile_options(${_md4c_tgt} PRIVATE /W0 /WX-)
+        else()
+            target_compile_options(${_md4c_tgt} PRIVATE -w -Wno-error)
+        endif()
+    endif()
+endforeach()
 # md4c's src/CMakeLists.txt installs from ${CMAKE_BINARY_DIR}/src/md4c.pc but
 # configure_file() writes to ${CMAKE_CURRENT_BINARY_DIR}/md4c.pc (the subbuild
 # dir). On CI these are different paths, causing CPack's "file INSTALL cannot
@@ -319,6 +345,12 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(QGeoView)
 # QGeoView has anonymous-namespace symbol clashes under unity build
 set_target_properties(qgeoview PROPERTIES UNITY_BUILD OFF)
+# Silence upstream warnings so CI's -Werror doesn't fail on third-party code.
+if(MSVC)
+    target_compile_options(qgeoview PRIVATE /W0 /WX-)
+else()
+    target_compile_options(qgeoview PRIVATE -w -Wno-error)
+endif()
 
 # Qt 6.8.3's FindWrapOpenGL.cmake adds "-framework AGL" which was removed in
 # macOS 14 (Sonoma). The patch in setup.sh fixes this at the Qt install level.
@@ -362,7 +394,9 @@ if(UNIX)
     file(WRITE ${SingleApplication_SOURCE_DIR}/singleapplication.cpp "${_sa_src}")
 endif()
 if(MSVC)
-    target_compile_options(SingleApplication PRIVATE /W0)
+    target_compile_options(SingleApplication PRIVATE /W0 /WX-)
+else()
+    target_compile_options(SingleApplication PRIVATE -w -Wno-error)
 endif()
 
 # ── Qt Advanced Docking System (detachable panels) ───────────────────────────
@@ -385,8 +419,12 @@ set_target_properties(qtadvanceddocking-qt6 PROPERTIES UNITY_BUILD OFF)
 
 # Restore install rules for the main application targets
 set(CMAKE_SKIP_INSTALL_RULES FALSE CACHE BOOL "" FORCE)
+# Third-party code: silence warnings so CI's -Werror doesn't turn a benign
+# upstream warning (e.g. -Wunused-but-set-variable on Clang) into a build failure.
 if(MSVC)
-    target_compile_options(qtadvanceddocking-qt6 PRIVATE /W0)
+    target_compile_options(qtadvanceddocking-qt6 PRIVATE /W0 /WX-)
+else()
+    target_compile_options(qtadvanceddocking-qt6 PRIVATE -w -Wno-error)
 endif()
 
 # ── Source files by module ────────────────────────────────────────────────────
@@ -401,6 +439,7 @@ set(CORE_SOURCES
     src/core/session/SessionManager.cpp
     src/core/session/ScreenStateManager.cpp
     src/core/keys/KeyConfigManager.cpp
+    src/core/net/NetSpeedMeter.cpp
 )
 
 # Network
@@ -563,6 +602,9 @@ set(TRADING_SOURCES
     src/trading/AccountDataStream.cpp
     src/trading/DataStreamManager.cpp
     src/trading/ExchangeService.cpp
+    src/trading/ExchangeSession.cpp
+    src/trading/ExchangeSessionManager.cpp
+    src/trading/ExchangeDaemonPool.cpp
     src/trading/brokers/BrokerHttp.cpp
     # Trading WebSocket
     src/trading/websocket/ZerodhaWebSocket.cpp
@@ -661,6 +703,16 @@ set(SERVICE_SOURCES
     src/services/polymarket/PolymarketService.cpp
     src/services/polymarket/PolymarketWebSocket.cpp
 
+    # Prediction Markets — exchange-agnostic abstraction (Polymarket, Kalshi, …)
+    src/services/prediction/PredictionExchangeAdapter.cpp
+    src/services/prediction/PredictionExchangeRegistry.cpp
+    src/services/prediction/PredictionCredentialStore.cpp
+    src/services/prediction/polymarket/PolymarketTypeMap.cpp
+    src/services/prediction/polymarket/PolymarketAdapter.cpp
+    src/services/prediction/kalshi/KalshiRestClient.cpp
+    src/services/prediction/kalshi/KalshiWsClient.cpp
+    src/services/prediction/kalshi/KalshiAdapter.cpp
+
     # Speech-to-text service (Python speech_recognition + Google API)
     src/services/stt/SpeechService.cpp
 
@@ -696,6 +748,7 @@ set(UI_SOURCES
     src/ui/widgets/WorldMapWidget.cpp
     src/ui/widgets/LoadingOverlay.cpp
     src/ui/widgets/ConfettiOverlay.cpp
+    src/ui/widgets/SpeedSparkline.cpp
     src/ui/tables/DataTable.cpp
     src/ui/charts/ChartFactory.cpp
     src/ui/navigation/NavigationBar.cpp
@@ -730,6 +783,7 @@ set(SCREEN_SOURCES
     src/screens/settings/McpServersSection.cpp
     src/screens/settings/KeybindingsSection.cpp
     src/screens/settings/PythonEnvSection.cpp
+    src/screens/settings/VoiceConfigSection.cpp
     src/screens/about/AboutScreen.cpp
     src/screens/support/SupportScreen.cpp
     src/screens/trade_viz/TradeVizScreen.cpp
@@ -947,7 +1001,7 @@ set(SCREEN_SOURCES
     src/screens/economics/panels/BeaPanel.cpp
     src/screens/economics/panels/FinceptMacroPanel.cpp
 
-    # Polymarket
+    # Polymarket / Prediction Markets
     src/screens/polymarket/PolymarketScreen.cpp
     src/screens/polymarket/PolymarketCommandBar.cpp
     src/screens/polymarket/PolymarketMarketCard.cpp
@@ -958,6 +1012,9 @@ set(SCREEN_SOURCES
     src/screens/polymarket/PolymarketLeaderboard.cpp
     src/screens/polymarket/PolymarketActivityFeed.cpp
     src/screens/polymarket/PolymarketStatusBar.cpp
+    src/screens/polymarket/PredictionAccountDialog.cpp
+    src/screens/polymarket/ExchangePresentation.cpp
+    src/screens/polymarket/PolymarketOrderBlotter.cpp
 
     # Alpha Arena
     src/screens/alpha_arena/AlphaArenaScreen.cpp
@@ -1326,6 +1383,7 @@ set_source_files_properties(
     src/screens/polymarket/PolymarketLeaderboard.cpp
     src/screens/polymarket/PolymarketActivityFeed.cpp
     src/screens/polymarket/PolymarketStatusBar.cpp
+    src/screens/polymarket/PredictionAccountDialog.cpp
     src/trading/websocket/ZerodhaWebSocket.cpp
     src/trading/websocket/AngelOneWebSocket.cpp
     # Trading broker files — each defines static now_ts() in same namespace
@@ -1839,20 +1897,23 @@ if(WIN32)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${QT_CONSISTENT_PLUGINS}/sqldrivers/qsqlite.dll"
                 "$<TARGET_FILE_DIR:FinceptTerminal>/sqldrivers/qsqlite.dll"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${QT_CONSISTENT_PLUGINS}/sqldrivers/qsqlmimer.dll"
-                "$<TARGET_FILE_DIR:FinceptTerminal>/sqldrivers/qsqlmimer.dll"
             COMMENT "Overwriting sqldrivers with consistent Qt_temp plugins..."
         )
     endif()
 endif()
 
 # ── Copy Python scripts to build output ──────────────────────────────────────
+# POST_BUILD drags the whole scripts/ tree over. Afterwards we prune junk
+# that must never ship — backup folders (agents.deleted.*), test caches,
+# local SQLite databases — because on macOS anything unexpected in the
+# .app bundle makes codesign reject it ("bundle format unrecognized").
 add_custom_command(TARGET FinceptTerminal POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/scripts"
         "$<TARGET_FILE_DIR:FinceptTerminal>/scripts"
-    COMMENT "Copying Python scripts to build output..."
+    COMMAND ${CMAKE_COMMAND} -DSCRIPTS_DIR=$<TARGET_FILE_DIR:FinceptTerminal>/scripts
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/prune_scripts_junk.cmake"
+    COMMENT "Copying Python scripts to build output + pruning junk..."
 )
 
 # ── Copy requirements files to build output ──────────────────────────────────
@@ -1928,7 +1989,8 @@ if(WIN32)
     # Windows: install exe + all DLLs beside it (windeployqt already copies them)
     install(TARGETS FinceptTerminal RUNTIME DESTINATION "." COMPONENT core)
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/"
-            DESTINATION "scripts" COMPONENT scripts)
+            DESTINATION "scripts" COMPONENT scripts
+            REGEX "(\\.deleted\\.|\\.pytest_cache|\\.benchmarks|__pycache__|\\.pyc$|\\.db$|\\.sqlite$|\\.sqlite3$|\\.bak$|\\.orig$)" EXCLUDE)
     # Requirements files — needed by PythonSetupManager at first run to install
     # Python packages. Must be deployed beside the exe so find_requirements_file()
     # can locate them at C:/Program Files/FinceptTerminal/resources/*.txt.
@@ -1954,7 +2016,8 @@ else()
     # Python analytics scripts
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/"
             DESTINATION "share/fincept-terminal/scripts"
-            USE_SOURCE_PERMISSIONS COMPONENT scripts)
+            USE_SOURCE_PERMISSIONS COMPONENT scripts
+            REGEX "(\\.deleted\\.|\\.pytest_cache|\\.benchmarks|__pycache__|\\.pyc$|\\.db$|\\.sqlite$|\\.sqlite3$|\\.bak$|\\.orig$)" EXCLUDE)
 
     # App icon (PNG required for hicolor theme; convert .ico → .png in CI)
     set(_ICON_PNG "${CMAKE_CURRENT_SOURCE_DIR}/resources/fincept.png")
@@ -2008,29 +2071,29 @@ if(FINCEPT_BUILD_INSTALLER)
         # Python-backed screens crash on an installed build.
         install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/"
                 DESTINATION "scripts" COMPONENT scripts)
-        # Requirements files — read by PythonSetupManager::install_packages()
-        # during first-run setup. Missing files → setup fails on installed build.
-        install(FILES
-                "${CMAKE_CURRENT_SOURCE_DIR}/resources/requirements-numpy1.txt"
-                "${CMAKE_CURRENT_SOURCE_DIR}/resources/requirements-numpy2.txt"
-                DESTINATION "resources" COMPONENT core)
-        # Qt plugin directories
-        install(DIRECTORY "$<TARGET_FILE_DIR:FinceptTerminal>/platforms"
+        # Full resources/ tree — icons, images, stylesheets, data files, etc.
+        # Also catches requirements-*.txt. Without this, asset paths resolved
+        # via AppPaths::resources_dir() return an empty dir and screens that
+        # load PNGs / JSON config crash on missing-file errors.
+        install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/"
+                DESTINATION "resources" COMPONENT core
+                PATTERN ".git*" EXCLUDE
+                PATTERN "*.pyc" EXCLUDE)
+        # qt.conf — pins plugin/library paths relative to the exe. Without
+        # this Qt uses hardcoded build-machine paths that don't exist on the
+        # user's machine, producing "could not load the Qt platform plugin".
+        install(FILES "$<TARGET_FILE_DIR:FinceptTerminal>/qt.conf"
                 DESTINATION "." COMPONENT core OPTIONAL)
-        install(DIRECTORY "$<TARGET_FILE_DIR:FinceptTerminal>/sqldrivers"
-                DESTINATION "." COMPONENT core OPTIONAL)
-        install(DIRECTORY "$<TARGET_FILE_DIR:FinceptTerminal>/imageformats"
-                DESTINATION "." COMPONENT core OPTIONAL)
-        install(DIRECTORY "$<TARGET_FILE_DIR:FinceptTerminal>/styles"
-                DESTINATION "." COMPONENT core OPTIONAL)
-        install(DIRECTORY "$<TARGET_FILE_DIR:FinceptTerminal>/tls"
-                DESTINATION "." COMPONENT core OPTIONAL)
-        install(DIRECTORY "$<TARGET_FILE_DIR:FinceptTerminal>/multimedia"
-                DESTINATION "." COMPONENT core OPTIONAL)
-        install(DIRECTORY "$<TARGET_FILE_DIR:FinceptTerminal>/networkinformation"
-                DESTINATION "." COMPONENT core OPTIONAL)
-        install(DIRECTORY "$<TARGET_FILE_DIR:FinceptTerminal>/generic"
-                DESTINATION "." COMPONENT core OPTIONAL)
+        # Qt plugin directories. OPTIONAL keeps the install non-fatal when
+        # a plugin dir isn't produced by windeployqt on a given host (e.g.
+        # texttospeech only appears when Qt TTS is present).
+        foreach(_plugin_dir
+                platforms sqldrivers imageformats iconengines styles tls
+                multimedia texttospeech networkinformation platforminputcontexts
+                printsupport generic)
+            install(DIRECTORY "$<TARGET_FILE_DIR:FinceptTerminal>/${_plugin_dir}"
+                    DESTINATION "." COMPONENT core OPTIONAL)
+        endforeach()
     endif()
 
     # ── CPack general metadata ───────────────────────────────────────────────
