@@ -19,7 +19,8 @@ StorageManager& StorageManager::instance() {
     return s;
 }
 
-StorageManager::StorageManager(QObject* parent) : QObject(parent) {}
+StorageManager::StorageManager(QObject* parent) : QObject(parent) {
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -6,6 +6,7 @@
 #include "services/agents/AgentService.h"
 #include "storage/repositories/AgentConfigRepository.h"
 #include "storage/repositories/LlmProfileRepository.h"
+#include "ui/Localization.h"
 #include "ui/theme/Theme.h"
 #include "ui/theme/ThemeManager.h"
 
@@ -26,9 +27,9 @@ static const QString kIn =
 namespace fincept::screens {
 
 static const QMap<QString, QString> kModeDescriptions = {
-    {"coordinate", "Agents coordinate through a leader who delegates and synthesizes results."},
-    {"route", "Queries are routed to the most appropriate agent based on intent."},
-    {"collaborate", "All agents work on the query simultaneously, results are merged."},
+    {"coordinate", "智能体通过一名领导者进行协作，领导者负责任务分派并汇报汇总结果。"},
+    {"route", "系统根据意图将查询路由至最匹配的特定智能体执行。"},
+    {"collaborate", "所有成员同时处理该查询，并将其输出合并为最终答案。"},
 };
 
 TeamsViewPanel::TeamsViewPanel(QWidget* parent) : QWidget(parent) {
@@ -75,7 +76,7 @@ QWidget* TeamsViewPanel::build_team_panel() {
     vl->setSpacing(6);
 
     auto* hdr = new QHBoxLayout;
-    auto* t = new QLabel("TEAM");
+    auto* t = new QLabel("当前团队");
     t->setStyleSheet(QString("color:%1;font-size:11px;font-weight:700;letter-spacing:1px;").arg(ui::colors::AMBER()));
     hdr->addWidget(t);
     team_count_ = new QLabel("0");
@@ -86,11 +87,13 @@ QWidget* TeamsViewPanel::build_team_panel() {
     vl->addLayout(hdr);
 
     // Mode
-    auto* ml = new QLabel("Mode:");
+    auto* ml = new QLabel("协作模式:");
     ml->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::TEXT_SECONDARY()));
     vl->addWidget(ml);
     mode_combo_ = new QComboBox;
-    mode_combo_->addItems({"coordinate", "route", "collaborate"});
+    mode_combo_->addItem(ui::Localization::translate_team_mode("coordinate"), "coordinate");
+    mode_combo_->addItem(ui::Localization::translate_team_mode("route"), "route");
+    mode_combo_->addItem(ui::Localization::translate_team_mode("collaborate"), "collaborate");
     mode_combo_->setStyleSheet(QString("QComboBox{%1}QComboBox::drop-down{border:none;}").arg(kIn));
     vl->addWidget(mode_combo_);
 
@@ -101,7 +104,7 @@ QWidget* TeamsViewPanel::build_team_panel() {
     vl->addWidget(mode_desc_label_);
 
     // Leader selector
-    auto* ll = new QLabel("Leader:");
+    auto* ll = new QLabel("指派领导者:");
     ll->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::TEXT_SECONDARY()));
     vl->addWidget(ll);
     leader_combo_ = new QComboBox;
@@ -109,7 +112,7 @@ QWidget* TeamsViewPanel::build_team_panel() {
     vl->addWidget(leader_combo_);
 
     // Show member responses
-    show_responses_check_ = new QCheckBox("Show member responses");
+    show_responses_check_ = new QCheckBox("显示成员详细回复");
     show_responses_check_->setStyleSheet(QString("QCheckBox{color:%1;font-size:10px;}").arg(ui::colors::TEXT_PRIMARY()));
     vl->addWidget(show_responses_check_);
 
@@ -123,7 +126,7 @@ QWidget* TeamsViewPanel::build_team_panel() {
                                        ui::colors::AMBER_DIM(), ui::colors::BG_HOVER()));
     vl->addWidget(team_list_, 1);
 
-    auto* rb = new QPushButton("REMOVE");
+    auto* rb = new QPushButton("移除成员");
     rb->setCursor(Qt::PointingHandCursor);
     rb->setStyleSheet(QString("QPushButton{background:transparent;color:%1;border:1px solid %1;padding:5px;"
                               "font-size:10px;font-weight:600;}QPushButton:hover{background:%2;}")
@@ -148,7 +151,7 @@ QWidget* TeamsViewPanel::build_agents_panel() {
     vl->setSpacing(6);
 
     auto* hdr = new QHBoxLayout;
-    auto* t = new QLabel("AVAILABLE AGENTS");
+    auto* t = new QLabel("可用智能体");
     t->setStyleSheet(
         QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::TEXT_SECONDARY()));
     hdr->addWidget(t);
@@ -168,7 +171,7 @@ QWidget* TeamsViewPanel::build_agents_panel() {
                                             ui::colors::AMBER_DIM(), ui::colors::BG_HOVER()));
     vl->addWidget(available_list_, 1);
 
-    auto* ab = new QPushButton("ADD TO TEAM");
+    auto* ab = new QPushButton("添加至团队");
     ab->setCursor(Qt::PointingHandCursor);
     ab->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:none;padding:6px;"
                               "font-size:10px;font-weight:700;letter-spacing:1px;}QPushButton:hover{background:%3;}")
@@ -190,13 +193,13 @@ QWidget* TeamsViewPanel::build_execution_panel() {
     vl->setSpacing(6);
 
     // Coordinator LLM profile picker
-    auto* llm_hdr = new QLabel("COORDINATOR LLM PROFILE");
+    auto* llm_hdr = new QLabel("协调员 LLM 配置文件");
     llm_hdr->setStyleSheet(
         QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::TEXT_SECONDARY()));
     vl->addWidget(llm_hdr);
 
     team_profile_combo_ = new QComboBox;
-    team_profile_combo_->setToolTip("LLM profile for the team coordinator. Members use their own assigned profiles.");
+    team_profile_combo_->setToolTip("团队协调员使用的 LLM 配置文件。成员将使用各自指定的配置文件。");
     team_profile_combo_->setStyleSheet(
         QString("QComboBox{%1}QComboBox::drop-down{border:none;}"
                 "QComboBox QAbstractItemView{background:%2;color:%3;selection-background-color:%4;}")
@@ -208,19 +211,19 @@ QWidget* TeamsViewPanel::build_execution_panel() {
     vl->addWidget(team_resolved_lbl_);
 
     // Query
-    auto* qh = new QLabel("TEAM QUERY");
+    auto* qh = new QLabel("团队查询内容");
     qh->setStyleSheet(
         QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;padding-top:4px;").arg(ui::colors::AMBER()));
     vl->addWidget(qh);
     query_input_ = new QPlainTextEdit;
-    query_input_->setPlaceholderText("Enter a query for the team...");
+    query_input_->setPlaceholderText("请输入该团队的查询内容...");
     query_input_->setMaximumHeight(80);
     query_input_->setStyleSheet(
         QString("QPlainTextEdit{background:%1;color:%2;border:1px solid %3;padding:8px;font-size:12px;}")
             .arg(ui::colors::BG_RAISED(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_MED()));
     vl->addWidget(query_input_);
 
-    run_btn_ = new QPushButton("RUN TEAM");
+    run_btn_ = new QPushButton("运行团队");
     run_btn_->setCursor(Qt::PointingHandCursor);
     run_btn_->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:none;padding:8px;font-size:11px;"
                                     "font-weight:700;letter-spacing:1px;}QPushButton:hover{background:%3;}"
@@ -233,7 +236,7 @@ QWidget* TeamsViewPanel::build_execution_panel() {
     exec_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::TEXT_TERTIARY()));
     vl->addWidget(exec_status_);
 
-    auto* lh = new QLabel("EXECUTION LOG");
+    auto* lh = new QLabel("执行日志");
     lh->setStyleSheet(QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;padding-top:4px;")
                           .arg(ui::colors::TEXT_SECONDARY()));
     vl->addWidget(lh);
@@ -245,7 +248,7 @@ QWidget* TeamsViewPanel::build_execution_panel() {
             .arg(ui::colors::BG_RAISED(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_DIM()));
     vl->addWidget(log_display_);
 
-    auto* rh = new QLabel("RESULT");
+    auto* rh = new QLabel("执行结果");
     rh->setStyleSheet(QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;padding-top:4px;")
                           .arg(ui::colors::TEXT_SECONDARY()));
     vl->addWidget(rh);
@@ -287,17 +290,17 @@ void TeamsViewPanel::setup_connections() {
         executing_ = false;
         pending_request_id_.clear();
         run_btn_->setEnabled(true);
-        run_btn_->setText("RUN TEAM");
+        run_btn_->setText("运行团队");
         if (r.success) {
             result_display_->setMarkdown(r.response);
-            exec_status_->setText(QString("Completed in %1ms").arg(r.execution_time_ms));
+            exec_status_->setText(QString("执行完毕，耗时 %1ms").arg(r.execution_time_ms));
             exec_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::POSITIVE()));
-            log_display_->append(QString("[DONE] Team completed (%1ms)").arg(r.execution_time_ms));
+            log_display_->append(QString("[完成] 团队任务结束 (%1ms)").arg(r.execution_time_ms));
         } else {
             result_display_->setPlainText("Error: " + r.error);
-            exec_status_->setText("FAILED");
+            exec_status_->setText("失败");
             exec_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
-            log_display_->append("[ERROR] " + r.error);
+            log_display_->append("[错误] " + r.error);
         }
     });
 
@@ -325,17 +328,17 @@ void TeamsViewPanel::setup_connections() {
         executing_ = false;
         pending_request_id_.clear();
         run_btn_->setEnabled(true);
-        run_btn_->setText("RUN TEAM");
+        run_btn_->setText("运行团队");
         if (r.success) {
             result_display_->setMarkdown(r.response);
-            exec_status_->setText(QString("Completed in %1ms").arg(r.execution_time_ms));
+            exec_status_->setText(QString("执行完毕，耗时 %1ms").arg(r.execution_time_ms));
             exec_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::POSITIVE()));
-            log_display_->append(QString("[DONE] Team completed (%1ms)").arg(r.execution_time_ms));
+            log_display_->append(QString("[完成] 团队任务结束 (%1ms)").arg(r.execution_time_ms));
         } else {
             result_display_->setPlainText("Error: " + r.error);
-            exec_status_->setText("FAILED");
+            exec_status_->setText("失败");
             exec_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
-            log_display_->append("[ERROR] " + r.error);
+            log_display_->append("[错误] " + r.error);
         }
     });
     // Profile combo for coordinator
@@ -352,10 +355,10 @@ void TeamsViewPanel::setup_connections() {
         executing_ = false;
         pending_request_id_.clear();
         run_btn_->setEnabled(true);
-        run_btn_->setText("RUN TEAM");
-        exec_status_->setText("ERROR");
+        run_btn_->setText("运行团队");
+        exec_status_->setText("错误");
         exec_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
-        log_display_->append("[ERROR] " + msg);
+        log_display_->append("[错误] " + msg);
     });
 
     connect(run_btn_, &QPushButton::clicked, this, &TeamsViewPanel::run_team);
@@ -364,14 +367,17 @@ void TeamsViewPanel::setup_connections() {
         if (row >= 0 && row < all_agents_.size())
             add_to_team(all_agents_[row]);
     });
-    connect(mode_combo_, &QComboBox::currentTextChanged, this,
-            [this](const QString& mode) { mode_desc_label_->setText(kModeDescriptions.value(mode, "")); });
+    connect(mode_combo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        QString mode = mode_combo_->itemData(idx).toString();
+        mode_desc_label_->setText(kModeDescriptions.value(mode, ""));
+    });
 }
 
 void TeamsViewPanel::populate_available_agents(const QVector<services::AgentInfo>& agents) {
     available_list_->clear();
     for (const auto& a : agents) {
-        auto* item = new QListWidgetItem(QString("%1 [%2]").arg(a.name, a.category));
+        auto* item = new QListWidgetItem(QString("%1 (%2)")
+            .arg(ui::Localization::translate_agent_name(a.name), ui::Localization::translate_category(a.category)));
         item->setToolTip(a.description);
         available_list_->addItem(item);
     }
@@ -387,10 +393,11 @@ void TeamsViewPanel::add_to_team(const services::AgentInfo& agent) {
         if (m.id == agent.id)
             return;
     team_members_.append(agent);
-    team_list_->addItem(QString("%1 [%2]").arg(agent.name, agent.category));
+    team_list_->addItem(QString("%1 (%2)")
+        .arg(ui::Localization::translate_agent_name(agent.name), ui::Localization::translate_category(agent.category)));
     team_count_->setText(QString::number(team_members_.size()));
     update_leader_combo();
-    log_display_->append(QString("[+] Added %1").arg(agent.name));
+    log_display_->append(QString("[+] 已添加 %1").arg(ui::Localization::translate_agent_name(agent.name)));
 }
 
 void TeamsViewPanel::remove_from_team(int row) {
@@ -401,20 +408,20 @@ void TeamsViewPanel::remove_from_team(int row) {
     delete team_list_->takeItem(row);
     team_count_->setText(QString::number(team_members_.size()));
     update_leader_combo();
-    log_display_->append(QString("[-] Removed %1").arg(name));
+    log_display_->append(QString("[-] 已移除 %1").arg(ui::Localization::translate_agent_name(name)));
 }
 
 void TeamsViewPanel::update_leader_combo() {
     leader_combo_->clear();
     for (int i = 0; i < team_members_.size(); ++i)
-        leader_combo_->addItem(QString("%1. %2").arg(i + 1).arg(team_members_[i].name));
+        leader_combo_->addItem(QString("%1. %2").arg(i + 1).arg(ui::Localization::translate_agent_name(team_members_[i].name)));
 }
 
 void TeamsViewPanel::load_team_profile_combo() {
     const QString prev_id = team_profile_combo_->currentData().toString();
     team_profile_combo_->blockSignals(true);
     team_profile_combo_->clear();
-    team_profile_combo_->addItem("Default (Global)", QString{});
+    team_profile_combo_->addItem("默认 (全局)", QString{});
 
     const auto pr = LlmProfileRepository::instance().list_profiles();
     const auto profiles = pr.is_ok() ? pr.value() : QVector<LlmProfile>{};
@@ -484,11 +491,11 @@ void TeamsViewPanel::run_team() {
         return;
     executing_ = true;
     run_btn_->setEnabled(false);
-    run_btn_->setText("RUNNING...");
+    run_btn_->setText("正在运行...");
     result_display_->clear();
-    exec_status_->setText("Executing...");
+    exec_status_->setText("正在执行...");
     exec_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::AMBER()));
-    log_display_->append(QString("[START] Running team (%1 members, mode: %2)")
+    log_display_->append(QString("[开始] 运行团队 (%1 个成员, 模式: %2)")
                              .arg(team_members_.size())
                              .arg(mode_combo_->currentText()));
 
@@ -516,7 +523,7 @@ void TeamsViewPanel::run_team() {
 
     QJsonObject tc;
     tc["name"] = "Custom Team";
-    tc["mode"] = mode_combo_->currentText();
+    tc["mode"] = mode_combo_->currentData().toString();
     tc["show_members_responses"] = show_responses_check_->isChecked();
     tc["leader_index"] = leader_combo_->currentIndex();
     tc["model"] = ai_chat::LlmService::profile_to_json(coord);
@@ -561,7 +568,7 @@ void TeamsViewPanel::run_team() {
         if (fresh_config.contains("instructions"))
             member["instructions"] = fresh_config["instructions"];
         members.append(member);
-        log_display_->append(QString("  [MEMBER] %1").arg(m.name));
+        log_display_->append(QString("  [成员] %1").arg(ui::Localization::translate_agent_name(m.name)));
     }
     tc["members"] = members;
     pending_request_id_ = services::AgentService::instance().run_team(q, tc);

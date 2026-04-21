@@ -44,116 +44,116 @@ WidgetRegistry::WidgetRegistry() {
     // Existing widgets ignore it until they opt into configurable behaviour.
 
     // ── Markets ───────────────────────────────────────────────────────────────
-    register_widget({"indices", "Market Indices", "Markets", "Major global indices — SPY, QQQ, DIA, IWM", 4, 5, 3, 4,
+    register_widget({"indices", "市场指数", "市场", "全球主要指数 — 标普500, 纳指, 道指, 罗素2000", 4, 5, 3, 4,
                      [](const QJsonObject&) { return widgets::create_indices_widget(); }});
 
-    register_widget({"forex", "Forex Pairs", "Markets", "Major FX pairs — EURUSD, GBPUSD, USDJPY", 4, 4, 2, 3,
+    register_widget({"forex", "外汇货币对", "市场", "主要外汇对 — 欧元/美元, 英镑/美元, 美元/日元", 4, 4, 2, 3,
                      [](const QJsonObject&) { return widgets::create_forex_widget(); }});
 
-    register_widget({"crypto", "Crypto Markets", "Markets", "Top cryptocurrencies — BTC, ETH, BNB, SOL", 4, 4, 2, 3,
+    register_widget({"crypto", "加密货币市场", "市场", "热门加密货币 — 比特币, 以太坊, 币安币, 索拉纳", 4, 4, 2, 3,
                      [](const QJsonObject&) { return widgets::create_crypto_widget(); }});
 
-    register_widget({"commodities", "Commodities", "Markets", "Gold, Oil, Natural Gas, Copper", 4, 4, 2, 3,
+    register_widget({"commodities", "大宗商品", "市场", "黄金、原油、天然气、铜", 4, 4, 2, 3,
                      [](const QJsonObject&) { return widgets::create_commodities_widget(); }});
 
-    register_widget({"sector_heatmap", "Sector Heatmap", "Markets", "S&P 500 sector performance heatmap", 6, 5, 3, 4,
+    register_widget({"sector_heatmap", "板块热图", "市场", "标普 500 板块表现热图", 6, 5, 3, 4,
                      [](const QJsonObject&) { return new widgets::SectorHeatmapWidget; }});
 
-    register_widget({"top_movers", "Top Movers", "Markets", "Biggest gainers and losers today", 6, 5, 3, 4,
+    register_widget({"top_movers", "涨跌榜", "市场", "今日领涨与领跌品种", 6, 5, 3, 4,
                      [](const QJsonObject&) { return new widgets::TopMoversWidget; }});
 
-    register_widget({"sentiment", "Market Sentiment", "Markets", "Fear & greed, bull/bear indicators", 4, 4, 2, 3,
+    register_widget({"sentiment", "市场情绪", "市场", "恐婪指数、牛熊指标", 4, 4, 2, 3,
                      [](const QJsonObject&) { return new widgets::MarketSentimentWidget; }});
 
     // ── Research ──────────────────────────────────────────────────────────────
-    register_widget({"news", "News Feed", "Research", "Latest financial news headlines", 8, 4, 3, 3,
+    register_widget({"news", "新闻资讯", "研究", "最新财经新闻头条", 8, 4, 3, 3,
                      [](const QJsonObject&) { return new widgets::NewsWidget; }});
 
-    register_widget({"stock_quote", "Stock Quote", "Research", "Single stock detail — price, volume, chart", 4, 5, 2, 3,
+    register_widget({"stock_quote", "股票报价", "研究", "个股详情 — 价格、成交量、图表", 4, 5, 2, 3,
                      [](const QJsonObject& cfg) {
                          const QString sym = cfg.value("symbol").toString("AAPL");
                          return new widgets::StockQuoteWidget(sym);
                      }});
 
-    register_widget({"screener", "Stock Screener", "Research", "Filter stocks by fundamentals and technicals", 6, 5, 3,
+    register_widget({"screener", "股票筛选器", "研究", "根据基本面和技术面筛选股票", 6, 5, 3,
                      4, [](const QJsonObject&) { return new widgets::ScreenerWidget; }});
 
-    register_widget({"econ_calendar", "Economic Calendar", "Research", "Upcoming macro events and releases", 4, 4, 2, 3,
+    register_widget({"econ_calendar", "经济日历", "研究", "即将发布的宏观经济事件和数据", 4, 4, 2, 3,
                      [](const QJsonObject&) { return new widgets::EconomicCalendarWidget; }});
 
     // ── Portfolio ─────────────────────────────────────────────────────────────
-    register_widget({"watchlist", "Watchlist", "Portfolio", "Your saved symbols with live prices", 6, 4, 2, 3,
+    register_widget({"watchlist", "自选股", "投资组合", "您关注的代码及其实时价格", 6, 4, 2, 3,
                      [](const QJsonObject&) { return new widgets::WatchlistWidget; }});
 
-    register_widget({"performance", "Performance", "Portfolio", "Portfolio P&L — today, week, month, YTD", 4, 5, 3, 4,
+    register_widget({"performance", "绩效分析", "投资组合", "投资组合损益 — 今日、本周、本月、年初至今", 4, 5, 3, 4,
                      [](const QJsonObject&) { return new widgets::PerformanceWidget; }});
 
-    register_widget({"portfolio_summary", "Portfolio Summary", "Portfolio",
-                     "Holdings overview with allocation breakdown", 6, 4, 2, 3,
+    register_widget({"portfolio_summary", "资产汇总", "投资组合",
+                     "持仓概览与资产配置明细", 6, 4, 2, 3,
                      [](const QJsonObject&) { return new widgets::PortfolioSummaryWidget; }});
 
-    register_widget({"risk_metrics", "Risk Metrics", "Portfolio", "Volatility, beta, drawdown, Sharpe ratio", 4, 5, 3,
+    register_widget({"risk_metrics", "风险指标", "投资组合", "波动率、贝塔系数、最大回撤、夏普比率", 4, 5, 3,
                      4, [](const QJsonObject&) { return new widgets::RiskMetricsWidget; }});
 
     // ── Trading ───────────────────────────────────────────────────────────────
-    register_widget({"quick_trade", "Quick Trade", "Trading", "Fast order entry for crypto and equities", 4, 5, 2, 3,
+    register_widget({"quick_trade", "快速交易", "交易", "加密货币和股票的快速下单入口", 4, 5, 2, 3,
                      [](const QJsonObject&) { return new widgets::QuickTradeWidget; }});
 
-    register_widget({"open_positions", "Open Positions", "Trading",
-                     "Live open positions for a broker account — pick via gear icon", 6, 5, 3, 3,
+    register_widget({"open_positions", "当前持仓", "交易",
+                     "券商账户实时持仓 — 通过齿轮图标选择", 6, 5, 3, 3,
                      [](const QJsonObject& cfg) { return new widgets::OpenPositionsWidget(cfg); }});
 
-    register_widget({"working_orders", "Working Orders", "Trading",
-                     "Pending/working orders for a broker account — click × to cancel", 6, 5, 3, 3,
+    register_widget({"working_orders", "活动订单", "交易",
+                     "券商账户待处理订单 — 点击 × 取消", 6, 5, 3, 3,
                      [](const QJsonObject& cfg) { return new widgets::OrderBookMiniWidget(cfg); }});
 
-    register_widget({"margin_usage", "Margin Usage", "Trading",
-                     "Broker account funds — available, used margin, total, usage %", 3, 4, 2, 3,
+    register_widget({"margin_usage", "保证金占用", "交易",
+                     "券商账户资金 — 可用、已用保证金、总额、占用率", 3, 4, 2, 3,
                      [](const QJsonObject& cfg) { return new widgets::MarginUsageWidget(cfg); }});
 
-    register_widget({"today_pnl", "Today P&L", "Trading",
-                     "Aggregate broker account P&L — total, day, realized, open positions", 3, 4, 2, 3,
+    register_widget({"today_pnl", "今日损益", "交易",
+                     "券商账户总损益 — 当日、已实现、浮动盈亏", 3, 4, 2, 3,
                      [](const QJsonObject& cfg) { return new widgets::TodayPnLWidget(cfg); }});
 
-    register_widget({"holdings", "Holdings", "Portfolio",
-                     "Long-term broker holdings — avg cost, LTP, P&L %", 6, 5, 3, 3,
+    register_widget({"holdings", "长期持仓", "投资组合",
+                     "长期券商持仓 — 平均成本、现值、盈亏比例", 6, 5, 3, 3,
                      [](const QJsonObject& cfg) { return new widgets::BrokerHoldingsWidget(cfg); }});
 
     // ── Tools ────────────────────────────────────────────────────────────────
-    register_widget({"video_player", "Live TV / Streams", "Tools",
-                     "Financial TV — Bloomberg, CNBC, Reuters and custom streams", 4, 5, 3, 4,
+    register_widget({"video_player", "实时电视 / 直播", "工具",
+                     "财经电视 — 彭博、CNBC、路透及自定义流", 4, 5, 3, 4,
                      [](const QJsonObject&) { return widgets::create_video_player_widget(); }});
 
-    register_widget({"recent_files", "Recent Files", "Tools",
-                     "Recently saved files — exports, reports, notebooks and more", 4, 4, 2, 3,
+    register_widget({"recent_files", "最近文件", "工具",
+                     "最近保存的文件 — 导出数据、报告、笔记本等", 4, 4, 2, 3,
                      [](const QJsonObject&) { return new widgets::RecentFilesWidget; }});
 
-    register_widget({"quote_strip", "Quote Strip", "Markets",
-                     "Configurable live quote list — pick symbols via gear icon", 3, 5, 2, 3,
+    register_widget({"quote_strip", "行情显示条", "市场",
+                     "可配置实时行情列表 — 通过齿轮图标选择代码", 3, 5, 2, 3,
                      [](const QJsonObject& cfg) { return new widgets::MarketQuoteStripWidget(cfg); }});
 
-    register_widget({"crypto_ticker", "Crypto Ticker", "Markets",
-                     "Live Kraken / HyperLiquid ticker strip — configurable pair list", 3, 5, 2, 3,
+    register_widget({"crypto_ticker", "加密行情", "市场",
+                     "实时快讯条 — 可配置交易对列表", 3, 5, 2, 3,
                      [](const QJsonObject& cfg) { return new widgets::CryptoTickerWidget(cfg); }});
 
-    register_widget({"polymarket_prices", "Polymarket", "Markets",
-                     "Live prediction-market prices — configurable asset list", 3, 5, 2, 3,
+    register_widget({"polymarket_prices", "预测市场", "市场",
+                     "实时预测市场价格 (Polymarket) — 可配置资产列表", 3, 5, 2, 3,
                      [](const QJsonObject& cfg) { return new widgets::PolymarketPriceWidget(cfg); }});
 
-    register_widget({"agent_errors", "Agent Errors", "Tools",
-                     "Recent agent execution failures — subscribes to agent:error:*", 5, 4, 3, 3,
+    register_widget({"agent_errors", "Agent 错误", "工具",
+                     "最近的 Agent 执行失败记录", 5, 4, 3, 3,
                      [](const QJsonObject& cfg) { return new widgets::AgentErrorsWidget(cfg); }});
 
-    register_widget({"sparklines", "Sparklines", "Markets",
-                     "Configurable sparkline strip — subscribes to market:sparkline:*", 4, 5, 3, 3,
+    register_widget({"sparklines", "走势图", "市场",
+                     "可配置实时走势图", 4, 5, 3, 3,
                      [](const QJsonObject& cfg) { return new widgets::SparklineStripWidget(cfg); }});
 
-    register_widget({"trade_tape", "Trade Tape", "Markets",
-                     "Live trade prints for a crypto pair — ws:<exchange>:trades:<pair>", 4, 5, 3, 4,
+    register_widget({"trade_tape", "交易流水", "市场",
+                     "加密货币成交流水 — 可配置交易对", 4, 5, 3, 4,
                      [](const QJsonObject& cfg) { return new widgets::TradeTapeWidget(cfg); }});
 
-    register_widget({"news_category", "News — Category", "Research",
-                     "Category-filtered news headlines — news:category:<category>", 5, 5, 3, 3,
+    register_widget({"news_category", "新闻 — 分类", "研究",
+                     "按分类筛选的新闻头条", 5, 5, 3, 3,
                      [](const QJsonObject& cfg) { return new widgets::NewsCategoryWidget(cfg); }});
 }
 

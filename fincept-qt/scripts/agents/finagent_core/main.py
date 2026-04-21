@@ -33,6 +33,8 @@ logging.basicConfig(
     force=True
 )
 
+logger = logging.getLogger(__name__)
+
 # Add parent directory to path
 parent_dir = str(Path(__file__).parent.parent)
 if parent_dir not in sys.path:
@@ -426,9 +428,9 @@ def dispatch_action(
         from finagent_core.super_agent import SuperAgent
         query = params.get("query")
         if not query:
-            return {"success": False, "error": "Missing 'query'"}
-        agent = SuperAgent(api_keys=api_keys)
-        return agent.execute_multi(query, params.get("session_id"), params.get("aggregate", True))
+            return {"success": False, "error": "Missing 'query' in params"}
+        agent = SuperAgent(api_keys=api_keys, model_config=config.get("model"))
+        return agent.execute_multi(query, params.get("session_id"), params.get("aggregate", True), user_config=config)
 
     # =========================================================================
     # Execution Planner

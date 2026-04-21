@@ -57,7 +57,7 @@ TickerBar::TickerBar(QWidget* parent) : QWidget(parent) {
     hl->setContentsMargins(6, 2, 6, 2);
     hl->setSpacing(4);
 
-    auto* lbl = new QLabel("SYMBOLS:", edit_bar_);
+    auto* lbl = new QLabel("股票代码:", edit_bar_);
     lbl->setStyleSheet(QString("color:%1; font-size:9px; font-weight:bold; background:transparent;")
                            .arg(ui::colors::TEXT_TERTIARY()));
     hl->addWidget(lbl);
@@ -73,7 +73,7 @@ TickerBar::TickerBar(QWidget* parent) : QWidget(parent) {
     connect(edit_input_, &QLineEdit::returnPressed, this, &TickerBar::commit_edit);
     hl->addWidget(edit_input_, 1);
 
-    edit_ok_ = new QPushButton("OK", edit_bar_);
+    edit_ok_ = new QPushButton("确定", edit_bar_);
     edit_ok_->setFixedWidth(32);
     edit_ok_->setStyleSheet(
         QString("QPushButton { background:%1; color:%2; border:none;"
@@ -197,7 +197,7 @@ void TickerBar::contextMenuEvent(QContextMenuEvent* event) {
             .arg(ui::colors::BG_RAISED(), ui::colors::TEXT_PRIMARY(),
                  ui::colors::BORDER_DIM(), ui::colors::AMBER(), ui::colors::BG_BASE()));
 
-    auto* edit_action = menu.addAction("Edit Symbols...");
+    auto* edit_action = menu.addAction("编辑代码...");
     connect(edit_action, &QAction::triggered, this, &TickerBar::show_edit_bar);
 
     menu.exec(event->globalPos());

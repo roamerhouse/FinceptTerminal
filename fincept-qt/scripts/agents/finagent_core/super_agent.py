@@ -18,21 +18,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 # System prompt given to the LLM router — lists all intents and asks for a JSON decision
-LLM_ROUTER_SYSTEM_PROMPT = """You are a financial query router. Your ONLY job is to classify a user query into ONE of these intents and return a JSON object.
+LLM_ROUTER_SYSTEM_PROMPT = """你是一个金融查询路由器。你的唯一任务是将用户查询分类到以下意图之一，并返回一个 JSON 对象。
 
-Available intents:
-- trading: order execution, buy/sell signals, position entry/exit, market orders
-- portfolio: portfolio allocation, rebalancing, diversification, holdings management
-- analysis: stock/equity research, valuation (DCF, P/E), fundamental or technical analysis, price targets
-- risk: VaR, volatility, drawdown, Sharpe ratio, hedging, stress testing, correlation
-- news: market news, earnings announcements, press releases, headlines
-- geopolitics: geopolitical risk, international relations, sanctions, trade wars, elections
-- economics: GDP, inflation, interest rates, central banks, employment, CPI/PPI
-- research: deep-dive research, industry studies, comprehensive investigation
-- general: anything that doesn't fit the above
+可用意图：
+- trading: 订单执行、买入/卖出信号、入场/出场策略、市价单
+- portfolio: 投资组合配置、再平衡、多元化、持仓管理
+- analysis: 股票/权益研究、估值（DCF, P/E）、基本面或技术分析、目标价
+- risk: VaR、波动率、最大回撤、夏普比率、对冲、压力测试、相关性
+- news: 市场新闻、盈利公告、新闻稿、头条新闻
+- geopolitics: 地缘政治风险、国际关系、制裁、贸易战、选举
+- economics: GDP、通胀、利率、中央银行、就业、CPI/PPI
+- research: 深度研究、行业研究、综合调查
+- general: 不属于上述任何一类的其他问题
 
-Respond ONLY with a valid JSON object in this exact format (no markdown, no explanation):
-{"intent": "<intent>", "confidence": <0.0-1.0>, "reasoning": "<one sentence>"}"""
+请仅以以下格式返回有效的 JSON 对象（不要使用 markdown，不要有任何解释）：
+{"intent": "<intent>", "confidence": <0.0-1.0>, "reasoning": "<一段简短的中文分类理由>"}"""
 
 
 class QueryIntent(Enum):
@@ -486,7 +486,8 @@ class SuperAgent:
         query: str,
         session_id: Optional[str] = None,
         context: Optional[Dict[str, Any]] = None,
-        user_config: Optional[Dict[str, Any]] = None
+        user_config: Optional[Dict[str, Any]] = None,
+        routing: Optional[RoutingResult] = None
     ) -> Dict[str, Any]:
         """
         Route and execute query.
@@ -496,6 +497,7 @@ class SuperAgent:
             session_id: Optional session ID
             context: Optional context
             user_config: Optional user-provided model config (from UI settings)
+            routing: Optional pre-resolved routing result
 
         Returns:
             Response from routed agent
@@ -507,9 +509,11 @@ class SuperAgent:
         if user_config and user_config.get("model"):
             self.llm_router.model_config = user_config["model"]
 
-        # Route query (LLM-based)
-        routing = self.route(query)
-        logger.info(f"Routed to {routing.agent_id} with confidence {routing.confidence:.2f}")
+        # Route query (LLM-based) if not provided
+        if not routing:
+            routing = self.route(query)
+        
+        logger.info(f"Executing with agent {routing.agent_id} (intent: {routing.intent.value})")
 
         # Build config - use user's model config if provided, otherwise resolve from api_keys
         if user_config and user_config.get("model"):
@@ -614,7 +618,8 @@ class SuperAgent:
         self,
         query: str,
         session_id: Optional[str] = None,
-        aggregate: bool = True
+        aggregate: bool = True,
+        user_config: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Execute query on multiple routed agents and aggregate results.
@@ -623,6 +628,7 @@ class SuperAgent:
             query: User query
             session_id: Optional session ID
             aggregate: Whether to aggregate responses
+            user_config: Optional user-provided config
 
         Returns:
             Aggregated or individual responses
@@ -630,11 +636,15 @@ class SuperAgent:
         routings = self.route_multi(query)
 
         if not routings:
-            return self.execute(query, session_id)
+            return self.execute(query, session_id, user_config=user_config)
 
         responses = []
         for routing in routings:
-            result = self.execute(query, session_id)
+            # Isolate sub-agent sessions to prevent turn violations in shared history (P4.23)
+            sub_session_id = f"{session_id}_{routing.agent_id}" if session_id else None
+            
+            # Execute each routed agent specifically
+            result = self.execute(query, sub_session_id, user_config=user_config, routing=routing)
             result["routing"]["priority"] = routing.confidence
             responses.append(result)
 
@@ -661,55 +671,55 @@ class SuperAgent:
     def _get_instructions_for_intent(self, intent: QueryIntent) -> str:
         """Get specialized instructions for intent"""
         instructions = {
-            QueryIntent.TRADING: """You are a trading assistant. Help users with:
-- Order placement and execution
-- Position management
-- Entry/exit strategies
-- Market timing""",
+            QueryIntent.TRADING: """你是一个交易助手。请在以下方面为用户提供帮助：
+- 订单下达与执行
+- 持仓管理
+- 入场/出场策略
+- 市场择时""",
 
-            QueryIntent.PORTFOLIO: """You are a portfolio manager. Help users with:
-- Portfolio allocation and rebalancing
-- Diversification strategies
-- Asset selection
-- Position sizing""",
+            QueryIntent.PORTFOLIO: """你是一个投资组合经理。请在以下方面为用户提供帮助：
+- 投资组合配置与再平衡
+- 多元化策略
+- 资产选择
+- 头寸控制""",
 
-            QueryIntent.ANALYSIS: """You are a financial analyst. Help users with:
-- Stock valuation (DCF, comparables)
-- Fundamental analysis
-- Technical analysis
-- Market research""",
+            QueryIntent.ANALYSIS: """你是一个财务分析师。请在以下方面为用户提供帮助：
+- 股票估值（DCF、可比公司法）
+- 基本面分析
+- 技术分析
+- 市场研究""",
 
-            QueryIntent.RISK: """You are a risk analyst. Help users with:
-- Risk metrics (VaR, Sharpe, etc.)
-- Volatility analysis
-- Stress testing
-- Hedging strategies""",
+            QueryIntent.RISK: """你是一个风险分析师。请在以下方面为用户提供帮助：
+- 风险指标（VaR、夏普比率等）
+- 波动率分析
+- 压力测试
+- 对冲策略""",
 
-            QueryIntent.NEWS: """You are a financial news analyst. Help users with:
-- Market news and headlines
-- Earnings announcements
-- Company updates
-- Sector news""",
+            QueryIntent.NEWS: """你是一个财经新闻分析师。请在以下方面为用户提供帮助：
+- 市场新闻与头条
+- 盈利公告
+- 公司更新
+- 行业新闻""",
 
-            QueryIntent.GEOPOLITICS: """You are a geopolitical analyst. Help users with:
-- Geopolitical risk assessment
-- International relations
-- Policy analysis
-- Global macro trends""",
+            QueryIntent.GEOPOLITICS: """你是一个地缘政治分析师。请在以下方面为用户提供帮助：
+- 地缘政治风险评估
+- 国际关系
+- 政策分析
+- 全球宏观趋势""",
 
-            QueryIntent.ECONOMICS: """You are an economist. Help users with:
-- Economic indicators
-- Central bank policy
-- Macro trends
-- Economic forecasting""",
+            QueryIntent.ECONOMICS: """你是一个经济学家。请在以下方面为用户提供帮助：
+- 经济指标
+- 央行政策
+- 宏观趋势
+- 经济预测""",
 
-            QueryIntent.RESEARCH: """You are a research analyst. Help users with:
-- Deep-dive research
-- Comprehensive analysis
-- Industry studies
-- Investment theses""",
+            QueryIntent.RESEARCH: """你是一个研究员。请在以下方面为用户提供帮助：
+- 深度研究
+- 综合分析
+- 行业研究
+- 投资指南""",
 
-            QueryIntent.GENERAL: """You are a helpful financial AI assistant."""
+            QueryIntent.GENERAL: """你是一个专业的金融 AI 助手。请始终使用中文回复用户。"""
         }
 
         return instructions.get(intent, instructions[QueryIntent.GENERAL])

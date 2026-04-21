@@ -76,7 +76,7 @@ void NodeEditorToolbar::set_executing(bool running) {
                                  "QPushButton:hover { background: %2; color: %3; }")
                              .arg(ui::colors::NEGATIVE_BG(), ui::colors::NEGATIVE(), ui::colors::TEXT_PRIMARY());
 
-    execute_btn_->setText(running ? "STOP" : "EXECUTE");
+    execute_btn_->setText(running ? "停止" : "运行");
     execute_btn_->setStyleSheet(running ? stop_style : accent_btn_style());
 }
 
@@ -88,7 +88,7 @@ void NodeEditorToolbar::build_ui() {
     layout->setSpacing(6);
 
     // ── Workflow name ──────────────────────────────────────────────
-    name_edit_ = new QLineEdit("Untitled Workflow");
+    name_edit_ = new QLineEdit("未命名工作流");
     name_edit_->setFixedWidth(200);
     name_edit_->setStyleSheet(QString("QLineEdit {"
                                       "  background: transparent; color: %1; border: none;"
@@ -102,7 +102,7 @@ void NodeEditorToolbar::build_ui() {
     connect(name_edit_, &QLineEdit::textChanged, this, &NodeEditorToolbar::name_changed);
 
     // ── Status badge ───────────────────────────────────────────────
-    auto* status = new QLabel("DRAFT");
+    auto* status = new QLabel("草稿");
     status->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 10px;"
                                   "font-weight: bold; letter-spacing: 0.5px; padding: 0 6px;")
                               .arg(ui::colors::TEXT_TERTIARY()));
@@ -111,17 +111,17 @@ void NodeEditorToolbar::build_ui() {
     layout->addStretch();
 
     // ── Undo / Redo ────────────────────────────────────────────────
-    undo_btn_ = new QPushButton("UNDO");
+    undo_btn_ = new QPushButton("撤销");
     undo_btn_->setStyleSheet(btn_style());
     undo_btn_->setEnabled(false);
-    undo_btn_->setToolTip("Undo last action (Ctrl+Z)");
+    undo_btn_->setToolTip("撤销上一步操作 (Ctrl+Z)");
     layout->addWidget(undo_btn_);
     connect(undo_btn_, &QPushButton::clicked, this, &NodeEditorToolbar::undo_clicked);
 
-    redo_btn_ = new QPushButton("REDO");
+    redo_btn_ = new QPushButton("重做");
     redo_btn_->setStyleSheet(btn_style());
     redo_btn_->setEnabled(false);
-    redo_btn_->setToolTip("Redo last action (Ctrl+Y)");
+    redo_btn_->setToolTip("重做上一步操作 (Ctrl+Y)");
     layout->addWidget(redo_btn_);
     connect(redo_btn_, &QPushButton::clicked, this, &NodeEditorToolbar::redo_clicked);
 
@@ -132,19 +132,19 @@ void NodeEditorToolbar::build_ui() {
     layout->addWidget(sep1);
 
     // ── Save / Load / Clear ────────────────────────────────────────
-    auto* save_btn = new QPushButton("SAVE");
+    auto* save_btn = new QPushButton("保存");
     save_btn->setStyleSheet(btn_style());
-    save_btn->setToolTip("Save workflow to database");
+    save_btn->setToolTip("保存工作流到数据库");
     layout->addWidget(save_btn);
     connect(save_btn, &QPushButton::clicked, this, &NodeEditorToolbar::save_clicked);
 
-    auto* load_btn = new QPushButton("LOAD");
+    auto* load_btn = new QPushButton("加载");
     load_btn->setStyleSheet(btn_style());
-    load_btn->setToolTip("Load a saved workflow");
+    load_btn->setToolTip("加载已保存的工作流");
     layout->addWidget(load_btn);
     connect(load_btn, &QPushButton::clicked, this, &NodeEditorToolbar::load_clicked);
 
-    auto* clear_btn = new QPushButton("CLEAR");
+    auto* clear_btn = new QPushButton("清空");
     clear_btn->setStyleSheet(btn_style());
     layout->addWidget(clear_btn);
     connect(clear_btn, &QPushButton::clicked, this, &NodeEditorToolbar::clear_clicked);
@@ -156,12 +156,12 @@ void NodeEditorToolbar::build_ui() {
     layout->addWidget(sep2);
 
     // ── Import / Export ────────────────────────────────────────────
-    auto* import_btn = new QPushButton("IMPORT");
+    auto* import_btn = new QPushButton("导入");
     import_btn->setStyleSheet(btn_style());
     layout->addWidget(import_btn);
     connect(import_btn, &QPushButton::clicked, this, &NodeEditorToolbar::import_clicked);
 
-    auto* export_btn = new QPushButton("EXPORT");
+    auto* export_btn = new QPushButton("导出");
     export_btn->setStyleSheet(btn_style());
     layout->addWidget(export_btn);
     connect(export_btn, &QPushButton::clicked, this, &NodeEditorToolbar::export_clicked);
@@ -173,13 +173,13 @@ void NodeEditorToolbar::build_ui() {
     layout->addWidget(sep3);
 
     // ── Templates ──────────────────────────────────────────────────
-    auto* templates_btn = new QPushButton("TEMPLATES");
+    auto* templates_btn = new QPushButton("模板");
     templates_btn->setStyleSheet(btn_style());
     layout->addWidget(templates_btn);
     connect(templates_btn, &QPushButton::clicked, this, &NodeEditorToolbar::templates_clicked);
 
     // ── Deploy ─────────────────────────────────────────────────────
-    auto* deploy_btn = new QPushButton("DEPLOY");
+    auto* deploy_btn = new QPushButton("部署");
     deploy_btn->setStyleSheet(btn_style());
     layout->addWidget(deploy_btn);
     connect(deploy_btn, &QPushButton::clicked, this, &NodeEditorToolbar::deploy_clicked);
@@ -191,7 +191,7 @@ void NodeEditorToolbar::build_ui() {
     layout->addWidget(sep4);
 
     // ── Execute ────────────────────────────────────────────────────
-    execute_btn_ = new QPushButton("EXECUTE");
+    execute_btn_ = new QPushButton("运行");
     execute_btn_->setStyleSheet(accent_btn_style());
     layout->addWidget(execute_btn_);
     connect(execute_btn_, &QPushButton::clicked, this, &NodeEditorToolbar::execute_clicked);

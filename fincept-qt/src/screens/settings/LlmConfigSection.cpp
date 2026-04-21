@@ -28,7 +28,7 @@ namespace fincept::screens {
 static constexpr const char* TAG = "LlmConfigSection";
 
 const QStringList LlmConfigSection::KNOWN_PROVIDERS = {"openai",     "anthropic", "gemini", "groq",   "deepseek",
-                                                       "openrouter", "minimax",   "ollama", "fincept"};
+                                                       "openrouter", "minimax",   "ollama", "llama", "fincept"};
 
 QString LlmConfigSection::default_base_url(const QString& provider) {
     const QString p = provider.toLower();
@@ -48,6 +48,8 @@ QString LlmConfigSection::default_base_url(const QString& provider) {
         return "https://api.minimax.io/v1";
     if (p == "ollama")
         return "http://localhost:11434";
+    if (p == "llama")
+        return "http://localhost:8080";
     if (p == "fincept")
         return {}; // endpoints are hardcoded in LlmService, no base_url needed
     return {};
@@ -72,6 +74,8 @@ QStringList LlmConfigSection::fallback_models(const QString& provider) {
         return {"MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed"};
     if (p == "ollama")
         return {"llama3:8b", "mistral:7b", "codellama:7b"};
+    if (p == "llama")
+        return {"llama-3-8b", "mistral-7b", "gemma-7b"};
     if (p == "fincept")
         return {"MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed"};
     return {};
@@ -113,7 +117,7 @@ void LlmConfigSection::build_ui() {
                              QString(ui::colors::BORDER_DIM()) + ";");
     auto* tbl = new QHBoxLayout(title_bar);
     tbl->setContentsMargins(16, 0, 16, 0);
-    auto* title_lbl = new QLabel("LLM CONFIGURATION");
+    auto* title_lbl = new QLabel("模型服务商配置");
     title_lbl->setStyleSheet("color:" + QString(ui::colors::AMBER()) + ";font-weight:700;letter-spacing:1px;");
     tbl->addWidget(title_lbl);
     tbl->addStretch();
@@ -133,8 +137,8 @@ void LlmConfigSection::build_ui() {
                                ";}"
                                "QTabBar::tab:hover{color:" +
                                QString(ui::colors::TEXT_PRIMARY()) + ";}");
-    tab_widget_->addTab(build_providers_tab(), "PROVIDERS");
-    tab_widget_->addTab(build_profiles_tab(), "PROFILES");
+    tab_widget_->addTab(build_providers_tab(), "服务商");
+    tab_widget_->addTab(build_profiles_tab(), "预设方案");
     root->addWidget(tab_widget_, 1);
 }
 
@@ -171,7 +175,7 @@ QWidget* LlmConfigSection::build_provider_list_panel() {
     vl->setContentsMargins(8, 8, 8, 8);
     vl->setSpacing(6);
 
-    auto* lbl = new QLabel("Providers");
+    auto* lbl = new QLabel("服务商列表");
     lbl->setStyleSheet("color:" + QString(ui::colors::TEXT_SECONDARY()) + ";font-weight:700;letter-spacing:1px;");
     vl->addWidget(lbl);
 
@@ -189,7 +193,7 @@ QWidget* LlmConfigSection::build_provider_list_panel() {
     vl->addWidget(provider_list_, 1);
 
     auto* btn_row = new QHBoxLayout;
-    add_btn_ = new QPushButton("+ Add");
+    add_btn_ = new QPushButton("+ 添加");
     add_btn_->setStyleSheet("QPushButton{background:" + QString(ui::colors::BG_RAISED()) + ";color:" +
                             QString(ui::colors::AMBER()) + ";border:1px solid " + QString(ui::colors::AMBER()) +
                             ";"
@@ -200,7 +204,7 @@ QWidget* LlmConfigSection::build_provider_list_panel() {
         // Show input dialog to pick provider
         QStringList choices = KNOWN_PROVIDERS;
         bool ok;
-        QString provider = QInputDialog::getItem(this, "Add Provider", "Select provider:", choices, 0, false, &ok);
+        QString provider = QInputDialog::getItem(this, "添加服务商", "选择服务商:", choices, 0, false, &ok);
         if (!ok || provider.isEmpty())
             return;
 
@@ -209,7 +213,7 @@ QWidget* LlmConfigSection::build_provider_list_panel() {
         if (existing.is_ok()) {
             for (const auto& p : existing.value()) {
                 if (p.provider.toLower() == provider.toLower()) {
-                    show_status("Provider already configured", true);
+                    show_status("服务商已配置", true);
                     return;
                 }
             }
@@ -232,7 +236,7 @@ QWidget* LlmConfigSection::build_provider_list_panel() {
         }
     });
 
-    delete_btn_ = new QPushButton("Remove");
+    delete_btn_ = new QPushButton("移除");
     delete_btn_->setEnabled(false);
     delete_btn_->setStyleSheet(
         "QPushButton{background:" + QString(ui::colors::BG_RAISED()) + ";color:" + QString(ui::colors::NEGATIVE()) +
@@ -274,7 +278,7 @@ QWidget* LlmConfigSection::build_form_panel() {
     vl->setSpacing(14);
 
     // Section title
-    auto* form_title = new QLabel("Provider Configuration");
+    auto* form_title = new QLabel("服务商详细配置");
     form_title->setStyleSheet("color:" + QString(ui::colors::AMBER()) + ";font-weight:700;");
     vl->addWidget(form_title);
 
@@ -299,10 +303,10 @@ QWidget* LlmConfigSection::build_form_panel() {
     };
     auto lbl_style = [](QLabel* l) { l->setStyleSheet("color:" + QString(ui::colors::TEXT_SECONDARY()) + ";"); };
 
-    auto* p_lbl = new QLabel("Provider");
+    auto* p_lbl = new QLabel("服务商类型");
     lbl_style(p_lbl);
     provider_edit_ = new QLineEdit;
-    provider_edit_->setPlaceholderText("e.g. openai");
+    provider_edit_->setPlaceholderText("例如: openai");
     provider_edit_->setReadOnly(true); // set by selection
     field_style(provider_edit_);
     provider_edit_->setStyleSheet(provider_edit_->styleSheet() +
@@ -310,7 +314,7 @@ QWidget* LlmConfigSection::build_form_panel() {
                                   ";color:" + QString(ui::colors::TEXT_TERTIARY()) + ";}");
     form->addRow(p_lbl, provider_edit_);
 
-    auto* k_lbl = new QLabel("API Key");
+    auto* k_lbl = new QLabel("API 凭据 (Key)");
     lbl_style(k_lbl);
     api_key_edit_ = new QLineEdit;
     api_key_edit_->setPlaceholderText("sk-...");
@@ -318,13 +322,13 @@ QWidget* LlmConfigSection::build_form_panel() {
     field_style(api_key_edit_);
     form->addRow(k_lbl, api_key_edit_);
 
-    auto* m_lbl = new QLabel("Model");
+    auto* m_lbl = new QLabel("模型名称");
     lbl_style(m_lbl);
     auto* model_row = new QHBoxLayout;
     model_combo_ = new QComboBox;
     model_combo_->setEditable(true);
     model_combo_->setMinimumWidth(260);
-    model_combo_->lineEdit()->setPlaceholderText("Select or type model...");
+    model_combo_->lineEdit()->setPlaceholderText("选择或输入模型名称...");
     model_combo_->setStyleSheet("QComboBox{background:" + QString(ui::colors::BG_RAISED()) +
                                 ";color:" + QString(ui::colors::TEXT_PRIMARY()) + ";border:1px solid " +
                                 QString(ui::colors::BORDER_MED()) +
@@ -348,7 +352,7 @@ QWidget* LlmConfigSection::build_form_panel() {
                                 QString(ui::colors::BORDER_MED()) + ";}");
     model_row->addWidget(model_combo_, 1);
 
-    fetch_btn_ = new QPushButton("Fetch");
+    fetch_btn_ = new QPushButton("获取列表");
     fetch_btn_->setFixedHeight(30);
     fetch_btn_->setFixedWidth(60);
     fetch_btn_->setStyleSheet(
@@ -366,15 +370,15 @@ QWidget* LlmConfigSection::build_form_panel() {
 
     form->addRow(m_lbl, model_row);
 
-    auto* b_lbl = new QLabel("Base URL");
+    auto* b_lbl = new QLabel("代理地址 (Base URL)");
     lbl_style(b_lbl);
     base_url_edit_ = new QLineEdit;
-    base_url_edit_->setPlaceholderText("Optional — leave empty for default");
+    base_url_edit_->setPlaceholderText("可选 — 留空则使用默认地址");
     field_style(base_url_edit_);
     form->addRow(b_lbl, base_url_edit_);
 
     // Tools toggle
-    tools_check_ = new QCheckBox("Enable MCP Tools (navigation, market data, portfolio, etc.)");
+    tools_check_ = new QCheckBox("启用 MCP 工具 (支持自动导航、数据调取、订单管理等)");
     tools_check_->setChecked(true);
     tools_check_->setStyleSheet("QCheckBox{color:" + QString(ui::colors::TEXT_PRIMARY()) +
                                 ";spacing:8px;}"
@@ -384,15 +388,14 @@ QWidget* LlmConfigSection::build_form_panel() {
                                 ";}"
                                 "QCheckBox::indicator:checked{background:" +
                                 QString(ui::colors::AMBER()) + ";border-color:" + QString(ui::colors::AMBER()) + ";}");
-    tools_check_->setToolTip("When enabled, the AI can interact with the terminal: navigate screens, fetch market "
-                             "data, manage watchlists, etc.");
+    tools_check_->setToolTip("启用后，AI 可以与终端交互：切换界面、获取行情、管理自选等。");
     form->addRow(new QLabel(""), tools_check_);
 
     vl->addLayout(form);
 
     // Buttons
     auto* btn_row = new QHBoxLayout;
-    save_btn_ = new QPushButton("Save & Set Active");
+    save_btn_ = new QPushButton("保存并设为当前引擎");
     save_btn_->setFixedHeight(34);
     save_btn_->setStyleSheet(
         "QPushButton{background:" + QString(ui::colors::AMBER()) + ";color:" + QString(ui::colors::BG_BASE()) +
@@ -405,7 +408,7 @@ QWidget* LlmConfigSection::build_form_panel() {
         QString(ui::colors::BORDER_BRIGHT()) + ";color:" + QString(ui::colors::TEXT_TERTIARY()) + ";}");
     connect(save_btn_, &QPushButton::clicked, this, &LlmConfigSection::on_save_provider);
 
-    test_btn_ = new QPushButton("Test Connection");
+    test_btn_ = new QPushButton("测试连接");
     test_btn_->setFixedHeight(34);
     test_btn_->setStyleSheet("QPushButton{background:" + QString(ui::colors::BG_RAISED()) +
                              ";color:" + QString(ui::colors::TEXT_PRIMARY()) + ";border:1px solid " +
@@ -439,7 +442,7 @@ QWidget* LlmConfigSection::build_global_panel() {
     vl->setContentsMargins(24, 12, 24, 12);
     vl->setSpacing(10);
 
-    auto* title = new QLabel("GLOBAL SETTINGS");
+    auto* title = new QLabel("全局通用配置");
     title->setStyleSheet("color:" + QString(ui::colors::AMBER()) + ";font-weight:700;letter-spacing:1px;");
     vl->addWidget(title);
 
@@ -448,7 +451,7 @@ QWidget* LlmConfigSection::build_global_panel() {
 
     // Temperature
     auto* temp_grp = new QVBoxLayout;
-    auto* temp_lbl = new QLabel("Temperature");
+    auto* temp_lbl = new QLabel("温度 (Temperature)");
     temp_lbl->setStyleSheet("color:" + QString(ui::colors::TEXT_SECONDARY()) + ";");
     temp_spin_ = new QDoubleSpinBox;
     temp_spin_->setRange(0.0, 2.0);
@@ -467,7 +470,7 @@ QWidget* LlmConfigSection::build_global_panel() {
 
     // Max tokens
     auto* tok_grp = new QVBoxLayout;
-    auto* tok_lbl = new QLabel("Max Tokens");
+    auto* tok_lbl = new QLabel("最大 Token 限制");
     tok_lbl->setStyleSheet("color:" + QString(ui::colors::TEXT_SECONDARY()) + ";");
     tokens_spin_ = new QSpinBox;
     tokens_spin_->setRange(100, 32000);
@@ -485,10 +488,10 @@ QWidget* LlmConfigSection::build_global_panel() {
 
     // System prompt
     auto* sp_grp = new QVBoxLayout;
-    auto* sp_lbl = new QLabel("System Prompt");
+    auto* sp_lbl = new QLabel("全局系统提示词 (System Prompt)");
     sp_lbl->setStyleSheet("color:" + QString(ui::colors::TEXT_SECONDARY()) + ";");
     system_prompt_ = new QPlainTextEdit;
-    system_prompt_->setPlaceholderText("Optional system prompt for the LLM...");
+    system_prompt_->setPlaceholderText("为 LLM 设置可选的全局系统提示词...");
     system_prompt_->setFixedHeight(60);
     system_prompt_->setStyleSheet("QPlainTextEdit{background:" + QString(ui::colors::BG_RAISED()) +
                                   ";color:" + QString(ui::colors::TEXT_PRIMARY()) + ";border:1px solid " +
@@ -503,7 +506,7 @@ QWidget* LlmConfigSection::build_global_panel() {
 
     vl->addLayout(row);
 
-    save_global_btn_ = new QPushButton("Save Global Settings");
+    save_global_btn_ = new QPushButton("保存全局配置");
     save_global_btn_->setFixedHeight(30);
     save_global_btn_->setFixedWidth(180);
     save_global_btn_->setStyleSheet("QPushButton{background:" + QString(ui::colors::BG_RAISED()) + ";color:" +
@@ -601,9 +604,9 @@ void LlmConfigSection::populate_form(const QString& provider) {
                 auto stored = SettingsRepository::instance().get("fincept_api_key");
                 if (stored.is_ok() && !stored.value().isEmpty()) {
                     QString masked = stored.value().left(8) + "...";
-                    api_key_edit_->setPlaceholderText("Linked to your Fincept account: " + masked);
+                    api_key_edit_->setPlaceholderText("已关联 Fincept 账户: " + masked);
                 } else {
-                    api_key_edit_->setPlaceholderText("Login to your Fincept account to enable");
+                    api_key_edit_->setPlaceholderText("请先登录 Fincept 账户以启用");
                 }
                 api_key_edit_->setEnabled(false);
                 // Fincept is a managed service — hide model/base_url/fetch
@@ -631,9 +634,9 @@ void LlmConfigSection::populate_form(const QString& provider) {
     if (is_fincept) {
         auto stored = SettingsRepository::instance().get("fincept_api_key");
         if (stored.is_ok() && !stored.value().isEmpty())
-            api_key_edit_->setPlaceholderText("Linked to your Fincept account: " + stored.value().left(8) + "...");
+            api_key_edit_->setPlaceholderText("已关联 Fincept 账户: " + stored.value().left(8) + "...");
         else
-            api_key_edit_->setPlaceholderText("Login to your Fincept account to enable");
+            api_key_edit_->setPlaceholderText("请先登录 Fincept 账户以启用");
         model_combo_->setVisible(false);
         fetch_btn_->setVisible(false);
         base_url_edit_->setVisible(false);
@@ -666,7 +669,7 @@ void LlmConfigSection::on_provider_selected(int row) {
 void LlmConfigSection::on_save_provider() {
     QString provider = provider_edit_->text().trimmed().toLower();
     if (provider.isEmpty()) {
-        show_status("No provider selected", true);
+        show_status("尚未选择服务商", true);
         return;
     }
 
@@ -689,23 +692,23 @@ void LlmConfigSection::on_save_provider() {
 
     // Basic validation
     if (!is_fincept && provider != "ollama" && cfg.api_key.isEmpty()) {
-        show_status("API key is required for " + provider, true);
+        show_status("API 凭据不能为空: " + provider, true);
         return;
     }
     if (!is_fincept && cfg.model.isEmpty()) {
-        show_status("Model name is required", true);
+        show_status("模型名称不能为空", true);
         return;
     }
 
     // Save first (INSERT OR REPLACE), THEN set active (deactivates others + activates this one)
     auto r2 = LlmConfigRepository::instance().save_provider(cfg);
     if (r2.is_err()) {
-        show_status("Failed to save: " + QString::fromStdString(r2.error()), true);
+        show_status("保存失败: " + QString::fromStdString(r2.error()), true);
         return;
     }
     LlmConfigRepository::instance().set_active(provider);
 
-    show_status("Saved and set as active provider", false);
+    show_status("配置已保存并设为当前服务商", false);
     load_providers();
     ai_chat::LlmService::instance().reload_config();
     emit config_changed();
@@ -721,11 +724,11 @@ void LlmConfigSection::on_delete_provider() {
     QString provider = provider_list_->item(row)->data(Qt::UserRole).toString();
 
     if (provider.toLower() == "fincept") {
-        show_status("Cannot remove built-in Fincept provider", true);
+        show_status("无法移除内置的 Fincept 服务商", true);
         return;
     }
 
-    auto reply = QMessageBox::question(this, "Delete Provider", "Remove '" + provider + "' configuration?",
+    auto reply = QMessageBox::question(this, "移除服务商", "确定要移除 '" + provider + "' 的配置吗？",
                                        QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes)
@@ -744,11 +747,11 @@ void LlmConfigSection::on_save_global() {
 
     auto r = LlmConfigRepository::instance().save_global_settings(gs);
     if (r.is_err()) {
-        show_status("Failed to save global settings", true);
+        show_status("全局设置保存失败", true);
         return;
     }
 
-    show_status("Global settings saved", false);
+    show_status("全局设置已保存", false);
     emit config_changed();
 }
 
@@ -763,20 +766,20 @@ void LlmConfigSection::on_test_connection() {
         // Fincept is a managed service — verify API key exists
         auto stored = SettingsRepository::instance().get("fincept_api_key");
         if (stored.is_ok() && !stored.value().isEmpty())
-            show_status("Fincept connected — API key active", false);
+            show_status("Fincept 已连接 — 凭据有效", false);
         else
-            show_status("Not connected — login to your Fincept account first", true);
+            show_status("未连接 — 请先登录 Fincept 账户", true);
         return;
     }
 
     if (provider != "ollama") {
         if (api_key_edit_->text().trimmed().isEmpty()) {
-            show_status("API key required for test", true);
+            show_status("尚未输入 API 凭据，无法测试", true);
             return;
         }
     }
 
-    show_status("Testing connection...", false);
+    show_status("正在测试连接...", false);
     test_btn_->setEnabled(false);
 
     // Real test: fetch models list — if it succeeds, the connection works.
@@ -789,9 +792,9 @@ void LlmConfigSection::on_test_connection() {
                             return;
                         test_btn_->setEnabled(true);
                         if (err.isEmpty())
-                            show_status("Connected — " + QString::number(models.size()) + " models available", false);
+                            show_status("连接成功 — 已获取到 " + QString::number(models.size()) + " 个可用模型", false);
                         else
-                            show_status("Connection failed: " + err, true);
+                            show_status("连接失败: " + err, true);
                         disconnect(*conn);
                     });
 
@@ -807,18 +810,18 @@ void LlmConfigSection::on_fetch_models() {
     }
 
     if (provider == "fincept") {
-        show_status("Fincept manages models automatically", false);
+        show_status("Fincept 自动管理可用模型", false);
         return;
     }
 
     if (provider != "ollama") {
         if (api_key_edit_->text().trimmed().isEmpty()) {
-            show_status("Enter API key first, then fetch models", true);
+            show_status("请先输入凭据，再获取模型列表", true);
             return;
         }
     }
 
-    show_status("Fetching models...", false);
+    show_status("正在获取模型列表...", false);
     fetch_btn_->setEnabled(false);
 
     ai_chat::LlmService::instance().fetch_models(provider, api_key_edit_->text().trimmed(),
@@ -833,7 +836,7 @@ void LlmConfigSection::on_models_fetched(const QString& provider, const QStringL
         return;
 
     if (!error.isEmpty()) {
-        show_status("Fetch failed: " + error + " — using suggestions", true);
+        show_status("获取失败: " + error + " — 已应用建议列表", true);
         return;
     }
 
@@ -854,7 +857,7 @@ void LlmConfigSection::on_models_fetched(const QString& provider, const QStringL
     else if (model_combo_->count() > 0)
         model_combo_->setCurrentIndex(0);
 
-    show_status(QString::number(models.size()) + " models loaded for " + provider, false);
+    show_status(provider + " 的 " + QString::number(models.size()) + " 个模型已加载", false);
     LOG_INFO(TAG, QString("Fetched %1 models for %2").arg(models.size()).arg(provider));
 }
 
@@ -898,11 +901,11 @@ QWidget* LlmConfigSection::build_profile_list_panel() {
     vl->setContentsMargins(8, 8, 8, 8);
     vl->setSpacing(6);
 
-    auto* lbl = new QLabel("PROFILES");
+    auto* lbl = new QLabel("方案预设列表");
     lbl->setStyleSheet("color:" + QString(ui::colors::TEXT_SECONDARY()) + ";font-weight:700;letter-spacing:1px;");
     vl->addWidget(lbl);
 
-    auto* hint = new QLabel("A profile = named LLM config you can assign to any agent or team.");
+    auto* hint = new QLabel("预设方案 = 已命名的模型配置，可分配给不同的 Agent 或团队使用。");
     hint->setWordWrap(true);
     hint->setStyleSheet("color:" + QString(ui::colors::TEXT_TERTIARY()) + ";padding-bottom:4px;");
     vl->addWidget(hint);
@@ -921,7 +924,7 @@ QWidget* LlmConfigSection::build_profile_list_panel() {
     vl->addWidget(profile_list_, 1);
 
     auto* btn_row = new QHBoxLayout;
-    auto* add_btn = new QPushButton("+ New");
+    auto* add_btn = new QPushButton("+ 新建预设");
     add_btn->setStyleSheet("QPushButton{background:" + QString(ui::colors::BG_RAISED()) + ";color:" +
                            QString(ui::colors::AMBER()) + ";border:1px solid " + QString(ui::colors::AMBER()) +
                            ";"
@@ -934,7 +937,7 @@ QWidget* LlmConfigSection::build_profile_list_panel() {
     });
     btn_row->addWidget(add_btn);
 
-    profile_delete_btn_ = new QPushButton("Delete");
+    profile_delete_btn_ = new QPushButton("删除");
     profile_delete_btn_->setEnabled(false);
     profile_delete_btn_->setStyleSheet("QPushButton{background:transparent;color:" + QString(ui::colors::NEGATIVE()) +
                                        ";border:1px solid " + QString(ui::colors::NEGATIVE()) +
@@ -981,13 +984,13 @@ QWidget* LlmConfigSection::build_profile_form_panel() {
                        QString(ui::colors::BORDER_MED()) + ";padding:6px 10px;");
     };
 
-    vl->addWidget(lbl("PROFILE NAME"));
+    vl->addWidget(lbl("方案名称"));
     profile_name_edit_ = new QLineEdit;
-    profile_name_edit_->setPlaceholderText("e.g. Fast Groq, Careful Claude, Coding minimax");
+    profile_name_edit_->setPlaceholderText("例如: 快速 Groq, 严谨 Claude, 深度思考");
     profile_name_edit_->setStyleSheet(field_style());
     vl->addWidget(profile_name_edit_);
 
-    vl->addWidget(lbl("PROVIDER"));
+    vl->addWidget(lbl("所属服务商"));
     profile_provider_combo_ = new QComboBox;
     profile_provider_combo_->addItems(KNOWN_PROVIDERS);
     profile_provider_combo_->setStyleSheet(
@@ -996,28 +999,28 @@ QWidget* LlmConfigSection::build_profile_form_panel() {
             &LlmConfigSection::on_profile_provider_changed);
     vl->addWidget(profile_provider_combo_);
 
-    vl->addWidget(lbl("MODEL"));
+    vl->addWidget(lbl("具体模型 (Model)"));
     profile_model_combo_ = new QComboBox;
     profile_model_combo_->setEditable(true);
     profile_model_combo_->setStyleSheet(QString("QComboBox{%1}QComboBox::drop-down{border:none;}").arg(field_style()));
     vl->addWidget(profile_model_combo_);
 
-    vl->addWidget(lbl("API KEY"));
+    vl->addWidget(lbl("独立 API 凭据 (API Key)"));
     profile_api_key_edit_ = new QLineEdit;
     profile_api_key_edit_->setEchoMode(QLineEdit::Password);
-    profile_api_key_edit_->setPlaceholderText("Leave blank to inherit from provider");
+    profile_api_key_edit_->setPlaceholderText("留空则继承服务商默认配置");
     profile_api_key_edit_->setStyleSheet(field_style());
     vl->addWidget(profile_api_key_edit_);
 
-    vl->addWidget(lbl("BASE URL (custom endpoint)"));
+    vl->addWidget(lbl("独立代理地址 (Base URL)"));
     profile_base_url_edit_ = new QLineEdit;
-    profile_base_url_edit_->setPlaceholderText("Leave blank to use provider default");
+    profile_base_url_edit_->setPlaceholderText("留空则使用服务商默认地址");
     profile_base_url_edit_->setStyleSheet(field_style());
     vl->addWidget(profile_base_url_edit_);
 
     auto* param_row = new QHBoxLayout;
     auto* temp_col = new QVBoxLayout;
-    temp_col->addWidget(lbl("TEMPERATURE"));
+    temp_col->addWidget(lbl("生成温度 (Temp)"));
     profile_temp_spin_ = new QDoubleSpinBox;
     profile_temp_spin_->setRange(0.0, 2.0);
     profile_temp_spin_->setSingleStep(0.1);
@@ -1027,7 +1030,7 @@ QWidget* LlmConfigSection::build_profile_form_panel() {
     param_row->addLayout(temp_col);
 
     auto* tok_col = new QVBoxLayout;
-    tok_col->addWidget(lbl("MAX TOKENS"));
+    tok_col->addWidget(lbl("最大 Token"));
     profile_tokens_spin_ = new QSpinBox;
     profile_tokens_spin_->setRange(256, 128000);
     profile_tokens_spin_->setSingleStep(256);
@@ -1037,15 +1040,15 @@ QWidget* LlmConfigSection::build_profile_form_panel() {
     param_row->addLayout(tok_col);
     vl->addLayout(param_row);
 
-    vl->addWidget(lbl("SYSTEM PROMPT OVERRIDE (optional)"));
+    vl->addWidget(lbl("自定义系统提示词 (可选)"));
     profile_prompt_edit_ = new QPlainTextEdit;
-    profile_prompt_edit_->setPlaceholderText("Leave blank to use global system prompt");
+    profile_prompt_edit_->setPlaceholderText("留空则使用全局系统提示词");
     profile_prompt_edit_->setMaximumHeight(80);
     profile_prompt_edit_->setStyleSheet(QString("QPlainTextEdit{%1}").arg(field_style()));
     vl->addWidget(profile_prompt_edit_);
 
     auto* btn_row = new QHBoxLayout;
-    profile_save_btn_ = new QPushButton("SAVE PROFILE");
+    profile_save_btn_ = new QPushButton("保存方案预设");
     profile_save_btn_->setStyleSheet("QPushButton{background:" + QString(ui::colors::AMBER()) +
                                      ";color:" + QString(ui::colors::BG_BASE()) +
                                      ";border:none;padding:8px 20px;"
@@ -1055,7 +1058,7 @@ QWidget* LlmConfigSection::build_profile_form_panel() {
     connect(profile_save_btn_, &QPushButton::clicked, this, &LlmConfigSection::on_save_profile);
     btn_row->addWidget(profile_save_btn_);
 
-    profile_default_btn_ = new QPushButton("SET AS DEFAULT");
+    profile_default_btn_ = new QPushButton("设为系统默认");
     profile_default_btn_->setEnabled(false);
     profile_default_btn_->setStyleSheet("QPushButton{background:transparent;color:" + QString(ui::colors::AMBER()) +
                                         ";border:1px solid " + QString(ui::colors::AMBER()) +
@@ -1195,13 +1198,13 @@ void LlmConfigSection::on_profile_provider_changed(const QString& provider) {
 void LlmConfigSection::on_save_profile() {
     QString name = profile_name_edit_->text().trimmed();
     if (name.isEmpty()) {
-        show_profile_status("Profile name is required", true);
+        show_profile_status("方案名称不能为空", true);
         return;
     }
     QString provider = profile_provider_combo_->currentText().trimmed();
     QString model = profile_model_combo_->currentText().trimmed();
     if (model.isEmpty()) {
-        show_profile_status("Model is required", true);
+        show_profile_status("必须要指定模型(Model)", true);
         return;
     }
 
@@ -1233,11 +1236,11 @@ void LlmConfigSection::on_save_profile() {
 
     auto r = LlmProfileRepository::instance().save_profile(profile);
     if (r.is_err()) {
-        show_profile_status("Save failed: " + QString::fromStdString(r.error()), true);
+        show_profile_status("保存失败: " + QString::fromStdString(r.error()), true);
         return;
     }
 
-    show_profile_status("Profile saved", false);
+    show_profile_status("方案预设已保存", false);
     load_profiles();
     emit config_changed();
     LOG_INFO(TAG, QString("LLM profile saved: %1 (%2 / %3)").arg(name, provider, model));
@@ -1253,7 +1256,7 @@ void LlmConfigSection::on_delete_profile() {
         emit config_changed();
         LOG_INFO(TAG, "LLM profile deleted: " + editing_profile_id_);
     } else {
-        show_profile_status("Delete failed: " + QString::fromStdString(r.error()), true);
+        show_profile_status("删除失败: " + QString::fromStdString(r.error()), true);
     }
 }
 
@@ -1267,7 +1270,7 @@ void LlmConfigSection::on_set_default_profile() {
         emit config_changed();
         LOG_INFO(TAG, "LLM default profile set: " + editing_profile_id_);
     } else {
-        show_profile_status("Failed: " + QString::fromStdString(r.error()), true);
+        show_profile_status("设置失败: " + QString::fromStdString(r.error()), true);
     }
 }
 

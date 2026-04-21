@@ -6,6 +6,7 @@
 #include "services/agents/AgentService.h"
 #include "storage/repositories/AgentConfigRepository.h"
 #include "storage/repositories/LlmProfileRepository.h"
+#include "ui/Localization.h"
 #include "ui/theme/Theme.h"
 #include "ui/theme/ThemeManager.h"
 
@@ -63,7 +64,7 @@ QWidget* AgentsViewPanel::build_agent_list_panel() {
     vl->setSpacing(6);
 
     auto* hdr = new QHBoxLayout;
-    auto* title = new QLabel("AGENTS");
+    auto* title = new QLabel("智能体列表");
     title->setStyleSheet(QString("color:%1;font-size:11px;font-weight:700;letter-spacing:1px;").arg(ui::colors::AMBER()));
     hdr->addWidget(title);
     list_count_label_ = new QLabel("0");
@@ -74,7 +75,7 @@ QWidget* AgentsViewPanel::build_agent_list_panel() {
     vl->addLayout(hdr);
 
     category_combo_ = new QComboBox;
-    category_combo_->addItem("All Categories", "");
+    category_combo_->addItem("所有分类", "");
     category_combo_->setStyleSheet(
         QString("QComboBox{%1}QComboBox::drop-down{border:none;}"
                 "QComboBox QAbstractItemView{background:%2;color:%3;selection-background-color:%4;}")
@@ -90,7 +91,7 @@ QWidget* AgentsViewPanel::build_agent_list_panel() {
                                         ui::colors::AMBER_DIM(), ui::colors::BG_HOVER()));
     vl->addWidget(agent_list_, 1);
 
-    auto* refresh_btn = new QPushButton("REFRESH");
+    auto* refresh_btn = new QPushButton("刷新");
     refresh_btn->setCursor(Qt::PointingHandCursor);
     refresh_btn->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:1px solid %3;padding:6px;"
                                        "font-size:10px;font-weight:600;letter-spacing:1px;}"
@@ -120,7 +121,7 @@ QWidget* AgentsViewPanel::build_config_panel() {
     auto* tbl = new QHBoxLayout(toggle_bar);
     tbl->setContentsMargins(8, 0, 8, 0);
 
-    json_toggle_btn_ = new QPushButton("JSON EDITOR");
+    json_toggle_btn_ = new QPushButton("JSON 编辑器");
     json_toggle_btn_->setCheckable(true);
     json_toggle_btn_->setCursor(Qt::PointingHandCursor);
     json_toggle_btn_->setStyleSheet(
@@ -131,7 +132,7 @@ QWidget* AgentsViewPanel::build_config_panel() {
     tbl->addWidget(json_toggle_btn_);
     tbl->addStretch();
 
-    add_team_btn_ = new QPushButton("+ ADD TO TEAM");
+    add_team_btn_ = new QPushButton("+ 添加至团队");
     add_team_btn_->setCursor(Qt::PointingHandCursor);
     add_team_btn_->setStyleSheet(
         QString("QPushButton{background:transparent;color:%1;border:1px solid %1;font-size:9px;"
@@ -157,7 +158,7 @@ QWidget* AgentsViewPanel::build_config_panel() {
     vl->setContentsMargins(16, 12, 16, 12);
     vl->setSpacing(8);
 
-    agent_name_label_ = new QLabel("Select an agent");
+    agent_name_label_ = new QLabel("请选择一个智能体");
     agent_name_label_->setStyleSheet(QString("color:%1;font-size:16px;font-weight:700;").arg(ui::colors::TEXT_PRIMARY()));
     vl->addWidget(agent_name_label_);
 
@@ -168,11 +169,11 @@ QWidget* AgentsViewPanel::build_config_panel() {
     vl->addWidget(agent_desc_label_);
 
     // ── LLM PROFILE — per-agent profile picker ────────────────────────────────
-    vl->addWidget(section_hdr("LLM PROFILE"));
+    vl->addWidget(section_hdr("LLM 配置文件"));
 
     llm_profile_combo_ = new QComboBox;
     llm_profile_combo_->setToolTip(
-        "Select which LLM profile this agent uses. Create profiles in Settings > LLM Config > Profiles.");
+        "选择该智能体使用的 LLM 配置文件。请在 设置 > LLM 配置 > 配置文件 中创建。");
     llm_profile_combo_->setStyleSheet(
         QString("QComboBox{background:%1;color:%2;border:1px solid %3;padding:5px 10px;font-size:12px;}"
                 "QComboBox::drop-down{border:none;}")
@@ -184,15 +185,15 @@ QWidget* AgentsViewPanel::build_config_panel() {
     vl->addWidget(llm_resolved_lbl_);
 
     // ── INSTRUCTIONS ──
-    vl->addWidget(section_hdr("INSTRUCTIONS"));
+    vl->addWidget(section_hdr("系统指令 (Instructions)"));
     instructions_edit_ = new QPlainTextEdit;
-    instructions_edit_->setPlaceholderText("System prompt / instructions...");
+    instructions_edit_->setPlaceholderText("系统提示词 / 指令...");
     instructions_edit_->setMaximumHeight(120);
     instructions_edit_->setStyleSheet(QString("QPlainTextEdit{%1}").arg(kInput));
     vl->addWidget(instructions_edit_);
 
     // ── TOOLS ──
-    vl->addWidget(section_hdr("TOOLS"));
+    vl->addWidget(section_hdr("工具 (Tools)"));
     tools_list_ = new QListWidget;
     tools_list_->setMaximumHeight(100);
     tools_list_->setStyleSheet(QString("QListWidget{background:%1;border:1px solid %2;color:%3;font-size:11px;}"
@@ -201,25 +202,25 @@ QWidget* AgentsViewPanel::build_config_panel() {
     vl->addWidget(tools_list_);
 
     // ── FEATURES ──
-    vl->addWidget(section_hdr("FEATURES"));
+    vl->addWidget(section_hdr("高级特性 (Features)"));
     const QString chk_style = QString("QCheckBox{color:%1;font-size:11px;spacing:6px;}").arg(ui::colors::TEXT_PRIMARY());
     auto* feat_grid = new QGridLayout;
-    reasoning_check_ = new QCheckBox("Reasoning");
+    reasoning_check_ = new QCheckBox("推理 (Reasoning)");
     reasoning_check_->setStyleSheet(chk_style);
     feat_grid->addWidget(reasoning_check_, 0, 0);
-    memory_check_ = new QCheckBox("Memory");
+    memory_check_ = new QCheckBox("记忆 (Memory)");
     memory_check_->setStyleSheet(chk_style);
     feat_grid->addWidget(memory_check_, 0, 1);
-    knowledge_check_ = new QCheckBox("Knowledge");
+    knowledge_check_ = new QCheckBox("知识库 (Knowledge)");
     knowledge_check_->setStyleSheet(chk_style);
     feat_grid->addWidget(knowledge_check_, 1, 0);
-    guardrails_check_ = new QCheckBox("Guardrails");
+    guardrails_check_ = new QCheckBox("护栏 (Guardrails)");
     guardrails_check_->setStyleSheet(chk_style);
     feat_grid->addWidget(guardrails_check_, 1, 1);
-    tracing_check_ = new QCheckBox("Tracing");
+    tracing_check_ = new QCheckBox("追踪 (Tracing)");
     tracing_check_->setStyleSheet(chk_style);
     feat_grid->addWidget(tracing_check_, 2, 0);
-    agentic_memory_check_ = new QCheckBox("Agentic Memory");
+    agentic_memory_check_ = new QCheckBox("智能体记忆");
     agentic_memory_check_->setStyleSheet(chk_style);
     feat_grid->addWidget(agentic_memory_check_, 2, 1);
     vl->addLayout(feat_grid);
@@ -227,14 +228,14 @@ QWidget* AgentsViewPanel::build_config_panel() {
     // ── Actions ──
     vl->addSpacing(12);
     auto* acts = new QHBoxLayout;
-    save_btn_ = new QPushButton("SAVE CONFIG");
+    save_btn_ = new QPushButton("保存配置");
     save_btn_->setCursor(Qt::PointingHandCursor);
     save_btn_->setStyleSheet(
         QString("QPushButton{background:%1;color:%2;border:none;padding:8px 16px;"
                 "font-size:11px;font-weight:600;letter-spacing:1px;}QPushButton:hover{background:%3;}")
             .arg(ui::colors::AMBER(), ui::colors::BG_BASE(), ui::colors::ORANGE()));
     acts->addWidget(save_btn_);
-    delete_btn_ = new QPushButton("DELETE");
+    delete_btn_ = new QPushButton("删除");
     delete_btn_->setCursor(Qt::PointingHandCursor);
     delete_btn_->setStyleSheet(
         QString("QPushButton{background:transparent;color:%1;border:1px solid %1;padding:8px 16px;"
@@ -257,7 +258,7 @@ QWidget* AgentsViewPanel::build_config_panel() {
                                         "font-size:12px;font-family:'Consolas','Courier New',monospace;}")
                                     .arg(ui::colors::BG_BASE(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_DIM()));
     jl->addWidget(json_editor_);
-    auto* apply_btn = new QPushButton("APPLY JSON");
+    auto* apply_btn = new QPushButton("应用 JSON");
     apply_btn->setCursor(Qt::PointingHandCursor);
     apply_btn->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:none;padding:8px;font-size:11px;"
                                      "font-weight:700;}QPushButton:hover{background:%3;}")
@@ -297,14 +298,14 @@ QWidget* AgentsViewPanel::build_query_panel() {
     vl->setContentsMargins(12, 8, 12, 8);
     vl->setSpacing(6);
 
-    vl->addWidget(section_hdr("TEST QUERY"));
+    vl->addWidget(section_hdr("测试查询"));
 
     auto* opts = new QHBoxLayout;
-    auto_route_check_ = new QCheckBox("Auto-Route");
+    auto_route_check_ = new QCheckBox("自动路由");
     auto_route_check_->setStyleSheet(QString("QCheckBox{color:%1;font-size:10px;}").arg(ui::colors::POSITIVE()));
     opts->addWidget(auto_route_check_);
 
-    auto* om_lbl = new QLabel("Output:");
+    auto* om_lbl = new QLabel("输出:");
     om_lbl->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::TEXT_SECONDARY()));
     opts->addWidget(om_lbl);
 
@@ -320,14 +321,14 @@ QWidget* AgentsViewPanel::build_query_panel() {
     vl->addLayout(opts);
 
     query_input_ = new QPlainTextEdit;
-    query_input_->setPlaceholderText("Enter a query to test this agent...");
+    query_input_->setPlaceholderText("输入查询内容以测试该智能体...");
     query_input_->setMaximumHeight(80);
     query_input_->setStyleSheet(
         QString("QPlainTextEdit{background:%1;color:%2;border:1px solid %3;padding:8px;font-size:12px;}")
             .arg(ui::colors::BG_RAISED(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_MED()));
     vl->addWidget(query_input_);
 
-    run_btn_ = new QPushButton("RUN AGENT");
+    run_btn_ = new QPushButton("运行智能体");
     run_btn_->setCursor(Qt::PointingHandCursor);
     run_btn_->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:none;padding:8px;font-size:11px;"
                                     "font-weight:700;letter-spacing:1px;}QPushButton:hover{background:%3;}"
@@ -346,7 +347,7 @@ QWidget* AgentsViewPanel::build_query_panel() {
     result_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::TEXT_TERTIARY()));
     vl->addWidget(result_status_);
 
-    auto* rh = new QLabel("RESULT");
+    auto* rh = new QLabel("执行结果");
     rh->setStyleSheet(QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;padding-top:4px;")
                           .arg(ui::colors::TEXT_SECONDARY()));
     vl->addWidget(rh);
@@ -418,9 +419,11 @@ void AgentsViewPanel::setup_connections() {
                 category_combo_->blockSignals(true);
                 const int prev = category_combo_->currentIndex();
                 category_combo_->clear();
-                category_combo_->addItem("All Categories", "");
-                for (const auto& cat : categories)
-                    category_combo_->addItem(QString("%1 (%2)").arg(cat.name).arg(cat.count), cat.name);
+                category_combo_->addItem("所有分类", "");
+                for (const auto& cat : categories) {
+                    QString display = ui::Localization::translate_category(cat.name);
+                    category_combo_->addItem(QString("%1 (%2)").arg(display).arg(cat.count), cat.name);
+                }
                 if (prev >= 0 && prev < category_combo_->count())
                     category_combo_->setCurrentIndex(prev);
                 category_combo_->blockSignals(false);
@@ -433,14 +436,14 @@ void AgentsViewPanel::setup_connections() {
         executing_ = false;
         pending_request_id_.clear();
         run_btn_->setEnabled(true);
-        run_btn_->setText("RUN AGENT");
+        run_btn_->setText("运行智能体");
         if (r.success) {
             result_display_->setMarkdown(r.response);
-            result_status_->setText(QString("Completed in %1ms").arg(r.execution_time_ms));
+            result_status_->setText(QString("执行完毕，耗时 %1ms").arg(r.execution_time_ms));
             result_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::POSITIVE()));
         } else {
             result_display_->setPlainText("Error: " + r.error);
-            result_status_->setText("FAILED");
+            result_status_->setText("失败");
             result_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
         }
     });
@@ -469,14 +472,14 @@ void AgentsViewPanel::setup_connections() {
         executing_ = false;
         pending_request_id_.clear();
         run_btn_->setEnabled(true);
-        run_btn_->setText("RUN AGENT");
+        run_btn_->setText("运行智能体");
         if (r.success) {
             result_display_->setMarkdown(r.response);
-            result_status_->setText(QString("Completed in %1ms").arg(r.execution_time_ms));
+            result_status_->setText(QString("执行完毕，耗时 %1ms").arg(r.execution_time_ms));
             result_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::POSITIVE()));
         } else {
             result_display_->setPlainText("Error: " + r.error);
-            result_status_->setText("FAILED");
+            result_status_->setText("失败");
             result_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
         }
     });
@@ -485,7 +488,7 @@ void AgentsViewPanel::setup_connections() {
         if (r.request_id != pending_request_id_)
             return;
         if (r.success) {
-            routing_info_label_->setText(QString("Routed → %1 (intent: %2, confidence: %3%)")
+            routing_info_label_->setText(QString("路由至 → %1 (意图: %2, 置信度: %3%)")
                                              .arg(r.agent_id, r.intent)
                                              .arg(static_cast<int>(r.confidence * 100)));
             routing_info_label_->show();
@@ -524,14 +527,14 @@ void AgentsViewPanel::load_profile_combo() {
     llm_profile_combo_->clear();
 
     // First item = use global default (no explicit assignment)
-    llm_profile_combo_->addItem("Default (Global)", QString{});
+    llm_profile_combo_->addItem("默认 (全局)", QString{});
 
     const auto pr = LlmProfileRepository::instance().list_profiles();
     const auto profiles = pr.is_ok() ? pr.value() : QVector<LlmProfile>{};
     for (const auto& p : profiles) {
         QString label = p.name;
         if (p.is_default)
-            label += " [default]";
+            label += " [默认]";
         llm_profile_combo_->addItem(label, p.id);
     }
 
@@ -593,12 +596,12 @@ void AgentsViewPanel::refresh_llm_pill() {
         if (text.length() > 60)
             text = text.left(58) + "..";
         if (profile_id.isEmpty())
-            text += " (inherited)";
+            text += " (继承)";
         llm_resolved_lbl_->setText(text);
         llm_resolved_lbl_->setStyleSheet(
             QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::TEXT_TERTIARY()));
     } else {
-        llm_resolved_lbl_->setText("No provider configured — go to Settings > LLM Config");
+        llm_resolved_lbl_->setText("未配置提供商 — 请前往 设置 > LLM 配置");
         llm_resolved_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
     }
 }
@@ -609,7 +612,8 @@ void AgentsViewPanel::populate_agent_list(const QVector<services::AgentInfo>& ag
     agent_list_->clear();
     filtered_agents_ = agents;
     for (const auto& a : agents) {
-        auto* item = new QListWidgetItem(a.name);
+        QString display = ui::Localization::translate_agent_name(a.name);
+        auto* item = new QListWidgetItem(display);
         item->setToolTip(a.description);
         item->setData(Qt::UserRole, a.id);
         agent_list_->addItem(item);
@@ -640,7 +644,7 @@ void AgentsViewPanel::on_agent_selected(int row) {
 }
 
 void AgentsViewPanel::load_agent_into_editor(const services::AgentInfo& agent) {
-    agent_name_label_->setText(agent.name);
+    agent_name_label_->setText(ui::Localization::translate_agent_name(agent.name));
     agent_desc_label_->setText(agent.description);
 
     // Restore the profile assignment for this agent in the combo
@@ -752,7 +756,7 @@ void AgentsViewPanel::save_current_config() {
     db.category = agent.category;
     db.config_json = QString::fromUtf8(QJsonDocument(build_config_from_editor()).toJson(QJsonDocument::Compact));
     services::AgentService::instance().save_config(db);
-    result_status_->setText("Config saved");
+    result_status_->setText("配置已保存");
     result_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::POSITIVE()));
 }
 
@@ -760,7 +764,7 @@ void AgentsViewPanel::delete_current_config() {
     if (selected_agent_idx_ < 0 || selected_agent_idx_ >= filtered_agents_.size())
         return;
     services::AgentService::instance().delete_config(filtered_agents_[selected_agent_idx_].id);
-    result_status_->setText("Config deleted");
+    result_status_->setText("配置已删除");
     result_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::WARNING()));
 }
 
@@ -771,10 +775,10 @@ void AgentsViewPanel::run_query() {
 
     executing_ = true;
     run_btn_->setEnabled(false);
-    run_btn_->setText("RUNNING...");
+    run_btn_->setText("运行中...");
     result_display_->clear();
     routing_info_label_->hide();
-    result_status_->setText("Executing...");
+    result_status_->setText("执行中...");
     result_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::AMBER()));
 
     const QJsonObject config = build_config_from_editor();

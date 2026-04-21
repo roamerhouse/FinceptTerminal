@@ -56,9 +56,9 @@ void MarketPanel::build_ui() {
         return b;
     };
 
-    cols_btn_   = make_hdr_btn("[COLS]");
-    edit_btn_   = make_hdr_btn("[EDIT]");
-    delete_btn_ = make_hdr_btn("[DEL]");
+    cols_btn_   = make_hdr_btn("[自选列]");
+    edit_btn_   = make_hdr_btn("[编辑]");
+    delete_btn_ = make_hdr_btn("[删除]");
 
     hhl->addWidget(cols_btn_);
     hhl->addWidget(edit_btn_);
@@ -102,7 +102,7 @@ void MarketPanel::build_ui() {
     el->setAlignment(Qt::AlignCenter);
     error_label_ = new QLabel;
     error_label_->setAlignment(Qt::AlignCenter);
-    retry_btn_ = new QPushButton("[RETRY]");
+    retry_btn_ = new QPushButton("[重试]");
     retry_btn_->setCursor(Qt::PointingHandCursor);
     retry_btn_->setFlat(true);
     connect(retry_btn_, &QPushButton::clicked, this, &MarketPanel::refresh);
@@ -121,7 +121,20 @@ void MarketPanel::setup_table_columns() {
     // Set header labels with alignment matching cell alignment
     for (int i = 0; i < cols.size(); ++i) {
         const QString& c = cols[i];
-        auto* hdr = new QTableWidgetItem(c);
+        QString label = c;
+        if (c == "SYMBOL") label = "代码";
+        else if (c == "NAME") label = "名称";
+        else if (c == "LAST") label = "最新价";
+        else if (c == "CHG")  label = "涨跌";
+        else if (c == "CHG%") label = "涨跌幅";
+        else if (c == "HIGH") label = "最高价";
+        else if (c == "LOW")  label = "最低价";
+        else if (c == "VOL")  label = "成交量";
+        else if (c == "BID")  label = "买入价";
+        else if (c == "ASK")  label = "卖出价";
+        else if (c == "OPEN") label = "开盘价";
+
+        auto* hdr = new QTableWidgetItem(label);
         bool is_text = (c == "SYMBOL" || c == "NAME");
         hdr->setTextAlignment(is_text ? (Qt::AlignLeft | Qt::AlignVCenter)
                                       : (Qt::AlignRight | Qt::AlignVCenter));
@@ -147,10 +160,14 @@ void MarketPanel::open_cols_dropdown() {
             .arg(ui::colors::BG_RAISED(), ui::colors::BORDER_MED(),
                  ui::colors::TEXT_PRIMARY(), ui::colors::BG_HOVER()));
 
-    const QStringList optional = {"CHG", "CHG%", "HIGH", "LOW", "VOL", "BID", "ASK", "OPEN", "NAME"};
+    const QMap<QString, QString> labels = {
+        {"CHG", "涨跌"}, {"CHG%", "涨跌幅"}, {"HIGH", "最高价"}, {"LOW", "最低价"},
+        {"VOL", "成交量"}, {"BID", "买入价"}, {"ASK", "卖出价"}, {"OPEN", "开盘价"}, {"NAME", "名称"}
+    };
 
-    for (const QString& col : optional) {
-        auto* act = menu->addAction(col);
+    for (auto it = labels.begin(); it != labels.end(); ++it) {
+        const QString& col = it.key();
+        auto* act = menu->addAction(it.value());
         act->setCheckable(true);
         act->setChecked(config_.column_order.contains(col));
         // Enforce max 7 columns (SYMBOL + LAST are locked = 2, so max 5 optional)

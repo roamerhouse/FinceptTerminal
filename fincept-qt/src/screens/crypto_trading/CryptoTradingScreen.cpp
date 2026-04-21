@@ -142,8 +142,8 @@ void CryptoTradingScreen::setup_ui() {
     cmd_layout->setContentsMargins(8, 0, 8, 0);
     cmd_layout->setSpacing(6);
 
-    // Exchange button + menu
-    exchange_btn_ = new QPushButton("KRAKEN");
+    // 交易所选择按钮及菜单
+    exchange_btn_ = new QPushButton("KRAKEN (交易所)");
     exchange_btn_->setObjectName("cryptoExchangeBtn");
     exchange_btn_->setFixedHeight(22);
     exchange_btn_->setCursor(Qt::PointingHandCursor);
@@ -183,7 +183,7 @@ void CryptoTradingScreen::setup_ui() {
     cmd_layout->addWidget(ticker_bar_, 1);
 
     // WS status
-    ws_status_ = new QLabel("REST");
+    ws_status_ = new QLabel("轮询中");
     ws_status_->setObjectName("cryptoWsStatus");
     ws_status_->setStyleSheet(QString("color: %1;").arg(ui::colors::WARNING()));
     cmd_layout->addWidget(ws_status_);
@@ -193,15 +193,15 @@ void CryptoTradingScreen::setup_ui() {
     clock_label_->setObjectName("cryptoClock");
     cmd_layout->addWidget(clock_label_);
 
-    // API button
-    api_btn_ = new QPushButton("API");
+    // API 按钮
+    api_btn_ = new QPushButton("API 设置");
     api_btn_->setObjectName("cryptoApiBtn");
     api_btn_->setFixedHeight(22);
     api_btn_->setCursor(Qt::PointingHandCursor);
     cmd_layout->addWidget(api_btn_);
 
     // Mode button
-    mode_btn_ = new QPushButton("PAPER");
+    mode_btn_ = new QPushButton("模拟交易");
     mode_btn_->setObjectName("cryptoModeBtn");
     mode_btn_->setProperty("mode", "paper");
     mode_btn_->setCheckable(true);
@@ -368,7 +368,7 @@ void CryptoTradingScreen::update_clock() {
     if (connected == last_ws_status_label_state_)
         return;
     last_ws_status_label_state_ = connected;
-    ws_status_->setText(connected ? "LIVE" : "REST");
+    ws_status_->setText(connected ? "实时" : "轮询中");
     ws_status_->setStyleSheet(QString("color: %1;").arg(connected ? ui::colors::POSITIVE() : ui::colors::WARNING()));
 }
 
@@ -628,7 +628,7 @@ void CryptoTradingScreen::switch_symbol(const QString& symbol) {
 void CryptoTradingScreen::on_mode_toggled() {
     const bool is_live = mode_btn_->isChecked();
     trading_mode_ = is_live ? TradingMode::Live : TradingMode::Paper;
-    mode_btn_->setText(is_live ? "LIVE" : "PAPER");
+    mode_btn_->setText(is_live ? "实盘交易" : "模拟交易");
     mode_btn_->setProperty("mode", is_live ? "live" : "paper");
     mode_btn_->style()->unpolish(mode_btn_);
     mode_btn_->style()->polish(mode_btn_);

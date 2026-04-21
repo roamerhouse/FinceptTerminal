@@ -106,7 +106,7 @@ namespace fincept {
 MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), window_id_(window_id) {
     // Show active profile in title bar when using a non-default profile
     const QString profile = ProfileManager::instance().active();
-    setWindowTitle(profile == "default" ? "Fincept Terminal" : QString("Fincept Terminal [%1]").arg(profile));
+    setWindowTitle(profile == "default" ? "Fincept 终端" : QString("Fincept 终端 [%1]").arg(profile));
     // Load icon from the embedded Windows resource (IDI_ICON1 in app.rc).
     // Falls back to the .ico beside the executable on other platforms.
     QIcon app_icon;
@@ -197,7 +197,7 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
     connect(&WorkspaceManager::instance(), &WorkspaceManager::workspace_loaded, this,
             [this](const WorkspaceDef&) { update_window_title(); });
     connect(&WorkspaceManager::instance(), &WorkspaceManager::workspace_error, this,
-            [this](const QString& msg) { QMessageBox::warning(this, "Workspace Error", msg); });
+            [this](const QString& msg) { QMessageBox::warning(this, "工作区错误", msg); });
 
     dock_router_ = new DockScreenRouter(dock_manager_, this);
     setup_dock_screens();
@@ -333,12 +333,12 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
             scr = QApplication::primaryScreen();
         QPixmap px = scr->grabWindow(winId());
         const QString path = QFileDialog::getSaveFileName(
-            this, "Save Screenshot",
+            this, "保存截图",
             QDir::homePath() + "/fincept_" + QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss") + ".png",
-            "PNG Images (*.png)");
+            "PNG 图片 (*.png)");
         if (!path.isEmpty()) {
             px.save(path, "PNG");
-            LOG_INFO("MainWindow", QString("Screenshot saved: %1").arg(path));
+            LOG_INFO("MainWindow", QString("截图已保存: %1").arg(path));
         }
     });
 
@@ -368,18 +368,18 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
         } else if (action.startsWith("panel_")) {
             // Float a screen — in ADS mode, navigate dock_router; in legacy, spawn window
             static const QMap<QString, QPair<QString, QString>> panel_map = {
-                {"panel_dashboard", {"Dashboard", "dashboard"}},
-                {"panel_watchlist", {"Watchlist", "watchlist"}},
-                {"panel_news", {"News Feed", "news"}},
-                {"panel_portfolio", {"Portfolio", "portfolio"}},
-                {"panel_markets", {"Markets", "markets"}},
-                {"panel_crypto", {"Crypto Trading", "crypto_trading"}},
-                {"panel_equity", {"Equity Trading", "equity_trading"}},
-                {"panel_algo", {"Algo Trading", "algo_trading"}},
-                {"panel_research", {"Equity Research", "equity_research"}},
-                {"panel_economics", {"Economics", "economics"}},
-                {"panel_geopolitics", {"Geopolitics", "geopolitics"}},
-                {"panel_ai_chat", {"AI Chat", "ai_chat"}},
+                {"panel_dashboard", {"仪表盘", "dashboard"}},
+                {"panel_watchlist", {"自选股", "watchlist"}},
+                {"panel_news", {"新闻流", "news"}},
+                {"panel_portfolio", {"投资组合", "portfolio"}},
+                {"panel_markets", {"市场监控", "markets"}},
+                {"panel_crypto", {"加密交易", "crypto_trading"}},
+                {"panel_equity", {"股票交易", "equity_trading"}},
+                {"panel_algo", {"算法交易", "algo_trading"}},
+                {"panel_research", {"股权研究", "equity_research"}},
+                {"panel_economics", {"宏观经济", "economics"}},
+                {"panel_geopolitics", {"地缘政治", "geopolitics"}},
+                {"panel_ai_chat", {"AI 聊天", "ai_chat"}},
             };
             if (panel_map.contains(action)) {
                 const auto [title, route] = panel_map[action];
@@ -390,10 +390,10 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
             if (dock_manager_) {
                 bool ok = false;
                 const QString name =
-                    QInputDialog::getText(this, "Save Layout", "Layout name:", QLineEdit::Normal, QString(), &ok);
+                    QInputDialog::getText(this, "保存布局", "布局名称:", QLineEdit::Normal, QString(), &ok);
                 if (ok && !name.trimmed().isEmpty()) {
                     dock_manager_->addPerspective(name.trimmed());
-                    LOG_INFO("MainWindow", QString("Saved perspective: %1").arg(name.trimmed()));
+                    LOG_INFO("MainWindow", QString("已保存布局: %1").arg(name.trimmed()));
                 }
             }
         } else if (action.startsWith("perspective_")) {
@@ -432,7 +432,7 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
                     for (int i = 1; i < screens.size(); ++i)
                         dock_router_->navigate(screens[i]); // fill grid
                 }
-                LOG_INFO("MainWindow", QString("Quick Switch: %1 (%2 panels)").arg(action).arg(screens.size()));
+                LOG_INFO("MainWindow", QString("快速切换: %1 (%2 个面板)").arg(action).arg(screens.size()));
             }
         } else if (action == "logout") {
             auth::AuthManager::instance().logout();
@@ -475,19 +475,14 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
             dlg->deleteLater();
         } else if (action == "save_workspace") {
             WorkspaceManager::instance().save_workspace();
-        } else if (action == "save_workspace_as") {
-            auto* dlg = new ui::WorkspaceSaveAsDialog(this);
-            if (dlg->exec() == QDialog::Accepted)
-                WorkspaceManager::instance().save_workspace_as(dlg->new_name(), dlg->chosen_path());
-            dlg->deleteLater();
         } else if (action == "import_data") {
             QString path =
-                QFileDialog::getOpenFileName(this, "Import Workspace", QDir::homePath(), "Fincept Workspace (*.fwsp)");
+                QFileDialog::getOpenFileName(this, "导入工作区", QDir::homePath(), "Fincept 工作区 (*.fwsp)");
             if (!path.isEmpty())
                 WorkspaceManager::instance().import_workspace(path);
         } else if (action == "export_data") {
             QString path =
-                QFileDialog::getSaveFileName(this, "Export Workspace", QDir::homePath(), "Fincept Workspace (*.fwsp)");
+                QFileDialog::getSaveFileName(this, "导出工作区", QDir::homePath(), "Fincept 工作区 (*.fwsp)");
             if (!path.isEmpty())
                 WorkspaceManager::instance().export_workspace(path);
         } else if (action == "screenshot") {
@@ -496,12 +491,12 @@ MainWindow::MainWindow(int window_id, QWidget* parent) : QMainWindow(parent), wi
                 scr = QApplication::primaryScreen();
             QPixmap px = scr->grabWindow(winId());
             QString path = QFileDialog::getSaveFileName(
-                this, "Save Screenshot",
+                this, "保存截图",
                 QDir::homePath() + "/fincept_" + QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss") + ".png",
-                "PNG Images (*.png)");
+                "PNG 图片 (*.png)");
             if (!path.isEmpty()) {
                 px.save(path, "PNG");
-                LOG_INFO("MainWindow", QString("Screenshot saved: %1").arg(path));
+                LOG_INFO("MainWindow", QString("截图已保存: %1").arg(path));
             }
         }
     });
@@ -1071,13 +1066,13 @@ void MainWindow::set_shell_visible(bool visible) {
     if (!visible) {
         // Reset title to plain app name — no screen suffix while on auth screens
         const QString profile = ProfileManager::instance().active();
-        setWindowTitle(profile == "default" ? "Fincept Terminal"
-                                            : QString("Fincept Terminal [%1]").arg(profile));
+        setWindowTitle(profile == "default" ? "Fincept 终端"
+                                            : QString("Fincept 终端 [%1]").arg(profile));
     }
 }
 
 void MainWindow::update_window_title() {
-    QString title = "Fincept Terminal";
+    QString title = "Fincept 终端";
 
     const QString profile = ProfileManager::instance().active();
     if (profile != "default")

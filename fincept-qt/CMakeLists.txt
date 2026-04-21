@@ -484,6 +484,9 @@ set(STORAGE_SOURCES
     # LLM Profiles — multi-provider support
     src/storage/sqlite/migrations/v010_llm_profiles.cpp
 
+    # Fix LLM Profiles schema
+    src/storage/sqlite/migrations/v019_fix_llm_profiles.cpp
+
     # Custom Indices — user-defined index creation
     src/storage/sqlite/migrations/v011_custom_indices.cpp
 

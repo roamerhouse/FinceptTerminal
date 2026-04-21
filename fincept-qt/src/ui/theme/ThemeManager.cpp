@@ -129,6 +129,12 @@ QString ThemeManager::build_global_qss() const {
             font-family: %15;
             font-size: %16px;
         }
+        /* Symbol Font Protection: Keep these consistently rendered in Consolas */
+        QLabel#iconLabel, QPushButton#iconButton, .icon-text, .symbol-text, 
+        QLabel[objectName^="icon"], QPushButton[objectName^="plus"],
+        QPushButton[text="+"], QPushButton[text="x"] {
+            font-family: 'Consolas', 'Courier New', monospace !important;
+        }
         QWidget {
             background-color: %1;
             color: %2;
@@ -165,6 +171,13 @@ QString ThemeManager::build_global_qss() const {
             padding: %7px %8px;
         }
         QComboBox::drop-down { border: none; width: 16px; }
+        QComboBox::menu-indicator {
+            image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><line x1='3' y1='6' x2='8' y2='11' stroke='%%2380808080' stroke-width='1.5' stroke-linecap='round'/><line x1='8' y1='11' x2='13' y2='6' stroke='%%2380808080' stroke-width='1.5' stroke-linecap='round'/></svg>");
+            width: 10px; height: 10px;
+        }
+        QComboBox::menu-indicator:hover {
+            image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><line x1='3' y1='6' x2='8' y2='11' stroke='%%23e5e5e5' stroke-width='1.5' stroke-linecap='round'/><line x1='8' y1='11' x2='13' y2='6' stroke='%%23e5e5e5' stroke-width='1.5' stroke-linecap='round'/></svg>");
+        }
         QComboBox QAbstractItemView {
             background: %5; color: %2; border: 1px solid %6;
             selection-background-color: %11;

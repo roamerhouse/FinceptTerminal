@@ -46,9 +46,9 @@ class KeyConfigManager : public QObject {
     /// Reset all actions to defaults and clear the "keybindings" category in DB.
     void reset_all();
 
-    /// Returns the KeyAction that currently uses seq, or nullopt if none.
+    /// Returns the KeyAction that currently uses seq, or KeyAction::Invalid if none.
     /// Pass exclude to skip the action being edited (conflict check).
-    std::optional<KeyAction> find_conflict(const QKeySequence& seq, KeyAction exclude) const;
+    KeyAction find_conflict(const QKeySequence& seq, KeyAction exclude) const;
 
   signals:
     void key_changed(fincept::KeyAction a, QKeySequence seq);

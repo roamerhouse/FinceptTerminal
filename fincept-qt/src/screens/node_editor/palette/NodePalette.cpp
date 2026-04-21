@@ -33,7 +33,7 @@ void NodePalette::build_ui() {
     header->setStyleSheet(QString("background: %1;").arg(ui::colors::BG_HOVER()));
     auto* hl = new QHBoxLayout(header);
     hl->setContentsMargins(10, 0, 10, 0);
-    auto* title = new QLabel("NODES");
+    auto* title = new QLabel("节点库");
     title->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 12px;"
                                  "font-weight: bold; letter-spacing: 0.5px;")
                              .arg(ui::colors::AMBER()));
@@ -54,7 +54,7 @@ void NodePalette::build_ui() {
     sl->setContentsMargins(8, 6, 8, 6);
 
     search_input_ = new QLineEdit;
-    search_input_->setPlaceholderText("Search nodes...");
+    search_input_->setPlaceholderText("搜索节点...");
     search_input_->setStyleSheet(
         QString("QLineEdit {"
                 "  background: %1; color: %2; border: 1px solid %3;"
@@ -170,6 +170,7 @@ void NodePalette::rebuild_categories(const QString& filter) {
             bl->setSpacing(6);
 
             auto* icon = new QLabel(n.icon_text);
+            icon->setObjectName("iconLabel");
             icon->setFixedWidth(20);
             icon->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 10px;"
                                         "font-weight: bold;")

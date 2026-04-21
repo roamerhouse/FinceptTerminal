@@ -1,7 +1,7 @@
 {
   "id": "renaissance_technologies",
-  "name": "Renaissance Technologies Medallion Fund",
-  "description": "Multi-agent quantitative hedge fund system inspired by RenTech's systematic approach. Features 10 specialized agents, 4 teams, signal discovery, risk assessment, IC deliberation, and execution workflows.",
+  "name": "文艺复兴科技 (大奖章基金) 系统",
+  "description": "灵感源自文艺复兴科技（RenTech）系统化方法的买方量化对冲基金系统。包含 10 个专业智能体、4 个团队、信号发现、风险评估、投资委员会审议及执行工作流。",
   "category": "hedgeFundAgents",
   "version": "2.0.0",
   "provider": "local",
@@ -24,7 +24,7 @@
       "temperature": 0.7,
       "max_tokens": 4096
     },
-    "instructions": "Renaissance Technologies Multi-Agent System with 10 specialized agents:\n\n**Research Team:**\n- Signal Scientist: Discovers statistical signals (p<0.01)\n- Data Scientist: Data quality and feature engineering\n- Quant Researcher: Strategy development and backtesting\n- Research Lead: Validates research and coordinates team\n\n**Trading Team:**\n- Execution Trader: Optimal order execution (TWAP/VWAP)\n- Market Maker: Liquidity provision and spread capture\n\n**Risk Team:**\n- Risk Quant: VaR, drawdown, stress testing\n- Compliance Officer: Regulatory compliance\n\n**Investment Committee:**\n- Portfolio Manager: Position sizing and portfolio construction\n- Investment Committee Chair: Final approval with 0.5075 win rate threshold\n\n**Key Features:**\n- Statistical rigor (p-values, IC, t-stats)\n- Multi-step reasoning engine\n- Agent memory system\n- Knowledge base with LanceDB\n- Guardrails (position limits, VaR limits)\n- Evaluation and learning\n- Full observability/tracing\n\n**Workflows:**\n1. Signal Discovery → Validation → Risk Assessment → IC Deliberation → Execution → Post-Trade Analysis\n\n**Commands:**\n- analyze_signal: Full signal analysis pipeline\n- run_ic_deliberation: Investment Committee decision\n- run_agent: Execute specific agent\n- run_team: Execute team workflow",
+    "instructions": "文艺复兴科技多智能体系统，包含 10 个专业化智能体：\n\n**研究团队 (Research Team)：**\n- 信号科学家 (Signal Scientist)：发现统计信号 (p<0.01)\n- 数据科学家 (Data Scientist)：数据质量及特征工程\n- 量化研究员 (Quant Researcher)：策略开发与回测\n- 研究主管 (Research Lead)：验证研究结论并协调团队\n\n**交易团队 (Trading Team)：**\n- 执行交易员 (Execution Trader)：最优订单执行 (TWAP/VWAP)\n- 做市商 (Market Maker)：提供流动性及获取价差\n\n**风险团队 (Risk Team)：**\n- 风险量化专家 (Risk Quant)：VaR、回撤、压力测试\n- 合规官 (Compliance Officer)：法规遵从性检查\n\n**投资委员会 (Investment Committee)：**\n- 投资组合经理 (Portfolio Manager)：仓位设置与组合构建\n- 投资委员会主席 (Investment Committee Chair)：最终审批，设定 0.5075 的胜率阈值\n\n**核心特性：**\n- 统计严谨性（p 值、IC 值、t 统计量）\n- 多步推理引擎\n- 智能体记忆系统\n- 基于 LanceDB 的知识库\n- 风控护栏（仓位限制、VaR 限制）\n- 评估与持续学习\n- 全面可观测性与追踪\n\n**工作流：**\n1. 信号发现 → 验证 → 风险评估 → 投资委员会审议 → 执行 → 盘后分析\n\n**命令集：**\n- analyze_signal：全流程信号分析流水线\n- run_ic_deliberation：投资委员会决策系统\n- run_agent：执行特定智能体\n- run_team：执行团队工作流",
     "tools": [
       "signal_discovery",
       "statistical_testing",
@@ -39,74 +39,74 @@
     "agents": [
       {
         "id": "signal_scientist",
-        "name": "Signal Scientist",
-        "role": "Statistical signal discovery"
+        "name": "信号科学家",
+        "role": "统计信号发现"
       },
       {
         "id": "data_scientist",
-        "name": "Data Scientist",
-        "role": "Data quality and feature engineering"
+        "name": "数据科学家",
+        "role": "数据质量与特征工程"
       },
       {
         "id": "quant_researcher",
-        "name": "Quant Researcher",
-        "role": "Strategy development and backtesting"
+        "name": "量化研究员",
+        "role": "策略开发与回测"
       },
       {
         "id": "research_lead",
-        "name": "Research Lead",
-        "role": "Research validation and coordination"
+        "name": "研究主管",
+        "role": "研究验证与协调"
       },
       {
         "id": "execution_trader",
-        "name": "Execution Trader",
-        "role": "Optimal trade execution"
+        "name": "执行交易员",
+        "role": "最优交易执行"
       },
       {
         "id": "market_maker",
-        "name": "Market Maker",
-        "role": "Liquidity and spread capture"
+        "name": "做市商",
+        "role": "流动性与价差获取"
       },
       {
         "id": "risk_quant",
-        "name": "Risk Quant",
-        "role": "Risk modeling and assessment"
+        "name": "风险量化专家",
+        "role": "风险建模与评估"
       },
       {
         "id": "compliance_officer",
-        "name": "Compliance Officer",
-        "role": "Regulatory compliance"
+        "name": "合规官",
+        "role": "法规遵从"
       },
       {
         "id": "portfolio_manager",
-        "name": "Portfolio Manager",
-        "role": "Position sizing and portfolio construction"
+        "name": "投资组合经理",
+        "role": "仓位设置与投资组合构建"
       },
       {
         "id": "investment_committee_chair",
-        "name": "Investment Committee Chair",
-        "role": "Final approval and oversight"
+        "name": "投资委员会主席",
+        "role": "最终审批与监督"
       }
     ],
     "teams": [
       {
         "id": "research_team",
-        "name": "Research Team",
+        "name": "研究团队",
         "members": ["signal_scientist", "data_scientist", "quant_researcher", "research_lead"]
       },
       {
         "id": "trading_team",
-        "name": "Trading Team",
+        "name": "交易团队",
         "members": ["execution_trader", "market_maker"]
       },
       {
         "id": "risk_team",
-        "name": "Risk Team",
+        "name": "风险团队",
         "members": ["risk_quant", "compliance_officer"]
       },
       {
         "id": "medallion_fund",
-        "name": "Medallion Fund (Full IC)",
+        "name": "大奖章基金 (投委会全员)",
         "members": ["investment_committee_chair", "portfolio_manager", "research_lead", "risk_quant"]
       }
     ]

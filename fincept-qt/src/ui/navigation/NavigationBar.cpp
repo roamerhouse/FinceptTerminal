@@ -23,10 +23,10 @@ NavigationBar::NavigationBar(QWidget* parent) : QWidget(parent) {
     };
 
     hl->addWidget(mk("FINCEPT", "navBrand"));
-    hl->addWidget(mk("TERMINAL", "navTitle"));
+    hl->addWidget(mk("终端", "navTitle"));
     hl->addWidget(mk("   ", "navSpacer"));
     hl->addWidget(mk("\xe2\x97\x8f", "navLiveDot"));
-    hl->addWidget(mk(" LIVE", "navLive"));
+    hl->addWidget(mk(" 实时数据", "navLive"));
     hl->addStretch();
     clock_label_ = mk("", "navClock");
     hl->addWidget(clock_label_);
@@ -41,7 +41,7 @@ NavigationBar::NavigationBar(QWidget* parent) : QWidget(parent) {
     hl->addWidget(plan_label_);
     hl->addWidget(mk("  |  ", "navSep"));
 
-    logout_btn_ = new QPushButton("LOGOUT");
+    logout_btn_ = new QPushButton("注 销");
     logout_btn_->setFixedHeight(24);
     logout_btn_->setCursor(Qt::PointingHandCursor);
     logout_btn_->setObjectName("navLogout");

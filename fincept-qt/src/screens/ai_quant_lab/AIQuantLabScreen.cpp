@@ -80,7 +80,7 @@ QWidget* AIQuantLabScreen::build_top_bar() {
     hl->setSpacing(8);
 
     // Brand chip
-    auto* brand = new QLabel("AI QUANT LAB", top_bar_);
+    auto* brand = new QLabel("AI 量化实验室", top_bar_);
     brand->setObjectName("aqBrand");
     hl->addWidget(brand);
 
@@ -120,7 +120,7 @@ QWidget* AIQuantLabScreen::build_top_bar() {
     hl->addWidget(badge_scroll_, 1);
 
     // Module count chip
-    auto* count_lbl = new QLabel(QString("%1 MODULES").arg(modules_.size()), top_bar_);
+    auto* count_lbl = new QLabel(QString("%1 个模块").arg(modules_.size()), top_bar_);
     count_lbl->setObjectName("aqModuleCount");
     hl->addWidget(count_lbl);
 
@@ -143,7 +143,7 @@ QWidget* AIQuantLabScreen::build_left_sidebar() {
     header->setFixedHeight(36);
     auto* hhl = new QHBoxLayout(header);
     hhl->setContentsMargins(12, 0, 12, 0);
-    sidebar_title_ = new QLabel("MODULES", header);
+    sidebar_title_ = new QLabel("功能模块", header);
     sidebar_title_->setObjectName("aqSidebarTitle");
     hhl->addWidget(sidebar_title_);
     hhl->addStretch();
@@ -199,7 +199,7 @@ QWidget* AIQuantLabScreen::build_right_sidebar() {
     vl->setContentsMargins(12, 12, 12, 12);
     vl->setSpacing(10);
 
-    auto* info_title = new QLabel("MODULE INFO", right_panel_);
+    auto* info_title = new QLabel("模块详情", right_panel_);
     info_title->setObjectName("aqInfoTitle");
     vl->addWidget(info_title);
 
@@ -227,7 +227,7 @@ QWidget* AIQuantLabScreen::build_right_sidebar() {
     svl->setContentsMargins(10, 10, 10, 10);
     svl->setSpacing(4);
 
-    stats_title_ = new QLabel("PLATFORM STATS", stats_card_);
+    stats_title_ = new QLabel("平台统计", stats_card_);
     stats_title_->setObjectName("aqStatsTitle");
     svl->addWidget(stats_title_);
 
@@ -244,10 +244,10 @@ QWidget* AIQuantLabScreen::build_right_sidebar() {
         rl->addWidget(val);
         svl->addWidget(row);
     };
-    add_stat("Modules", QString::number(modules_.size()));
-    add_stat("ML Models", "30+");
-    add_stat("RL Algorithms", "5");
-    add_stat("Python Scripts", "25+");
+    add_stat("功能模块", QString::number(modules_.size()));
+    add_stat("ML 模型", "30+");
+    add_stat("RL 算法", "5");
+    add_stat("Python 脚本", "25+");
     vl->addWidget(stats_card_);
 
     vl->addStretch();
@@ -264,7 +264,7 @@ QWidget* AIQuantLabScreen::build_status_bar() {
     hl->setContentsMargins(12, 0, 12, 0);
     hl->setSpacing(16);
 
-    auto* engine_lbl = new QLabel("ENGINE:", status_bar_);
+    auto* engine_lbl = new QLabel("引擎:", status_bar_);
     engine_lbl->setObjectName("aqStatusLabel");
     status_engine_val_ = new QLabel("QLIB + GS QUANT + PYTHON", status_bar_);
     status_engine_val_->setObjectName("aqStatusValue");
@@ -272,7 +272,7 @@ QWidget* AIQuantLabScreen::build_status_bar() {
     hl->addWidget(status_engine_val_);
     hl->addStretch();
 
-    status_ready_lbl_ = new QLabel("READY", status_bar_);
+    status_ready_lbl_ = new QLabel("就绪", status_bar_);
     status_ready_lbl_->setObjectName("aqStatusReady");
     hl->addWidget(status_ready_lbl_);
 
@@ -443,9 +443,9 @@ void AIQuantLabScreen::update_right_panel() {
     right_title_->setText(mod.label.toUpper());
     right_title_->setStyleSheet(
         QString("color:%1; font-weight:700; font-size:11px; background:transparent;").arg(mod.color.name()));
-    right_category_->setText(QString(mod.category).replace('_', '/') + " module");
+    right_category_->setText(QString(mod.category).replace('_', '/') + " 模块");
     right_desc_->setText(mod.description);
-    right_script_->setText("Script: " + mod.script);
+    right_script_->setText("脚本: " + mod.script);
 }
 
 // ── IStatefulScreen ───────────────────────────────────────────────────────────

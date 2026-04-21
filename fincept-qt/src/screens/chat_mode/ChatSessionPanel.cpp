@@ -32,7 +32,7 @@ void ChatSessionPanel::build_ui() {
     // Header row
     auto* header_row = new QHBoxLayout;
     header_row->setSpacing(4);
-    auto* title_lbl = new QLabel("CONVERSATIONS");
+    auto* title_lbl = new QLabel("对话列表");
     title_lbl->setStyleSheet(QString("color:%1;font-size:11px;font-weight:700;"
                                      "font-family:'Consolas','Courier New',monospace;"
                                      "background:transparent;letter-spacing:1px;")
@@ -40,10 +40,10 @@ void ChatSessionPanel::build_ui() {
     header_row->addWidget(title_lbl);
     header_row->addStretch();
 
-    exit_btn_ = new QPushButton("TERMINAL");
+    exit_btn_ = new QPushButton("终端");
     exit_btn_->setFixedHeight(20);
     exit_btn_->setCursor(Qt::PointingHandCursor);
-    exit_btn_->setToolTip("Switch to Terminal Mode (F9)");
+    exit_btn_->setToolTip("切换到终端模式 (F9)");
     exit_btn_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     exit_btn_->setStyleSheet(QString("QPushButton{background:transparent;color:%1;border:1px solid %2;"
                                      "padding:0 8px;font-weight:700;font-size:10px;"
@@ -56,7 +56,7 @@ void ChatSessionPanel::build_ui() {
 
     // Search
     search_edit_ = new QLineEdit;
-    search_edit_->setPlaceholderText("Search...");
+    search_edit_->setPlaceholderText("搜索...");
     search_edit_->setFixedHeight(28);
     search_edit_->setStyleSheet(
         QString("QLineEdit{background:%1;color:%2;border:1px solid %3;"
@@ -117,8 +117,8 @@ void ChatSessionPanel::build_ui() {
     // Row 1: New + Rename
     auto* row1 = new QHBoxLayout;
     row1->setSpacing(4);
-    new_btn_ = mk_btn("+ New", "New conversation");
-    rename_btn_ = mk_btn("Rename", "Rename selected");
+    new_btn_ = mk_btn("+ 新建", "新建对话");
+    rename_btn_ = mk_btn("重命名", "重命名所选对话");
     rename_btn_->setEnabled(false);
     row1->addWidget(new_btn_);
     row1->addWidget(rename_btn_);
@@ -127,8 +127,8 @@ void ChatSessionPanel::build_ui() {
     // Row 2: Delete + Export
     auto* row2 = new QHBoxLayout;
     row2->setSpacing(4);
-    delete_btn_ = mk_btn("Delete", "Delete selected");
-    export_btn_ = mk_btn("Export", "Export conversations");
+    delete_btn_ = mk_btn("删除", "删除所选对话");
+    export_btn_ = mk_btn("导出", "导出对话记录");
     delete_btn_->setEnabled(false);
     row2->addWidget(delete_btn_);
     row2->addWidget(export_btn_);
@@ -155,8 +155,8 @@ void ChatSessionPanel::populate_list(const QVector<ChatSession>& sessions) {
     session_list_->clear();
     for (const auto& s : sessions) {
         auto* item = new QListWidgetItem(session_list_);
-        const QString display = s.title.isEmpty() ? "(Untitled)" : s.title;
-        item->setText(display + QString("\n%1 msg").arg(s.message_count));
+        const QString display = s.title.isEmpty() ? "(未命名)" : s.title;
+        item->setText(display + QString("\n%1 条消息").arg(s.message_count));
         item->setData(Qt::UserRole, s.uuid);
         item->setData(Qt::UserRole + 1, s.title);
         if (s.uuid == active_uuid_) {
@@ -196,7 +196,7 @@ void ChatSessionPanel::set_active_session(const QString& uuid) {
 }
 
 void ChatSessionPanel::update_stats(const ChatStats& stats) {
-    stats_lbl_->setText(QString("%1 sessions | %2 messages").arg(stats.total_sessions).arg(stats.total_messages));
+    stats_lbl_->setText(QString("%1 个对话 | %2 条消息").arg(stats.total_sessions).arg(stats.total_messages));
 }
 
 // ── Slots ─────────────────────────────────────────────────────────────────────
@@ -228,7 +228,7 @@ void ChatSessionPanel::on_delete_clicked() {
     }
     const QString confirm_name = title.isEmpty() ? "(Untitled)" : title;
 
-    if (QMessageBox::question(this, "Delete Conversation", QString("Delete \"%1\"?").arg(confirm_name),
+    if (QMessageBox::question(this, "删除对话", QString("确定要删除 \"%1\" 吗?").arg(confirm_name),
                               QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
         return;
 
@@ -249,7 +249,7 @@ void ChatSessionPanel::on_rename_clicked() {
 
     bool ok = false;
     const QString new_title =
-        QInputDialog::getText(this, "Rename Conversation", "New title:", QLineEdit::Normal, current_title, &ok);
+        QInputDialog::getText(this, "重命名对话", "新标题:", QLineEdit::Normal, current_title, &ok);
     if (ok && !new_title.trimmed().isEmpty())
         emit rename_session_requested(active_uuid_, new_title.trimmed());
 }
@@ -261,12 +261,12 @@ void ChatSessionPanel::on_export_clicked() {
         uuids.append(s.uuid);
 
     if (uuids.isEmpty()) {
-        QMessageBox::information(this, "Export", "No conversations to export.");
+        QMessageBox::information(this, "导出", "没有可导出的对话。");
         return;
     }
 
     const QString path =
-        QFileDialog::getSaveFileName(this, "Export Conversations", "fincept_chat_export.json", "JSON (*.json)");
+        QFileDialog::getSaveFileName(this, "导出对话", "fincept_chat_export.json", "JSON (*.json)");
     if (path.isEmpty())
         return;
 
@@ -277,17 +277,17 @@ void ChatSessionPanel::on_export_clicked() {
         export_btn_->setEnabled(true);
         export_btn_->setText("Export");
         if (!ok) {
-            QMessageBox::warning(this, "Export Failed", err);
+            QMessageBox::warning(this, "导出失败", err);
             return;
         }
         QFile file(path);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            QMessageBox::warning(this, "Export Failed", "Could not write file.");
+            QMessageBox::warning(this, "导出失败", "无法写入文件。");
             return;
         }
         file.write(QJsonDocument(data).toJson(QJsonDocument::Indented));
         file.close();
-        QMessageBox::information(this, "Export", QString("Exported %1 conversations.").arg(data.size()));
+        QMessageBox::information(this, "导出", QString("已成功导出 %1 条对话。").arg(data.size()));
     });
 }
 

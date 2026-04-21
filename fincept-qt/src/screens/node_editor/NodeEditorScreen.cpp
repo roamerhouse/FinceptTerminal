@@ -160,7 +160,7 @@ void NodeEditorScreen::keyPressEvent(QKeyEvent* event) {
             copy.id = new_id;
             copy.x += 40;
             copy.y += 40;
-            copy.name = nd.name + " (copy)";
+            copy.name = nd.name + " (副本)";
 
             auto& reg = NodeRegistry::instance();
             const auto* td = reg.find(copy.type);
@@ -250,7 +250,7 @@ void NodeEditorScreen::wire_signals() {
         copy.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
         copy.x += 40;
         copy.y += 40;
-        copy.name += " (copy)";
+        copy.name += " (副本)";
         auto& reg = NodeRegistry::instance();
         const auto* td = reg.find(copy.type);
         if (td)
@@ -337,8 +337,8 @@ void NodeEditorScreen::wire_signals() {
         scene_->stop_all_edge_animations();
         results_panel_->set_finished(result);
         toolbar_->set_executing(false);
-        QString msg = result.success ? QString("Execution completed in %1ms").arg(result.total_duration_ms)
-                                     : QString("Execution failed: %1").arg(result.error);
+        QString msg = result.success ? QString("运行完成，耗时 %1ms").arg(result.total_duration_ms)
+                                     : QString("运行失败: %1").arg(result.error);
         LOG_INFO("NodeEditor", msg);
     });
 }
@@ -409,7 +409,7 @@ void NodeEditorScreen::on_clear_workflow() {
     if (result == QMessageBox::Yes) {
         scene_->clear_all();
         properties_->clear();
-        LOG_INFO("NodeEditor", "Workflow cleared");
+        LOG_INFO("NodeEditor", "工作流已清空");
     }
 }
 
@@ -434,7 +434,7 @@ void NodeEditorScreen::on_import_workflow() {
     QJsonObject obj = doc.object();
     WorkflowDef wf;
     wf.id = obj.value("id").toString(QUuid::createUuid().toString(QUuid::WithoutBraces));
-    wf.name = obj.value("name").toString("Imported Workflow");
+    wf.name = obj.value("name").toString("导入的工作流");
     wf.description = obj.value("description").toString();
 
     for (const auto& nv : obj.value("nodes").toArray()) {
@@ -585,7 +585,7 @@ void NodeEditorScreen::on_execute() {
 
     WorkflowDef wf = scene_->serialize();
     if (wf.nodes.isEmpty()) {
-        LOG_WARN("NodeEditor", "No nodes to execute");
+        LOG_WARN("NodeEditor", "没有可运行的节点");
         return;
     }
 
@@ -600,27 +600,27 @@ void NodeEditorScreen::on_execute() {
 
 void NodeEditorScreen::on_show_templates() {
     QStringList templates = {
-        // Beginner
-        "1. Hello World — Trigger → Set Variable → Display",
-        "2. Stock Quote Lookup — Fetch quote for multiple tickers",
-        // Market Analysis
-        "3. Multi-Indicator Scanner — RSI + MACD + Bollinger on a stock",
-        "4. Sector Correlation — Compare correlations across sector ETFs",
-        "5. Economic Dashboard — Fetch GDP, CPI, unemployment data",
-        // Trading
-        "6. Price Alert Trading — Auto-trade when price crosses threshold",
-        "7. Mean Reversion Strategy — Buy oversold / sell overbought with risk checks",
-        "8. Portfolio Rebalancer — Check drift → optimize → place orders",
-        // Risk & Safety
-        "9. Daily Risk Monitor — Positions → VaR → loss limit → alert",
-        "10. Pre-Trade Compliance — Full validation before order execution",
-        // Data & AI
-        "11. News Sentiment Pipeline — Fetch news → NLP → filter → alert",
-        "12. AI Research Agent — Multi-agent analysis with mediator",
-        // Operations
-        "13. Scheduled Report — Daily P&L report to email",
-        "14. Data Export Pipeline — Fetch → transform → CSV export",
-        "15. Webhook Automation — External trigger → process → notify",
+        // 入门
+        "1. 你好世界 — 触发器 → 变量设置 → 显示结果",
+        "2. 股票报价查询 — 获取多个代码的实时行情",
+        // 市场分析
+        "3. 多指标扫描器 — 股票 RSI + MACD + 布林带分析",
+        "4. 板块相关性 — 比较不同板块 ETF 的相关性",
+        "5. 宏观数据面板 — 获取 GDP, CPI 等数据",
+        // 交易
+        "6. 价格提醒执行 — 价格触达阈值时自动下单",
+        "7. 均值回归策略 — 超卖买入/超买卖出并带风险检查",
+        "8. 组合再平衡 — 检查偏差 → 优化 → 下单执行",
+        // 风险管理
+        "9. 每日风险监测 — 持仓 → VaR 分析 → 亏损限制 → 告警",
+        "10. 交易合规检查 — 下单前的全量规则校验",
+        // 数据与 AI
+        "11. 新闻情绪流水线 — 抓取新闻 → NLP 处理 → 信号过滤",
+        "12. AI 研究助手 — 基于多主体的深度投资分析",
+        // 运维自动化
+        "13. 自动报表发送 — 每日 P&L 报表邮件通知",
+        "14. 数据导出流水线 — 抓取 → 转换 → CSV 导出",
+        "15. Webhook 自动化 — 外部触发器 → 逻辑处理 → 通知",
     };
 
     bool ok = false;

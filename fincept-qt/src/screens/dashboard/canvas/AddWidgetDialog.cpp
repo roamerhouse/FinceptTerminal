@@ -16,15 +16,15 @@ namespace fincept::screens {
 // ── Category accent colors ──────────────────────────────────────────────────
 
 QString AddWidgetDialog::accent_for_category(const QString& category) {
-    if (category == "Markets")
+    if (category == "Markets" || category == "市场")
         return ui::colors::AMBER();
-    if (category == "Research")
+    if (category == "Research" || category == "研究")
         return ui::colors::CYAN();
-    if (category == "Portfolio")
+    if (category == "Portfolio" || category == "投资组合")
         return ui::colors::POSITIVE();
-    if (category == "Trading")
+    if (category == "Trading" || category == "交易")
         return ui::colors::NEGATIVE();
-    if (category == "Tools")
+    if (category == "Tools" || category == "工具")
         return ui::colors::AMBER();
     return ui::colors::TEXT_SECONDARY();
 }
@@ -58,7 +58,7 @@ QString AddWidgetDialog::icon_for_widget(const QString& type_id) {
 // ── Constructor ─────────────────────────────────────────────────────────────
 
 AddWidgetDialog::AddWidgetDialog(QWidget* parent) : QDialog(parent) {
-    setWindowTitle("Add Widget");
+    setWindowTitle("添加组件");
     setFixedSize(620, 520);
     setStyleSheet(QString("QDialog { background: %1; }").arg(ui::colors::BG_BASE()));
 
@@ -68,20 +68,20 @@ AddWidgetDialog::AddWidgetDialog(QWidget* parent) : QDialog(parent) {
 
     // ── Title row ──
     auto* title_row = new QHBoxLayout;
-    auto* title = new QLabel("ADD WIDGET");
+    auto* title = new QLabel("添加组件");
     title->setStyleSheet(
         QString("color: %1; font-size: 12px; font-weight: bold; letter-spacing: 1px;").arg(ui::colors::AMBER()));
     title_row->addWidget(title);
     title_row->addStretch();
 
-    auto* subtitle = new QLabel(QString("%1 AVAILABLE").arg(WidgetRegistry::instance().all().size()));
+    auto* subtitle = new QLabel(QString("%1 个可选组件").arg(WidgetRegistry::instance().all().size()));
     subtitle->setStyleSheet(QString("color: %1; font-size: 10px;").arg(ui::colors::TEXT_TERTIARY()));
     title_row->addWidget(subtitle);
     root->addLayout(title_row);
 
     // ── Search ──
     search_bar_ = new QLineEdit;
-    search_bar_->setPlaceholderText("Search widgets...");
+    search_bar_->setPlaceholderText("搜索组件...");
     search_bar_->setFixedHeight(30);
     search_bar_->setStyleSheet(
         QString("QLineEdit { background: %1; border: 1px solid %2; color: %3; "
@@ -118,7 +118,7 @@ AddWidgetDialog::AddWidgetDialog(QWidget* parent) : QDialog(parent) {
     bot->setSpacing(8);
     bot->addStretch();
 
-    auto* cancel_btn = new QPushButton("CANCEL");
+    auto* cancel_btn = new QPushButton("取消");
     cancel_btn->setFixedSize(90, 30);
     cancel_btn->setCursor(Qt::PointingHandCursor);
     cancel_btn->setStyleSheet(
@@ -129,7 +129,7 @@ AddWidgetDialog::AddWidgetDialog(QWidget* parent) : QDialog(parent) {
     connect(cancel_btn, &QPushButton::clicked, this, &QDialog::reject);
     bot->addWidget(cancel_btn);
 
-    add_btn_ = new QPushButton("ADD WIDGET");
+    add_btn_ = new QPushButton("确定添加");
     add_btn_->setFixedSize(110, 30);
     add_btn_->setCursor(Qt::PointingHandCursor);
     add_btn_->setEnabled(false);
@@ -158,7 +158,7 @@ void AddWidgetDialog::build_category_bar(QVBoxLayout* root) {
 
     // Gather unique categories from registry
     QStringList categories;
-    categories << "All";
+    categories << "全部";
     QSet<QString> seen;
     for (const auto& meta : WidgetRegistry::instance().all()) {
         if (!seen.contains(meta.category)) {

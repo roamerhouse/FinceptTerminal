@@ -60,7 +60,7 @@ class TemplatePreview : public QWidget {
 };
 
 TemplatePicker::TemplatePicker(QWidget* parent) : QDialog(parent) {
-    setWindowTitle("Choose Dashboard Template");
+    setWindowTitle("选择仪表盘模板");
     setFixedSize(640, 400);
     setStyleSheet(QString("QDialog { background: %1; }"
                           "QPushButton { background: %2; border: 1px solid %3; color: %4; "
@@ -73,12 +73,12 @@ TemplatePicker::TemplatePicker(QWidget* parent) : QDialog(parent) {
     vl->setContentsMargins(16, 16, 16, 16);
     vl->setSpacing(12);
 
-    auto* title = new QLabel("CHOOSE TEMPLATE");
+    auto* title = new QLabel("选择模板");
     title->setStyleSheet(
         QString("color: %1; font-size: 11px; font-weight: bold; letter-spacing: 1px;").arg(ui::colors::AMBER()));
     vl->addWidget(title);
 
-    auto* sub = new QLabel("Select a template to reset your dashboard. Current layout will be replaced.");
+    auto* sub = new QLabel("选择一个模板以重置您的仪表盘。当前的布局将被替换。");
     sub->setStyleSheet(QString("color: %1; font-size: 9px;").arg(ui::colors::TEXT_TERTIARY()));
     sub->setWordWrap(true);
     vl->addWidget(sub);
@@ -114,7 +114,7 @@ TemplatePicker::TemplatePicker(QWidget* parent) : QDialog(parent) {
         desc_lbl->setWordWrap(true);
         cl->addWidget(desc_lbl);
 
-        auto* apply_btn = new QPushButton("APPLY");
+        auto* apply_btn = new QPushButton("应用");
         apply_btn->setFixedHeight(24);
         const QString tid = tmpl.id;
         connect(apply_btn, &QPushButton::clicked, this, [this, tid]() {
@@ -133,7 +133,7 @@ TemplatePicker::TemplatePicker(QWidget* parent) : QDialog(parent) {
 
     auto* bot = new QHBoxLayout;
     bot->addStretch();
-    auto* cancel = new QPushButton("CANCEL");
+    auto* cancel = new QPushButton("取消");
     cancel->setFixedHeight(28);
     connect(cancel, &QPushButton::clicked, this, &QDialog::reject);
     bot->addWidget(cancel);

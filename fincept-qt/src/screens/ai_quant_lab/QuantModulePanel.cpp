@@ -3199,7 +3199,7 @@ QWidget* QuantModulePanel::build_feature_engineering_panel() {
     });
     evl->addWidget(expr_run);
     evl->addStretch();
-    tabs->addTab(expr, "Expression Engine");
+    tabs->addTab(expr, "表达式引擎");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -3227,32 +3227,32 @@ QWidget* QuantModulePanel::build_portfolio_opt_panel() {
         tvl->setSpacing(8);
 
         auto* assets_in = new QLineEdit(t);
-        assets_in->setPlaceholderText("Asset names (comma-separated, e.g. AAPL,GOOG,MSFT)");
+        assets_in->setPlaceholderText("资产名称 (逗号分隔，如 AAPL,GOOG,MSFT)");
         assets_in->setStyleSheet(input_ss());
         text_inputs_[method_id + "_assets"] = assets_in;
-        tvl->addWidget(build_input_row("Assets", assets_in, t));
+        tvl->addWidget(build_input_row("资产", assets_in, t));
 
         auto* cov_in = new QLineEdit(t);
-        cov_in->setPlaceholderText("Covariance matrix JSON: [[0.04,0.01],[0.01,0.09]]");
+        cov_in->setPlaceholderText("协方差矩阵 JSON: [[0.04,0.01],[0.01,0.09]]");
         cov_in->setStyleSheet(input_ss());
         text_inputs_[method_id + "_cov"] = cov_in;
-        tvl->addWidget(build_input_row("Covariance Matrix", cov_in, t));
+        tvl->addWidget(build_input_row("协方差矩阵", cov_in, t));
 
         if (needs_returns) {
             auto* ret_in = new QLineEdit(t);
-            ret_in->setPlaceholderText("Expected returns (comma-separated, e.g. 0.10,0.15,0.12)");
+            ret_in->setPlaceholderText("预期收益率 (逗号分隔，如 0.10,0.15,0.12)");
             ret_in->setStyleSheet(input_ss());
             text_inputs_[method_id + "_returns"] = ret_in;
-            tvl->addWidget(build_input_row("Expected Returns", ret_in, t));
+            tvl->addWidget(build_input_row("预期收益率", ret_in, t));
         }
 
         auto* rf_spin = make_double_spin(0, 20, 2.0, 2, "%", t);
         double_inputs_[method_id + "_rf"] = rf_spin;
-        tvl->addWidget(build_input_row("Risk-Free Rate", rf_spin, t));
+        tvl->addWidget(build_input_row("无风险利率", rf_spin, t));
 
         auto* run = make_run_button(btn_label, t);
         connect(run, &QPushButton::clicked, this, [this, method_id, needs_returns]() {
-            status_label_->setText("Optimizing...");
+            status_label_->setText("正在优化...");
             QJsonObject params;
             auto assets_str = text_inputs_[method_id + "_assets"]->text().split(',');
             QJsonArray assets_arr;
@@ -3276,10 +3276,10 @@ QWidget* QuantModulePanel::build_portfolio_opt_panel() {
         return t;
     };
 
-    tabs->addTab(make_cov_tab("hierarchical_risk_parity", "RUN HRP", false), "HRP");
-    tabs->addTab(make_cov_tab("minimum_variance", "MIN VARIANCE", false), "Min Variance");
-    tabs->addTab(make_cov_tab("maximum_sharpe", "MAX SHARPE", true), "Max Sharpe");
-    tabs->addTab(make_cov_tab("efficient_frontier", "EFFICIENT FRONTIER", true), "Eff. Frontier");
+    tabs->addTab(make_cov_tab("hierarchical_risk_parity", "运行 HRP", false), "HRP (阶层风险均衡)");
+    tabs->addTab(make_cov_tab("minimum_variance", "运行最小方差", false), "最小方差");
+    tabs->addTab(make_cov_tab("maximum_sharpe", "运行最大夏普", true), "最大夏普");
+    tabs->addTab(make_cov_tab("efficient_frontier", "运行有效前沿", true), "有效前沿");
 
     // ── Black-Litterman ──
     auto* bl = new QWidget(this);
@@ -3287,33 +3287,33 @@ QWidget* QuantModulePanel::build_portfolio_opt_panel() {
     blvl->setContentsMargins(12, 12, 12, 12);
     blvl->setSpacing(8);
     auto* bl_assets = new QLineEdit(bl);
-    bl_assets->setPlaceholderText("Asset names (comma-separated)");
+    bl_assets->setPlaceholderText("资产名称 (逗号分隔)");
     bl_assets->setStyleSheet(input_ss());
     text_inputs_["bl_assets"] = bl_assets;
-    blvl->addWidget(build_input_row("Assets", bl_assets, bl));
+    blvl->addWidget(build_input_row("资产", bl_assets, bl));
     auto* bl_caps = new QLineEdit(bl);
-    bl_caps->setPlaceholderText("Market caps (comma-separated, e.g. 2000,1500,800)");
+    bl_caps->setPlaceholderText("市值 (逗号分隔，如 2000,1500,800)");
     bl_caps->setStyleSheet(input_ss());
     text_inputs_["bl_caps"] = bl_caps;
-    blvl->addWidget(build_input_row("Market Caps ($B)", bl_caps, bl));
+    blvl->addWidget(build_input_row("市值 ($B)", bl_caps, bl));
     auto* bl_cov = new QLineEdit(bl);
-    bl_cov->setPlaceholderText("Covariance matrix JSON: [[0.04,0.01],[0.01,0.09]]");
+    bl_cov->setPlaceholderText("协方差矩阵 JSON: [[0.04,0.01],[0.01,0.09]]");
     bl_cov->setStyleSheet(input_ss());
     text_inputs_["bl_cov"] = bl_cov;
-    blvl->addWidget(build_input_row("Covariance Matrix", bl_cov, bl));
+    blvl->addWidget(build_input_row("协方差矩阵", bl_cov, bl));
     auto* bl_views = new QLineEdit(bl);
-    bl_views->setPlaceholderText("Views (comma-separated, e.g. 0.05,0.10)");
+    bl_views->setPlaceholderText("观点 (逗号分隔，如 0.05,0.10)");
     bl_views->setStyleSheet(input_ss());
     text_inputs_["bl_views"] = bl_views;
-    blvl->addWidget(build_input_row("Views", bl_views, bl));
+    blvl->addWidget(build_input_row("观点", bl_views, bl));
     auto* bl_conf = new QLineEdit(bl);
-    bl_conf->setPlaceholderText("View confidences (e.g. 0.8,0.6)");
+    bl_conf->setPlaceholderText("观点置信度 (如 0.8,0.6)");
     bl_conf->setStyleSheet(input_ss());
     text_inputs_["bl_conf"] = bl_conf;
-    blvl->addWidget(build_input_row("View Confidences", bl_conf, bl));
-    auto* bl_run = make_run_button("RUN BLACK-LITTERMAN", bl);
+    blvl->addWidget(build_input_row("观点置信度", bl_conf, bl));
+    auto* bl_run = make_run_button("运行 BLACK-LITTERMAN", bl);
     connect(bl_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Running BL...");
+        status_label_->setText("正在运行 BL...");
         QJsonObject params;
         QJsonArray caps, views, confs, assets;
         for (auto& v : text_inputs_["bl_caps"]->text().split(','))
@@ -3335,7 +3335,7 @@ QWidget* QuantModulePanel::build_portfolio_opt_panel() {
     });
     blvl->addWidget(bl_run);
     blvl->addStretch();
-    tabs->addTab(bl, "Black-Litterman");
+    tabs->addTab(bl, "Black-Litterman 模型");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -3361,23 +3361,23 @@ QWidget* QuantModulePanel::build_factor_evaluation_panel() {
     icvl->setContentsMargins(12, 12, 12, 12);
     icvl->setSpacing(8);
     auto* ic_preds = new QLineEdit(ic);
-    ic_preds->setPlaceholderText("Predictions (comma-separated, e.g. 0.1,0.2,-0.1,0.3)");
+    ic_preds->setPlaceholderText("预测值 (逗号分隔，如 0.1,0.2,-0.1,0.3)");
     ic_preds->setStyleSheet(input_ss());
     text_inputs_["ev_predictions"] = ic_preds;
-    icvl->addWidget(build_input_row("Predictions", ic_preds, ic));
+    icvl->addWidget(build_input_row("预测值", ic_preds, ic));
     auto* ic_rets = new QLineEdit(ic);
-    ic_rets->setPlaceholderText("Actual returns (comma-separated)");
+    ic_rets->setPlaceholderText("实际收益率 (逗号分隔)");
     ic_rets->setStyleSheet(input_ss());
     text_inputs_["ev_returns"] = ic_rets;
-    icvl->addWidget(build_input_row("Returns", ic_rets, ic));
+    icvl->addWidget(build_input_row("收益率", ic_rets, ic));
     auto* ic_method = new QComboBox(ic);
-    ic_method->addItems({"pearson", "spearman"});
+    ic_method->addItems({"pearson (皮尔逊)", "spearman (斯皮尔曼)"});
     ic_method->setStyleSheet(combo_ss());
     combo_inputs_["ev_ic_method"] = ic_method;
-    icvl->addWidget(build_input_row("Method", ic_method, ic));
-    auto* ic_run = make_run_button("CALCULATE IC METRICS", ic);
+    icvl->addWidget(build_input_row("方法", ic_method, ic));
+    auto* ic_run = make_run_button("计算 IC 指标", ic);
     connect(ic_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Calculating...");
+        status_label_->setText("正在计算...");
         QJsonObject params;
         QJsonArray preds, rets;
         for (auto& v : text_inputs_["ev_predictions"]->text().split(','))
@@ -3391,7 +3391,7 @@ QWidget* QuantModulePanel::build_factor_evaluation_panel() {
     });
     icvl->addWidget(ic_run);
     icvl->addStretch();
-    tabs->addTab(ic, "IC Metrics");
+    tabs->addTab(ic, "IC 指标");
 
     // ── Full Report tab ──
     auto* rep = new QWidget(this);
@@ -3399,23 +3399,23 @@ QWidget* QuantModulePanel::build_factor_evaluation_panel() {
     repvl->setContentsMargins(12, 12, 12, 12);
     repvl->setSpacing(8);
     auto* rep_name = new QLineEdit(rep);
-    rep_name->setPlaceholderText("Factor name (e.g. momentum)");
+    rep_name->setPlaceholderText("因子名称 (如 momentum)");
     rep_name->setStyleSheet(input_ss());
     text_inputs_["ev_factor_name"] = rep_name;
-    repvl->addWidget(build_input_row("Factor Name", rep_name, rep));
+    repvl->addWidget(build_input_row("因子名称", rep_name, rep));
     auto* rep_preds = new QLineEdit(rep);
-    rep_preds->setPlaceholderText("Predictions (comma-separated)");
+    rep_preds->setPlaceholderText("预测值 (逗号分隔)");
     rep_preds->setStyleSheet(input_ss());
     text_inputs_["ev_rep_preds"] = rep_preds;
-    repvl->addWidget(build_input_row("Predictions", rep_preds, rep));
+    repvl->addWidget(build_input_row("预测值", rep_preds, rep));
     auto* rep_rets = new QLineEdit(rep);
-    rep_rets->setPlaceholderText("Returns (comma-separated)");
+    rep_rets->setPlaceholderText("收益率 (逗号分隔)");
     rep_rets->setStyleSheet(input_ss());
     text_inputs_["ev_rep_returns"] = rep_rets;
-    repvl->addWidget(build_input_row("Returns", rep_rets, rep));
-    auto* rep_run = make_run_button("GENERATE EVALUATION REPORT", rep);
+    repvl->addWidget(build_input_row("收益率", rep_rets, rep));
+    auto* rep_run = make_run_button("生成评估报告", rep);
     connect(rep_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Generating...");
+        status_label_->setText("正在生成...");
         QJsonObject params;
         QJsonArray preds, rets;
         for (auto& v : text_inputs_["ev_rep_preds"]->text().split(','))
@@ -3429,7 +3429,7 @@ QWidget* QuantModulePanel::build_factor_evaluation_panel() {
     });
     repvl->addWidget(rep_run);
     repvl->addStretch();
-    tabs->addTab(rep, "Full Report");
+    tabs->addTab(rep, "全量报告");
 
     // ── Risk Metrics tab ──
     auto* risk = new QWidget(this);
@@ -3437,21 +3437,21 @@ QWidget* QuantModulePanel::build_factor_evaluation_panel() {
     riskvl->setContentsMargins(12, 12, 12, 12);
     riskvl->setSpacing(8);
     auto* risk_rets = new QLineEdit(risk);
-    risk_rets->setPlaceholderText("Daily returns (comma-separated)");
+    risk_rets->setPlaceholderText("日收益率 (逗号分隔)");
     risk_rets->setStyleSheet(input_ss());
     text_inputs_["ev_risk_returns"] = risk_rets;
-    riskvl->addWidget(build_input_row("Returns", risk_rets, risk));
+    riskvl->addWidget(build_input_row("收益率", risk_rets, risk));
     auto* risk_bench = new QLineEdit(risk);
-    risk_bench->setPlaceholderText("Benchmark returns (optional, comma-separated)");
+    risk_bench->setPlaceholderText("基准收益率 (可选，逗号分隔)");
     risk_bench->setStyleSheet(input_ss());
     text_inputs_["ev_risk_bench"] = risk_bench;
-    riskvl->addWidget(build_input_row("Benchmark (opt.)", risk_bench, risk));
+    riskvl->addWidget(build_input_row("基准 (可选)", risk_bench, risk));
     auto* risk_conf = make_double_spin(0.8, 0.999, 0.95, 3, "", risk);
     double_inputs_["ev_risk_conf"] = risk_conf;
-    riskvl->addWidget(build_input_row("Confidence Level", risk_conf, risk));
-    auto* risk_run = make_run_button("CALCULATE RISK METRICS", risk);
+    riskvl->addWidget(build_input_row("置信水平", risk_conf, risk));
+    auto* risk_run = make_run_button("计算风险指标", risk);
     connect(risk_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Calculating...");
+        status_label_->setText("正在计算...");
         QJsonObject params;
         QJsonArray rets;
         for (auto& v : text_inputs_["ev_risk_returns"]->text().split(','))
@@ -3469,7 +3469,7 @@ QWidget* QuantModulePanel::build_factor_evaluation_panel() {
     });
     riskvl->addWidget(risk_run);
     riskvl->addStretch();
-    tabs->addTab(risk, "Risk Metrics");
+    tabs->addTab(risk, "风险指标");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -3495,10 +3495,10 @@ QWidget* QuantModulePanel::build_strategy_builder_panel() {
     tkvl->setContentsMargins(12, 12, 12, 12);
     tkvl->setSpacing(8);
     auto* tk_signal = new QLineEdit(topk);
-    tk_signal->setPlaceholderText("Signal values (comma-separated)");
+    tk_signal->setPlaceholderText("信号值 (逗号分隔)");
     tk_signal->setStyleSheet(input_ss());
     text_inputs_["st_tk_signal"] = tk_signal;
-    tkvl->addWidget(build_input_row("Signal", tk_signal, topk));
+    tkvl->addWidget(build_input_row("信号", tk_signal, topk));
     auto* tk_topk = new QSpinBox(topk);
     tk_topk->setRange(1, 500);
     tk_topk->setValue(50);
@@ -3511,9 +3511,9 @@ QWidget* QuantModulePanel::build_strategy_builder_panel() {
     tk_drop->setStyleSheet(tk_topk->styleSheet());
     int_inputs_["st_ndrop"] = tk_drop;
     tkvl->addWidget(build_input_row("N-Drop", tk_drop, topk));
-    auto* tk_run = make_run_button("CREATE TOPK-DROPOUT STRATEGY", topk);
+    auto* tk_run = make_run_button("创建 TopK-Dropout 策略", topk);
     connect(tk_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Creating...");
+        status_label_->setText("正在创建...");
         QJsonObject params;
         QJsonArray signal;
         for (auto& v : text_inputs_["st_tk_signal"]->text().split(','))
@@ -3533,21 +3533,21 @@ QWidget* QuantModulePanel::build_strategy_builder_panel() {
     rpvl->setContentsMargins(12, 12, 12, 12);
     rpvl->setSpacing(8);
     auto* rp_returns = new QLineEdit(rp);
-    rp_returns->setPlaceholderText("Asset returns matrix JSON: [[0.01,-0.02,...],[...]]");
+    rp_returns->setPlaceholderText("资产收益率矩阵 JSON: [[0.01,-0.02,...],[...]]");
     rp_returns->setStyleSheet(input_ss());
     text_inputs_["st_rp_returns"] = rp_returns;
-    rpvl->addWidget(build_input_row("Returns Matrix", rp_returns, rp));
+    rpvl->addWidget(build_input_row("收益率矩阵", rp_returns, rp));
     auto* rp_target = make_double_spin(0.01, 1.0, 0.10, 2, "", rp);
     double_inputs_["st_rp_target"] = rp_target;
-    rpvl->addWidget(build_input_row("Target Risk", rp_target, rp));
+    rpvl->addWidget(build_input_row("目标风险", rp_target, rp));
     auto* rp_freq = new QComboBox(rp);
-    rp_freq->addItems({"monthly", "weekly", "daily", "quarterly"});
+    rp_freq->addItems({"每月 (monthly)", "每周 (weekly)", "每日 (daily)", "每季度 (quarterly)"});
     rp_freq->setStyleSheet(combo_ss());
     combo_inputs_["st_rp_freq"] = rp_freq;
-    rpvl->addWidget(build_input_row("Rebalance", rp_freq, rp));
-    auto* rp_run = make_run_button("CREATE RISK PARITY STRATEGY", rp);
+    rpvl->addWidget(build_input_row("再平衡频率", rp_freq, rp));
+    auto* rp_run = make_run_button("创建风险均衡策略", rp);
     connect(rp_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Creating...");
+        status_label_->setText("正在创建...");
         QJsonObject params;
         auto ret_doc = QJsonDocument::fromJson(text_inputs_["st_rp_returns"]->text().toUtf8());
         if (!ret_doc.isNull())
@@ -3558,7 +3558,7 @@ QWidget* QuantModulePanel::build_strategy_builder_panel() {
     });
     rpvl->addWidget(rp_run);
     rpvl->addStretch();
-    tabs->addTab(rp, "Risk Parity");
+    tabs->addTab(rp, "风险均衡 (Risk Parity)");
 
     // ── Portfolio Metrics ──
     auto* pm = new QWidget(this);
@@ -3566,21 +3566,21 @@ QWidget* QuantModulePanel::build_strategy_builder_panel() {
     pmvl->setContentsMargins(12, 12, 12, 12);
     pmvl->setSpacing(8);
     auto* pm_rets = new QLineEdit(pm);
-    pm_rets->setPlaceholderText("Portfolio returns (comma-separated)");
+    pm_rets->setPlaceholderText("组合收益率 (逗号分隔)");
     pm_rets->setStyleSheet(input_ss());
     text_inputs_["st_pm_returns"] = pm_rets;
-    pmvl->addWidget(build_input_row("Returns", pm_rets, pm));
+    pmvl->addWidget(build_input_row("收益率", pm_rets, pm));
     auto* pm_bench = new QLineEdit(pm);
-    pm_bench->setPlaceholderText("Benchmark returns (optional)");
+    pm_bench->setPlaceholderText("基准收益率 (可选)");
     pm_bench->setStyleSheet(input_ss());
     text_inputs_["st_pm_bench"] = pm_bench;
-    pmvl->addWidget(build_input_row("Benchmark (opt.)", pm_bench, pm));
+    pmvl->addWidget(build_input_row("基准 (可选)", pm_bench, pm));
     auto* pm_rf = make_double_spin(0, 20, 2.0, 2, "%", pm);
     double_inputs_["st_pm_rf"] = pm_rf;
-    pmvl->addWidget(build_input_row("Risk-Free Rate", pm_rf, pm));
-    auto* pm_run = make_run_button("CALCULATE PORTFOLIO METRICS", pm);
+    pmvl->addWidget(build_input_row("无风险利率", pm_rf, pm));
+    auto* pm_run = make_run_button("计算投资组合指标", pm);
     connect(pm_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Calculating...");
+        status_label_->setText("正在计算...");
         QJsonObject params;
         QJsonArray rets;
         for (auto& v : text_inputs_["st_pm_returns"]->text().split(','))
@@ -3598,7 +3598,7 @@ QWidget* QuantModulePanel::build_strategy_builder_panel() {
     });
     pmvl->addWidget(pm_run);
     pmvl->addStretch();
-    tabs->addTab(pm, "Portfolio Metrics");
+    tabs->addTab(pm, "投资组合指标");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -3623,21 +3623,21 @@ QWidget* QuantModulePanel::build_data_processors_panel() {
     auto* ltvl = new QVBoxLayout(list_tab);
     ltvl->setContentsMargins(12, 12, 12, 12);
     ltvl->setSpacing(8);
-    auto* lt_info = new QLabel("Browse all available data normalizers and transformation processors.", list_tab);
+    auto* lt_info = new QLabel("查看所有可用的数据标准化和转换处理器。", list_tab);
     lt_info->setWordWrap(true);
     lt_info->setStyleSheet(QString("color:%1; font-size:%2px; font-family:%3;")
                                .arg(ui::colors::TEXT_SECONDARY())
                                .arg(ui::fonts::SMALL)
                                .arg(ui::fonts::DATA_FAMILY));
     ltvl->addWidget(lt_info);
-    auto* lt_run = make_run_button("LIST ALL PROCESSORS", list_tab);
+    auto* lt_run = make_run_button("列出所有处理器", list_tab);
     connect(lt_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         AIQuantLabService::instance().dataproc_list_processors();
     });
     ltvl->addWidget(lt_run);
     ltvl->addStretch();
-    tabs->addTab(list_tab, "Browse");
+    tabs->addTab(list_tab, "浏览");
 
     // ── Create Pipeline ──
     auto* pipe_tab = new QWidget(this);
@@ -3645,18 +3645,18 @@ QWidget* QuantModulePanel::build_data_processors_panel() {
     ptvl->setContentsMargins(12, 12, 12, 12);
     ptvl->setSpacing(8);
     auto* pipe_id = new QLineEdit(pipe_tab);
-    pipe_id->setPlaceholderText("Pipeline ID (e.g. my_pipeline)");
+    pipe_id->setPlaceholderText("流水线 ID (如 my_pipeline)");
     pipe_id->setStyleSheet(input_ss());
     text_inputs_["dp_pipeline_id"] = pipe_id;
-    ptvl->addWidget(build_input_row("Pipeline ID", pipe_id, pipe_tab));
+    ptvl->addWidget(build_input_row("流水线 ID", pipe_id, pipe_tab));
     auto* pipe_procs = new QLineEdit(pipe_tab);
     pipe_procs->setPlaceholderText(R"([{"type":"zscore"},{"type":"winsorize","lower":0.01,"upper":0.99}])");
     pipe_procs->setStyleSheet(input_ss());
     text_inputs_["dp_processors"] = pipe_procs;
-    ptvl->addWidget(build_input_row("Processors (JSON)", pipe_procs, pipe_tab));
-    auto* pipe_run = make_run_button("CREATE PIPELINE", pipe_tab);
+    ptvl->addWidget(build_input_row("处理器 (JSON)", pipe_procs, pipe_tab));
+    auto* pipe_run = make_run_button("创建流水线", pipe_tab);
     connect(pipe_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Creating...");
+        status_label_->setText("正在创建...");
         QJsonObject params;
         params["pipeline_id"] = text_inputs_["dp_pipeline_id"]->text();
         auto doc = QJsonDocument::fromJson(text_inputs_["dp_processors"]->text().toUtf8());
@@ -3666,7 +3666,7 @@ QWidget* QuantModulePanel::build_data_processors_panel() {
     });
     ptvl->addWidget(pipe_run);
     ptvl->addStretch();
-    tabs->addTab(pipe_tab, "Create Pipeline");
+    tabs->addTab(pipe_tab, "创建流水线");
 
     // ── Process Data ──
     auto* proc_tab = new QWidget(this);
@@ -3674,18 +3674,18 @@ QWidget* QuantModulePanel::build_data_processors_panel() {
     procvl->setContentsMargins(12, 12, 12, 12);
     procvl->setSpacing(8);
     auto* proc_pid = new QLineEdit(proc_tab);
-    proc_pid->setPlaceholderText("Pipeline ID (must be created first)");
+    proc_pid->setPlaceholderText("流水线 ID (必须先创建)");
     proc_pid->setStyleSheet(input_ss());
     text_inputs_["dp_proc_pid"] = proc_pid;
-    procvl->addWidget(build_input_row("Pipeline ID", proc_pid, proc_tab));
+    procvl->addWidget(build_input_row("流水线 ID", proc_pid, proc_tab));
     auto* proc_data = new QLineEdit(proc_tab);
     proc_data->setPlaceholderText(R"({"feature_close":[100,102,...],"feature_volume":[1000,1200,...]})");
     proc_data->setStyleSheet(input_ss());
     text_inputs_["dp_proc_data"] = proc_data;
-    procvl->addWidget(build_input_row("Data (JSON)", proc_data, proc_tab));
-    auto* proc_run = make_run_button("PROCESS DATA", proc_tab);
+    procvl->addWidget(build_input_row("数据 (JSON)", proc_data, proc_tab));
+    auto* proc_run = make_run_button("处理数据", proc_tab);
     connect(proc_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Processing...");
+        status_label_->setText("正在处理...");
         QJsonObject params;
         params["pipeline_id"] = text_inputs_["dp_proc_pid"]->text();
         auto doc = QJsonDocument::fromJson(text_inputs_["dp_proc_data"]->text().toUtf8());
@@ -3695,7 +3695,7 @@ QWidget* QuantModulePanel::build_data_processors_panel() {
     });
     procvl->addWidget(proc_run);
     procvl->addStretch();
-    tabs->addTab(proc_tab, "Process Data");
+    tabs->addTab(proc_tab, "处理数据");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -3721,23 +3721,23 @@ QWidget* QuantModulePanel::build_quant_reporting_panel() {
     icvl->setContentsMargins(12, 12, 12, 12);
     icvl->setSpacing(8);
     auto* ic_preds = new QLineEdit(ic_tab);
-    ic_preds->setPlaceholderText("Predictions (comma-separated)");
+    ic_preds->setPlaceholderText("预测值 (逗号分隔)");
     ic_preds->setStyleSheet(input_ss());
     text_inputs_["rp_ic_preds"] = ic_preds;
-    icvl->addWidget(build_input_row("Predictions", ic_preds, ic_tab));
+    icvl->addWidget(build_input_row("预测值", ic_preds, ic_tab));
     auto* ic_rets = new QLineEdit(ic_tab);
-    ic_rets->setPlaceholderText("Returns (comma-separated)");
+    ic_rets->setPlaceholderText("收益率 (逗号分隔)");
     ic_rets->setStyleSheet(input_ss());
     text_inputs_["rp_ic_rets"] = ic_rets;
-    icvl->addWidget(build_input_row("Returns", ic_rets, ic_tab));
+    icvl->addWidget(build_input_row("收益率", ic_rets, ic_tab));
     auto* ic_method = new QComboBox(ic_tab);
-    ic_method->addItems({"both", "pearson", "spearman"});
+    ic_method->addItems({"both (两者)", "pearson (皮尔逊)", "spearman (斯皮尔曼)"});
     ic_method->setStyleSheet(combo_ss());
     combo_inputs_["rp_ic_method"] = ic_method;
-    icvl->addWidget(build_input_row("Method", ic_method, ic_tab));
-    auto* ic_run = make_run_button("GENERATE IC ANALYSIS", ic_tab);
+    icvl->addWidget(build_input_row("方法", ic_method, ic_tab));
+    auto* ic_run = make_run_button("生成 IC 分析报告", ic_tab);
     connect(ic_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Analyzing...");
+        status_label_->setText("正在分析...");
         QJsonObject params;
         QJsonArray preds, rets;
         for (auto& v : text_inputs_["rp_ic_preds"]->text().split(','))
@@ -3751,7 +3751,7 @@ QWidget* QuantModulePanel::build_quant_reporting_panel() {
     });
     icvl->addWidget(ic_run);
     icvl->addStretch();
-    tabs->addTab(ic_tab, "IC Analysis");
+    tabs->addTab(ic_tab, "IC 分析");
 
     // ── Model Performance ──
     auto* mp_tab = new QWidget(this);
@@ -3759,23 +3759,23 @@ QWidget* QuantModulePanel::build_quant_reporting_panel() {
     mpvl->setContentsMargins(12, 12, 12, 12);
     mpvl->setSpacing(8);
     auto* mp_preds = new QLineEdit(mp_tab);
-    mp_preds->setPlaceholderText("Model predictions (comma-separated)");
+    mp_preds->setPlaceholderText("模型预测值 (逗号分隔)");
     mp_preds->setStyleSheet(input_ss());
     text_inputs_["rp_mp_preds"] = mp_preds;
-    mpvl->addWidget(build_input_row("Predictions", mp_preds, mp_tab));
+    mpvl->addWidget(build_input_row("预测值", mp_preds, mp_tab));
     auto* mp_rets = new QLineEdit(mp_tab);
-    mp_rets->setPlaceholderText("Actual returns (comma-separated)");
+    mp_rets->setPlaceholderText("实际收益率 (逗号分隔)");
     mp_rets->setStyleSheet(input_ss());
     text_inputs_["rp_mp_rets"] = mp_rets;
-    mpvl->addWidget(build_input_row("Returns", mp_rets, mp_tab));
+    mpvl->addWidget(build_input_row("收益率", mp_rets, mp_tab));
     auto* mp_name = new QLineEdit(mp_tab);
-    mp_name->setPlaceholderText("Model name (e.g. LightGBM)");
+    mp_name->setPlaceholderText("模型名称 (如 LightGBM)");
     mp_name->setStyleSheet(input_ss());
     text_inputs_["rp_mp_name"] = mp_name;
-    mpvl->addWidget(build_input_row("Model Name", mp_name, mp_tab));
-    auto* mp_run = make_run_button("GENERATE MODEL PERFORMANCE REPORT", mp_tab);
+    mpvl->addWidget(build_input_row("模型名称", mp_name, mp_tab));
+    auto* mp_run = make_run_button("生成模型性能报告", mp_tab);
     connect(mp_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Generating...");
+        status_label_->setText("正在生成...");
         QJsonObject params;
         QJsonArray preds, rets;
         for (auto& v : text_inputs_["rp_mp_preds"]->text().split(','))
@@ -3785,12 +3785,12 @@ QWidget* QuantModulePanel::build_quant_reporting_panel() {
         params["predictions"] = preds;
         params["returns"] = rets;
         params["model_name"] =
-            text_inputs_["rp_mp_name"]->text().isEmpty() ? QString("Model") : text_inputs_["rp_mp_name"]->text();
+            text_inputs_["rp_mp_name"]->text().isEmpty() ? QString("模型") : text_inputs_["rp_mp_name"]->text();
         AIQuantLabService::instance().reporting_model_performance(params);
     });
     mpvl->addWidget(mp_run);
     mpvl->addStretch();
-    tabs->addTab(mp_tab, "Model Performance");
+    tabs->addTab(mp_tab, "模型性能");
 
     // ── Cumulative Returns ──
     auto* cr_tab = new QWidget(this);
@@ -3798,23 +3798,23 @@ QWidget* QuantModulePanel::build_quant_reporting_panel() {
     crvl->setContentsMargins(12, 12, 12, 12);
     crvl->setSpacing(8);
     auto* cr_rets = new QLineEdit(cr_tab);
-    cr_rets->setPlaceholderText("Portfolio returns (comma-separated)");
+    cr_rets->setPlaceholderText("组合收益率 (逗号分隔)");
     cr_rets->setStyleSheet(input_ss());
     text_inputs_["rp_cr_rets"] = cr_rets;
-    crvl->addWidget(build_input_row("Returns", cr_rets, cr_tab));
+    crvl->addWidget(build_input_row("收益率", cr_rets, cr_tab));
     auto* cr_bench = new QLineEdit(cr_tab);
-    cr_bench->setPlaceholderText("Benchmark returns (optional, comma-separated)");
+    cr_bench->setPlaceholderText("基准收益率 (可选，逗号分隔)");
     cr_bench->setStyleSheet(input_ss());
     text_inputs_["rp_cr_bench"] = cr_bench;
-    crvl->addWidget(build_input_row("Benchmark (opt.)", cr_bench, cr_tab));
+    crvl->addWidget(build_input_row("基准 (可选)", cr_bench, cr_tab));
     auto* cr_title = new QLineEdit(cr_tab);
-    cr_title->setPlaceholderText("Chart title (e.g. Strategy vs Benchmark)");
+    cr_title->setPlaceholderText("图表标题 (如 策略 vs 基准)");
     cr_title->setStyleSheet(input_ss());
     text_inputs_["rp_cr_title"] = cr_title;
-    crvl->addWidget(build_input_row("Title", cr_title, cr_tab));
-    auto* cr_run = make_run_button("GENERATE CUMULATIVE RETURN CHART", cr_tab);
+    crvl->addWidget(build_input_row("标题", cr_title, cr_tab));
+    auto* cr_run = make_run_button("生成累计收益图", cr_tab);
     connect(cr_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Generating...");
+        status_label_->setText("正在生成...");
         QJsonObject params;
         QJsonArray rets;
         for (auto& v : text_inputs_["rp_cr_rets"]->text().split(','))
@@ -3828,12 +3828,12 @@ QWidget* QuantModulePanel::build_quant_reporting_panel() {
             params["benchmark_returns"] = bench;
         }
         auto title = text_inputs_["rp_cr_title"]->text().trimmed();
-        params["title"] = title.isEmpty() ? QString("Cumulative Returns") : title;
+        params["title"] = title.isEmpty() ? QString("累计收益率") : title;
         AIQuantLabService::instance().reporting_cumulative_returns(params);
     });
     crvl->addWidget(cr_run);
     crvl->addStretch();
-    tabs->addTab(cr_tab, "Cumulative Returns");
+    tabs->addTab(cr_tab, "累计收益率");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -3858,27 +3858,27 @@ QWidget* QuantModulePanel::build_factor_discovery_panel() {
     auto* libvl = new QVBoxLayout(lib_tab);
     libvl->setContentsMargins(12, 12, 12, 12);
     libvl->setSpacing(8);
-    auto* lib_info = new QLabel("Browse all built-in Qlib alpha factors and expressions.", lib_tab);
+    auto* lib_info = new QLabel("浏览所有内置的 Qlib Alpha 因子和表达式。", lib_tab);
     lib_info->setWordWrap(true);
     lib_info->setStyleSheet(QString("color:%1; font-size:%2px; font-family:%3;")
                                 .arg(ui::colors::TEXT_SECONDARY())
                                 .arg(ui::fonts::SMALL)
                                 .arg(ui::fonts::DATA_FAMILY));
     libvl->addWidget(lib_info);
-    auto* lib_run = make_run_button("BROWSE FACTOR LIBRARY", lib_tab);
+    auto* lib_run = make_run_button("浏览因子库", lib_tab);
     connect(lib_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         AIQuantLabService::instance().factor_get_library();
     });
     libvl->addWidget(lib_run);
-    auto* inst_run = make_run_button("LIST INSTRUMENTS", lib_tab);
+    auto* inst_run = make_run_button("列出标的资产", lib_tab);
     connect(inst_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         AIQuantLabService::instance().factor_get_instruments();
     });
     libvl->addWidget(inst_run);
     libvl->addStretch();
-    tabs->addTab(lib_tab, "Factor Library");
+    tabs->addTab(lib_tab, "因子库");
 
     // ── Fetch Data ──
     auto* data_tab = new QWidget(this);
@@ -3886,28 +3886,28 @@ QWidget* QuantModulePanel::build_factor_discovery_panel() {
     datavl->setContentsMargins(12, 12, 12, 12);
     datavl->setSpacing(8);
     auto* fd_instr = new QLineEdit(data_tab);
-    fd_instr->setPlaceholderText("Instruments (comma-separated, e.g. aapl,msft)");
+    fd_instr->setPlaceholderText("标的资产 (逗号分隔，如 aapl,msft)");
     fd_instr->setStyleSheet(input_ss());
     text_inputs_["fd_instruments"] = fd_instr;
-    datavl->addWidget(build_input_row("Instruments", fd_instr, data_tab));
+    datavl->addWidget(build_input_row("标的资产", fd_instr, data_tab));
     auto* fd_fields = new QLineEdit(data_tab);
-    fd_fields->setPlaceholderText("Fields (comma-separated, e.g. $close,$volume,$open)");
+    fd_fields->setPlaceholderText("字段 (逗号分隔，如 $close,$volume,$open)");
     fd_fields->setStyleSheet(input_ss());
     text_inputs_["fd_fields"] = fd_fields;
-    datavl->addWidget(build_input_row("Fields", fd_fields, data_tab));
+    datavl->addWidget(build_input_row("字段", fd_fields, data_tab));
     auto* fd_start = new QLineEdit(data_tab);
-    fd_start->setPlaceholderText("Start date (YYYY-MM-DD, e.g. 2019-01-01)");
+    fd_start->setPlaceholderText("开始日期 (YYYY-MM-DD，如 2019-01-01)");
     fd_start->setStyleSheet(input_ss());
     text_inputs_["fd_start"] = fd_start;
-    datavl->addWidget(build_input_row("Start Date", fd_start, data_tab));
+    datavl->addWidget(build_input_row("开始日期", fd_start, data_tab));
     auto* fd_end = new QLineEdit(data_tab);
-    fd_end->setPlaceholderText("End date (YYYY-MM-DD, e.g. 2020-11-10)");
+    fd_end->setPlaceholderText("结束日期 (YYYY-MM-DD，如 2020-11-10)");
     fd_end->setStyleSheet(input_ss());
     text_inputs_["fd_end"] = fd_end;
-    datavl->addWidget(build_input_row("End Date", fd_end, data_tab));
-    auto* fd_run = make_run_button("FETCH DATA", data_tab);
+    datavl->addWidget(build_input_row("结束日期", fd_end, data_tab));
+    auto* fd_run = make_run_button("获取数据", data_tab);
     connect(fd_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Fetching...");
+        status_label_->setText("正在获取...");
         QJsonObject params;
         QJsonArray instr;
         for (auto& s : text_inputs_["fd_instruments"]->text().split(','))
@@ -3927,7 +3927,7 @@ QWidget* QuantModulePanel::build_factor_discovery_panel() {
     });
     datavl->addWidget(fd_run);
     datavl->addStretch();
-    tabs->addTab(data_tab, "Fetch Data");
+    tabs->addTab(data_tab, "获取数据");
 
     // ── Calendar ──
     auto* cal_tab = new QWidget(this);
@@ -3935,18 +3935,18 @@ QWidget* QuantModulePanel::build_factor_discovery_panel() {
     calvl->setContentsMargins(12, 12, 12, 12);
     calvl->setSpacing(8);
     auto* cal_start = new QLineEdit(cal_tab);
-    cal_start->setPlaceholderText("Start date (YYYY-MM-DD)");
+    cal_start->setPlaceholderText("开始日期 (YYYY-MM-DD)");
     cal_start->setStyleSheet(input_ss());
     text_inputs_["fd_cal_start"] = cal_start;
-    calvl->addWidget(build_input_row("Start Date", cal_start, cal_tab));
+    calvl->addWidget(build_input_row("开始日期", cal_start, cal_tab));
     auto* cal_end = new QLineEdit(cal_tab);
-    cal_end->setPlaceholderText("End date (YYYY-MM-DD)");
+    cal_end->setPlaceholderText("结束日期 (YYYY-MM-DD)");
     cal_end->setStyleSheet(input_ss());
     text_inputs_["fd_cal_end"] = cal_end;
-    calvl->addWidget(build_input_row("End Date", cal_end, cal_tab));
-    auto* cal_run = make_run_button("GET TRADING CALENDAR", cal_tab);
+    calvl->addWidget(build_input_row("结束日期", cal_end, cal_tab));
+    auto* cal_run = make_run_button("获取交易日历", cal_tab);
     connect(cal_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         QJsonObject params;
         if (!text_inputs_["fd_cal_start"]->text().isEmpty())
             params["start_date"] = text_inputs_["fd_cal_start"]->text().trimmed();
@@ -3956,7 +3956,7 @@ QWidget* QuantModulePanel::build_factor_discovery_panel() {
     });
     calvl->addWidget(cal_run);
     calvl->addStretch();
-    tabs->addTab(cal_tab, "Calendar");
+    tabs->addTab(cal_tab, "交易日历");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -3982,27 +3982,27 @@ QWidget* QuantModulePanel::build_model_library_panel() {
     btvl->setContentsMargins(12, 12, 12, 12);
     btvl->setSpacing(8);
     auto* bt_info =
-        new QLabel("List all available Qlib models (LightGBM, XGBoost, LSTM, Transformer, etc.).", browse_tab);
+        new QLabel("列出所有可用的 Qlib 模型 (LightGBM, XGBoost, LSTM, Transformer 等)。", browse_tab);
     bt_info->setWordWrap(true);
     bt_info->setStyleSheet(QString("color:%1; font-size:%2px; font-family:%3;")
                                .arg(ui::colors::TEXT_SECONDARY())
                                .arg(ui::fonts::SMALL)
                                .arg(ui::fonts::DATA_FAMILY));
     btvl->addWidget(bt_info);
-    auto* bt_list = make_run_button("LIST ALL MODELS", browse_tab);
+    auto* bt_list = make_run_button("列出所有模型", browse_tab);
     connect(bt_list, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         AIQuantLabService::instance().model_list();
     });
     btvl->addWidget(bt_list);
-    auto* bt_status = make_run_button("CHECK QLIB STATUS", browse_tab);
+    auto* bt_status = make_run_button("检查 Qlib 状态", browse_tab);
     connect(bt_status, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Checking...");
+        status_label_->setText("正在检查...");
         AIQuantLabService::instance().model_check_status();
     });
     btvl->addWidget(bt_status);
     btvl->addStretch();
-    tabs->addTab(browse_tab, "Browse");
+    tabs->addTab(browse_tab, "浏览");
 
     // ── Train Model ──
     auto* train_tab = new QWidget(this);
@@ -4011,27 +4011,27 @@ QWidget* QuantModulePanel::build_model_library_panel() {
     ttvl->setSpacing(8);
     auto* ml_type = new QComboBox(train_tab);
     ml_type->setStyleSheet(combo_ss());
-    ml_type->addItems({"lightgbm", "xgboost", "catboost", "linear", "lstm", "gru", "transformer"});
+    ml_type->addItems({"lightgbm", "xgboost", "catboost", "linear (线性)", "lstm", "gru", "transformer"});
     combo_inputs_["ml_model_type"] = ml_type;
-    ttvl->addWidget(build_input_row("Model Type", ml_type, train_tab));
+    ttvl->addWidget(build_input_row("模型类型", ml_type, train_tab));
     auto* ml_instr = new QLineEdit(train_tab);
-    ml_instr->setPlaceholderText("Instruments (comma-separated, e.g. aapl,msft)");
+    ml_instr->setPlaceholderText("标的资产 (逗号分隔，如 aapl,msft)");
     ml_instr->setStyleSheet(input_ss());
     text_inputs_["ml_instruments"] = ml_instr;
-    ttvl->addWidget(build_input_row("Instruments", ml_instr, train_tab));
+    ttvl->addWidget(build_input_row("标的资产", ml_instr, train_tab));
     auto* ml_start = new QLineEdit(train_tab);
-    ml_start->setPlaceholderText("Train start (YYYY-MM-DD)");
+    ml_start->setPlaceholderText("训练开始日期 (YYYY-MM-DD)");
     ml_start->setStyleSheet(input_ss());
     text_inputs_["ml_start"] = ml_start;
-    ttvl->addWidget(build_input_row("Start Date", ml_start, train_tab));
+    ttvl->addWidget(build_input_row("开始日期", ml_start, train_tab));
     auto* ml_end = new QLineEdit(train_tab);
-    ml_end->setPlaceholderText("Train end (YYYY-MM-DD)");
+    ml_end->setPlaceholderText("训练结束日期 (YYYY-MM-DD)");
     ml_end->setStyleSheet(input_ss());
     text_inputs_["ml_end"] = ml_end;
-    ttvl->addWidget(build_input_row("End Date", ml_end, train_tab));
-    auto* ml_run = make_run_button("TRAIN MODEL", train_tab);
+    ttvl->addWidget(build_input_row("结束日期", ml_end, train_tab));
+    auto* ml_run = make_run_button("训练模型", train_tab);
     connect(ml_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Training...");
+        status_label_->setText("正在训练...");
         QJsonObject params;
         params["model_type"] = combo_inputs_["ml_model_type"]->currentText();
         QJsonArray instr;
@@ -4047,7 +4047,7 @@ QWidget* QuantModulePanel::build_model_library_panel() {
     });
     ttvl->addWidget(ml_run);
     ttvl->addStretch();
-    tabs->addTab(train_tab, "Train Model");
+    tabs->addTab(train_tab, "模型训练");
 
     // ── Backtest ──
     auto* bt_tab = new QWidget(this);
@@ -4055,28 +4055,28 @@ QWidget* QuantModulePanel::build_model_library_panel() {
     btvl2->setContentsMargins(12, 12, 12, 12);
     btvl2->setSpacing(8);
     auto* bt_model = new QLineEdit(bt_tab);
-    bt_model->setPlaceholderText("Model ID (from training output)");
+    bt_model->setPlaceholderText("模型 ID (来自训练输出)");
     bt_model->setStyleSheet(input_ss());
     text_inputs_["ml_bt_model"] = bt_model;
-    btvl2->addWidget(build_input_row("Model ID", bt_model, bt_tab));
+    btvl2->addWidget(build_input_row("模型 ID", bt_model, bt_tab));
     auto* bt_instr = new QLineEdit(bt_tab);
-    bt_instr->setPlaceholderText("Instruments (comma-separated)");
+    bt_instr->setPlaceholderText("标的资产 (逗号分隔)");
     bt_instr->setStyleSheet(input_ss());
     text_inputs_["ml_bt_instr"] = bt_instr;
-    btvl2->addWidget(build_input_row("Instruments", bt_instr, bt_tab));
+    btvl2->addWidget(build_input_row("标的资产", bt_instr, bt_tab));
     auto* bt_start2 = new QLineEdit(bt_tab);
-    bt_start2->setPlaceholderText("Backtest start (YYYY-MM-DD)");
+    bt_start2->setPlaceholderText("回测开始日期 (YYYY-MM-DD)");
     bt_start2->setStyleSheet(input_ss());
     text_inputs_["ml_bt_start"] = bt_start2;
-    btvl2->addWidget(build_input_row("Start Date", bt_start2, bt_tab));
+    btvl2->addWidget(build_input_row("开始日期", bt_start2, bt_tab));
     auto* bt_end2 = new QLineEdit(bt_tab);
-    bt_end2->setPlaceholderText("Backtest end (YYYY-MM-DD)");
+    bt_end2->setPlaceholderText("回测结束日期 (YYYY-MM-DD)");
     bt_end2->setStyleSheet(input_ss());
     text_inputs_["ml_bt_end"] = bt_end2;
-    btvl2->addWidget(build_input_row("End Date", bt_end2, bt_tab));
-    auto* bt_run2 = make_run_button("RUN BACKTEST", bt_tab);
+    btvl2->addWidget(build_input_row("结束日期", bt_end2, bt_tab));
+    auto* bt_run2 = make_run_button("运行回测", bt_tab);
     connect(bt_run2, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Running backtest...");
+        status_label_->setText("正在运行回测...");
         QJsonObject params;
         params["model_id"] = text_inputs_["ml_bt_model"]->text().trimmed();
         QJsonArray instr;
@@ -4092,7 +4092,7 @@ QWidget* QuantModulePanel::build_model_library_panel() {
     });
     btvl2->addWidget(bt_run2);
     btvl2->addStretch();
-    tabs->addTab(bt_tab, "Backtest");
+    tabs->addTab(bt_tab, "回测 (Backtest)");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -4118,28 +4118,28 @@ QWidget* QuantModulePanel::build_live_signals_panel() {
     sigvl->setContentsMargins(12, 12, 12, 12);
     sigvl->setSpacing(8);
     auto* sig_instr = new QLineEdit(sig_tab);
-    sig_instr->setPlaceholderText("Instruments (comma-separated, e.g. aapl,msft,goog)");
+    sig_instr->setPlaceholderText("标的资产 (逗号分隔，如 aapl,msft,goog)");
     sig_instr->setStyleSheet(input_ss());
     text_inputs_["ls_instruments"] = sig_instr;
-    sigvl->addWidget(build_input_row("Instruments", sig_instr, sig_tab));
+    sigvl->addWidget(build_input_row("标的资产", sig_instr, sig_tab));
     auto* sig_fields = new QLineEdit(sig_tab);
-    sig_fields->setPlaceholderText("Fields (e.g. $close,$open,$high,$low,$volume)");
+    sig_fields->setPlaceholderText("字段 (如 $close,$open,$high,$low,$volume)");
     sig_fields->setStyleSheet(input_ss());
     text_inputs_["ls_fields"] = sig_fields;
-    sigvl->addWidget(build_input_row("Fields", sig_fields, sig_tab));
+    sigvl->addWidget(build_input_row("字段", sig_fields, sig_tab));
     auto* sig_start = new QLineEdit(sig_tab);
-    sig_start->setPlaceholderText("Start date (YYYY-MM-DD)");
+    sig_start->setPlaceholderText("开始日期 (YYYY-MM-DD)");
     sig_start->setStyleSheet(input_ss());
     text_inputs_["ls_start"] = sig_start;
-    sigvl->addWidget(build_input_row("Start Date", sig_start, sig_tab));
+    sigvl->addWidget(build_input_row("开始日期", sig_start, sig_tab));
     auto* sig_end = new QLineEdit(sig_tab);
-    sig_end->setPlaceholderText("End date (YYYY-MM-DD)");
+    sig_end->setPlaceholderText("结束日期 (YYYY-MM-DD)");
     sig_end->setStyleSheet(input_ss());
     text_inputs_["ls_end"] = sig_end;
-    sigvl->addWidget(build_input_row("End Date", sig_end, sig_tab));
-    auto* sig_run = make_run_button("FETCH SIGNALS", sig_tab);
+    sigvl->addWidget(build_input_row("结束日期", sig_end, sig_tab));
+    auto* sig_run = make_run_button("获取信号", sig_tab);
     connect(sig_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Fetching...");
+        status_label_->setText("正在获取...");
         QJsonObject params;
         QJsonArray instr;
         for (auto& s : text_inputs_["ls_instruments"]->text().split(','))
@@ -4159,7 +4159,7 @@ QWidget* QuantModulePanel::build_live_signals_panel() {
     });
     sigvl->addWidget(sig_run);
     sigvl->addStretch();
-    tabs->addTab(sig_tab, "Signal Data");
+    tabs->addTab(sig_tab, "信号数据");
 
     // ── Factor Analysis ──
     auto* fa_tab = new QWidget(this);
@@ -4167,23 +4167,23 @@ QWidget* QuantModulePanel::build_live_signals_panel() {
     favl->setContentsMargins(12, 12, 12, 12);
     favl->setSpacing(8);
     auto* fa_instr = new QLineEdit(fa_tab);
-    fa_instr->setPlaceholderText("Instruments (comma-separated)");
+    fa_instr->setPlaceholderText("标的资产 (逗号分隔)");
     fa_instr->setStyleSheet(input_ss());
     text_inputs_["ls_fa_instr"] = fa_instr;
-    favl->addWidget(build_input_row("Instruments", fa_instr, fa_tab));
+    favl->addWidget(build_input_row("标的资产", fa_instr, fa_tab));
     auto* fa_start = new QLineEdit(fa_tab);
-    fa_start->setPlaceholderText("Start date (YYYY-MM-DD)");
+    fa_start->setPlaceholderText("开始日期 (YYYY-MM-DD)");
     fa_start->setStyleSheet(input_ss());
     text_inputs_["ls_fa_start"] = fa_start;
-    favl->addWidget(build_input_row("Start Date", fa_start, fa_tab));
+    favl->addWidget(build_input_row("开始日期", fa_start, fa_tab));
     auto* fa_end = new QLineEdit(fa_tab);
-    fa_end->setPlaceholderText("End date (YYYY-MM-DD)");
+    fa_end->setPlaceholderText("结束日期 (YYYY-MM-DD)");
     fa_end->setStyleSheet(input_ss());
     text_inputs_["ls_fa_end"] = fa_end;
-    favl->addWidget(build_input_row("End Date", fa_end, fa_tab));
-    auto* fa_run = make_run_button("RUN FACTOR ANALYSIS", fa_tab);
+    favl->addWidget(build_input_row("结束日期", fa_end, fa_tab));
+    auto* fa_run = make_run_button("运行因子分析", fa_tab);
     connect(fa_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Analyzing...");
+        status_label_->setText("正在分析...");
         QJsonObject params;
         QJsonArray instr;
         for (auto& s : text_inputs_["ls_fa_instr"]->text().split(','))
@@ -4198,7 +4198,7 @@ QWidget* QuantModulePanel::build_live_signals_panel() {
     });
     favl->addWidget(fa_run);
     favl->addStretch();
-    tabs->addTab(fa_tab, "Factor Analysis");
+    tabs->addTab(fa_tab, "因子分析");
 
     // ── Feature Importance ──
     auto* fi_tab = new QWidget(this);
@@ -4206,20 +4206,20 @@ QWidget* QuantModulePanel::build_live_signals_panel() {
     fivl->setContentsMargins(12, 12, 12, 12);
     fivl->setSpacing(8);
     auto* fi_model = new QLineEdit(fi_tab);
-    fi_model->setPlaceholderText("Trained model ID");
+    fi_model->setPlaceholderText("已训练模型 ID");
     fi_model->setStyleSheet(input_ss());
     text_inputs_["ls_fi_model"] = fi_model;
-    fivl->addWidget(build_input_row("Model ID", fi_model, fi_tab));
-    auto* fi_run = make_run_button("GET FEATURE IMPORTANCE", fi_tab);
+    fivl->addWidget(build_input_row("模型 ID", fi_model, fi_tab));
+    auto* fi_run = make_run_button("获取特征重要性", fi_tab);
     connect(fi_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         QJsonObject params;
         params["model_id"] = text_inputs_["ls_fi_model"]->text().trimmed();
         AIQuantLabService::instance().signals_get_feature_importance(params);
     });
     fivl->addWidget(fi_run);
     fivl->addStretch();
-    tabs->addTab(fi_tab, "Feature Importance");
+    tabs->addTab(fi_tab, "特征重要性");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -4244,21 +4244,21 @@ QWidget* QuantModulePanel::build_online_learning_panel() {
     auto* mtvl = new QVBoxLayout(models_tab);
     mtvl->setContentsMargins(12, 12, 12, 12);
     mtvl->setSpacing(8);
-    auto* mt_info = new QLabel("Incrementally trained models that update on each new data point.", models_tab);
+    auto* mt_info = new QLabel("在每个新数据点上更新的增量训练模型。", models_tab);
     mt_info->setWordWrap(true);
     mt_info->setStyleSheet(QString("color:%1; font-size:%2px; font-family:%3;")
                                .arg(ui::colors::TEXT_SECONDARY())
                                .arg(ui::fonts::SMALL)
                                .arg(ui::fonts::DATA_FAMILY));
     mtvl->addWidget(mt_info);
-    auto* mt_list = make_run_button("LIST ALL MODELS", models_tab);
+    auto* mt_list = make_run_button("列出所有模型", models_tab);
     connect(mt_list, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         AIQuantLabService::instance().online_list_models();
     });
     mtvl->addWidget(mt_list);
     mtvl->addStretch();
-    tabs->addTab(models_tab, "Models");
+    tabs->addTab(models_tab, "模型");
 
     // ── Create Model ──
     auto* create_tab = new QWidget(this);
@@ -4267,17 +4267,17 @@ QWidget* QuantModulePanel::build_online_learning_panel() {
     ctvl->setSpacing(8);
     auto* ol_model_type = new QComboBox(create_tab);
     ol_model_type->setStyleSheet(combo_ss());
-    ol_model_type->addItems({"linear", "bayesian_linear", "pa", "tree", "adaptive_tree", "bagging", "ewa", "srp"});
+    ol_model_type->addItems({"linear (线性)", "bayesian_linear (贝叶斯线性)", "pa (被动攻击)", "tree (树)", "adaptive_tree (自适应树)", "bagging (装袋)", "ewa (指数加权平均)", "srp"});
     combo_inputs_["ol_model_type"] = ol_model_type;
-    ctvl->addWidget(build_input_row("Model Type", ol_model_type, create_tab));
+    ctvl->addWidget(build_input_row("模型类型", ol_model_type, create_tab));
     auto* ol_model_id = new QLineEdit(create_tab);
-    ol_model_id->setPlaceholderText("Model ID (optional, auto-generated if blank)");
+    ol_model_id->setPlaceholderText("模型 ID (可选，若为空则自动生成)");
     ol_model_id->setStyleSheet(input_ss());
     text_inputs_["ol_model_id"] = ol_model_id;
-    ctvl->addWidget(build_input_row("Model ID", ol_model_id, create_tab));
-    auto* ol_create = make_run_button("CREATE MODEL", create_tab);
+    ctvl->addWidget(build_input_row("模型 ID", ol_model_id, create_tab));
+    auto* ol_create = make_run_button("创建模型", create_tab);
     connect(ol_create, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Creating...");
+        status_label_->setText("正在创建...");
         QJsonObject params;
         params["model_type"] = combo_inputs_["ol_model_type"]->currentText();
         auto mid = text_inputs_["ol_model_id"]->text().trimmed();
@@ -4287,7 +4287,7 @@ QWidget* QuantModulePanel::build_online_learning_panel() {
     });
     ctvl->addWidget(ol_create);
     ctvl->addStretch();
-    tabs->addTab(create_tab, "Create Model");
+    tabs->addTab(create_tab, "创建模型");
 
     // ── Incremental Train ──
     auto* train_tab = new QWidget(this);
@@ -4295,23 +4295,23 @@ QWidget* QuantModulePanel::build_online_learning_panel() {
     ttvl->setContentsMargins(12, 12, 12, 12);
     ttvl->setSpacing(8);
     auto* ol_tid = new QLineEdit(train_tab);
-    ol_tid->setPlaceholderText("Model ID");
+    ol_tid->setPlaceholderText("模型 ID");
     ol_tid->setStyleSheet(input_ss());
     text_inputs_["ol_train_id"] = ol_tid;
-    ttvl->addWidget(build_input_row("Model ID", ol_tid, train_tab));
+    ttvl->addWidget(build_input_row("模型 ID", ol_tid, train_tab));
     auto* ol_feats = new QLineEdit(train_tab);
     ol_feats->setPlaceholderText(R"({"close":94.0,"volume":1000000,"rsi":55.0})");
     ol_feats->setStyleSheet(input_ss());
     text_inputs_["ol_features"] = ol_feats;
-    ttvl->addWidget(build_input_row("Features (JSON)", ol_feats, train_tab));
+    ttvl->addWidget(build_input_row("特征 (JSON)", ol_feats, train_tab));
     auto* ol_target = new QLineEdit(train_tab);
-    ol_target->setPlaceholderText("Target value (e.g. 0.02)");
+    ol_target->setPlaceholderText("目标值 (如 0.02)");
     ol_target->setStyleSheet(input_ss());
     text_inputs_["ol_target"] = ol_target;
-    ttvl->addWidget(build_input_row("Target", ol_target, train_tab));
-    auto* ol_train = make_run_button("TRAIN ONE STEP", train_tab);
+    ttvl->addWidget(build_input_row("目标值", ol_target, train_tab));
+    auto* ol_train = make_run_button("训练一步", train_tab);
     connect(ol_train, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Training...");
+        status_label_->setText("正在训练...");
         QJsonObject params;
         params["model_id"] = text_inputs_["ol_train_id"]->text().trimmed();
         auto doc = QJsonDocument::fromJson(text_inputs_["ol_features"]->text().toUtf8());
@@ -4322,7 +4322,7 @@ QWidget* QuantModulePanel::build_online_learning_panel() {
     });
     ttvl->addWidget(ol_train);
     ttvl->addStretch();
-    tabs->addTab(train_tab, "Incremental Train");
+    tabs->addTab(train_tab, "增量训练");
 
     // ── Predict ──
     auto* pred_tab = new QWidget(this);
@@ -4330,18 +4330,18 @@ QWidget* QuantModulePanel::build_online_learning_panel() {
     predvl->setContentsMargins(12, 12, 12, 12);
     predvl->setSpacing(8);
     auto* ol_pid = new QLineEdit(pred_tab);
-    ol_pid->setPlaceholderText("Model ID");
+    ol_pid->setPlaceholderText("模型 ID");
     ol_pid->setStyleSheet(input_ss());
     text_inputs_["ol_pred_id"] = ol_pid;
-    predvl->addWidget(build_input_row("Model ID", ol_pid, pred_tab));
+    predvl->addWidget(build_input_row("模型 ID", ol_pid, pred_tab));
     auto* ol_pfeats = new QLineEdit(pred_tab);
     ol_pfeats->setPlaceholderText(R"({"close":95.0,"volume":1100000,"rsi":58.0})");
     ol_pfeats->setStyleSheet(input_ss());
     text_inputs_["ol_pred_feats"] = ol_pfeats;
-    predvl->addWidget(build_input_row("Features (JSON)", ol_pfeats, pred_tab));
-    auto* ol_pred = make_run_button("PREDICT", pred_tab);
+    predvl->addWidget(build_input_row("特征 (JSON)", ol_pfeats, pred_tab));
+    auto* ol_pred = make_run_button("预测", pred_tab);
     connect(ol_pred, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Predicting...");
+        status_label_->setText("正在预测...");
         QJsonObject params;
         params["model_id"] = text_inputs_["ol_pred_id"]->text().trimmed();
         auto doc = QJsonDocument::fromJson(text_inputs_["ol_pred_feats"]->text().toUtf8());
@@ -4350,16 +4350,16 @@ QWidget* QuantModulePanel::build_online_learning_panel() {
         AIQuantLabService::instance().online_predict(params);
     });
     predvl->addWidget(ol_pred);
-    auto* ol_perf = make_run_button("GET PERFORMANCE", pred_tab);
+    auto* ol_perf = make_run_button("获取性能", pred_tab);
     connect(ol_perf, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         QJsonObject params;
         params["model_id"] = text_inputs_["ol_pred_id"]->text().trimmed();
         AIQuantLabService::instance().online_performance(params);
     });
     predvl->addWidget(ol_perf);
     predvl->addStretch();
-    tabs->addTab(pred_tab, "Predict");
+    tabs->addTab(pred_tab, "预测");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -4384,32 +4384,32 @@ QWidget* QuantModulePanel::build_meta_learning_panel() {
     auto* selvl = new QVBoxLayout(sel_tab);
     selvl->setContentsMargins(12, 12, 12, 12);
     selvl->setSpacing(8);
-    auto* sel_info = new QLabel("Automatically select the best model from a set of candidates.", sel_tab);
+    auto* sel_info = new QLabel("从一组候选模型中自动选择最佳模型。", sel_tab);
     sel_info->setWordWrap(true);
     sel_info->setStyleSheet(QString("color:%1; font-size:%2px; font-family:%3;")
                                 .arg(ui::colors::TEXT_SECONDARY())
                                 .arg(ui::fonts::SMALL)
                                 .arg(ui::fonts::DATA_FAMILY));
     selvl->addWidget(sel_info);
-    auto* sel_list_btn = make_run_button("LIST AVAILABLE MODELS", sel_tab);
+    auto* sel_list_btn = make_run_button("列出可用模型", sel_tab);
     connect(sel_list_btn, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         AIQuantLabService::instance().meta_list_models();
     });
     selvl->addWidget(sel_list_btn);
     auto* sel_models = new QLineEdit(sel_tab);
-    sel_models->setPlaceholderText("Model IDs (comma-separated, e.g. lightgbm,xgboost,random_forest)");
+    sel_models->setPlaceholderText("模型 ID (逗号分隔，如 lightgbm,xgboost,random_forest)");
     sel_models->setStyleSheet(input_ss());
     text_inputs_["ml_sel_models"] = sel_models;
-    selvl->addWidget(build_input_row("Models", sel_models, sel_tab));
+    selvl->addWidget(build_input_row("模型", sel_models, sel_tab));
     auto* sel_task = new QComboBox(sel_tab);
     sel_task->setStyleSheet(combo_ss());
-    sel_task->addItems({"regression", "classification"});
+    sel_task->addItems({"regression (回归)", "classification (分类)"});
     combo_inputs_["ml_sel_task"] = sel_task;
-    selvl->addWidget(build_input_row("Task Type", sel_task, sel_tab));
-    auto* sel_run = make_run_button("RUN MODEL SELECTION", sel_tab);
+    selvl->addWidget(build_input_row("任务类型", sel_task, sel_tab));
+    auto* sel_run = make_run_button("运行模型选择", sel_tab);
     connect(sel_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Selecting...");
+        status_label_->setText("正在选择...");
         QJsonObject params;
         QJsonArray model_ids;
         for (auto& s : text_inputs_["ml_sel_models"]->text().split(','))
@@ -4421,7 +4421,7 @@ QWidget* QuantModulePanel::build_meta_learning_panel() {
     });
     selvl->addWidget(sel_run);
     selvl->addStretch();
-    tabs->addTab(sel_tab, "Model Selection");
+    tabs->addTab(sel_tab, "模型选择");
 
     // ── Ensemble ──
     auto* ens_tab = new QWidget(this);
@@ -4429,18 +4429,18 @@ QWidget* QuantModulePanel::build_meta_learning_panel() {
     ensvl->setContentsMargins(12, 12, 12, 12);
     ensvl->setSpacing(8);
     auto* ens_keys = new QLineEdit(ens_tab);
-    ens_keys->setPlaceholderText("Model keys (from selection output, comma-separated)");
+    ens_keys->setPlaceholderText("模型键 (来自选择输出，逗号分隔)");
     ens_keys->setStyleSheet(input_ss());
     text_inputs_["ml_ens_keys"] = ens_keys;
-    ensvl->addWidget(build_input_row("Model Keys", ens_keys, ens_tab));
+    ensvl->addWidget(build_input_row("模型键", ens_keys, ens_tab));
     auto* ens_method = new QComboBox(ens_tab);
     ens_method->setStyleSheet(combo_ss());
-    ens_method->addItems({"voting", "stacking", "averaging"});
+    ens_method->addItems({"voting (投票)", "stacking (堆叠)", "averaging (平均)"});
     combo_inputs_["ml_ens_method"] = ens_method;
-    ensvl->addWidget(build_input_row("Ensemble Method", ens_method, ens_tab));
-    auto* ens_run = make_run_button("CREATE ENSEMBLE", ens_tab);
+    ensvl->addWidget(build_input_row("集成方法", ens_method, ens_tab));
+    auto* ens_run = make_run_button("创建集成模型", ens_tab);
     connect(ens_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Creating ensemble...");
+        status_label_->setText("正在创建集成...");
         QJsonObject params;
         QJsonArray keys;
         for (auto& s : text_inputs_["ml_ens_keys"]->text().split(','))
@@ -4452,7 +4452,7 @@ QWidget* QuantModulePanel::build_meta_learning_panel() {
     });
     ensvl->addWidget(ens_run);
     ensvl->addStretch();
-    tabs->addTab(ens_tab, "Ensemble");
+    tabs->addTab(ens_tab, "集成学习");
 
     // ── Hyperparameter Tuning ──
     auto* tune_tab = new QWidget(this);
@@ -4463,20 +4463,20 @@ QWidget* QuantModulePanel::build_meta_learning_panel() {
     tune_model->setStyleSheet(combo_ss());
     tune_model->addItems({"lightgbm", "xgboost", "random_forest", "catboost"});
     combo_inputs_["ml_tune_model"] = tune_model;
-    tunevl->addWidget(build_input_row("Model", tune_model, tune_tab));
+    tunevl->addWidget(build_input_row("模型", tune_model, tune_tab));
     auto* tune_grid = new QLineEdit(tune_tab);
     tune_grid->setPlaceholderText(R"({"n_estimators":[50,100,200],"max_depth":[3,5,7]})");
     tune_grid->setStyleSheet(input_ss());
     text_inputs_["ml_tune_grid"] = tune_grid;
-    tunevl->addWidget(build_input_row("Param Grid (JSON)", tune_grid, tune_tab));
+    tunevl->addWidget(build_input_row("参数网格 (JSON)", tune_grid, tune_tab));
     auto* tune_method = new QComboBox(tune_tab);
     tune_method->setStyleSheet(combo_ss());
-    tune_method->addItems({"grid", "random"});
+    tune_method->addItems({"grid (网格搜索)", "random (随机搜索)"});
     combo_inputs_["ml_tune_method"] = tune_method;
-    tunevl->addWidget(build_input_row("Search Method", tune_method, tune_tab));
-    auto* tune_run = make_run_button("TUNE HYPERPARAMETERS", tune_tab);
+    tunevl->addWidget(build_input_row("搜索方法", tune_method, tune_tab));
+    auto* tune_run = make_run_button("调优超参数", tune_tab);
     connect(tune_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Tuning...");
+        status_label_->setText("正在调优...");
         QJsonObject params;
         params["model_id"] = combo_inputs_["ml_tune_model"]->currentText();
         auto doc = QJsonDocument::fromJson(text_inputs_["ml_tune_grid"]->text().toUtf8());
@@ -4486,14 +4486,14 @@ QWidget* QuantModulePanel::build_meta_learning_panel() {
         AIQuantLabService::instance().meta_tune_hyperparameters(params);
     });
     tunevl->addWidget(tune_run);
-    auto* results_btn = make_run_button("GET ALL RESULTS", tune_tab);
+    auto* results_btn = make_run_button("获取所有结果", tune_tab);
     connect(results_btn, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading...");
+        status_label_->setText("正在加载...");
         AIQuantLabService::instance().meta_get_results();
     });
     tunevl->addWidget(results_btn);
     tunevl->addStretch();
-    tabs->addTab(tune_tab, "Hyperparameter Tuning");
+    tabs->addTab(tune_tab, "超参数调优");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;
@@ -4578,9 +4578,9 @@ QWidget* QuantModulePanel::build_hft_panel() {
     // Controls row
     auto* ob_ctrl = new QHBoxLayout;
     ob_ctrl->setSpacing(8);
-    auto* ob_fetch = make_run_button("FETCH LIVE ORDER BOOK", ob_tab);
+    auto* ob_fetch = make_run_button("获取实时订单簿", ob_tab);
     connect(ob_fetch, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Fetching live order book...");
+        status_label_->setText("正在获取实时订单簿...");
         QJsonObject p;
         p["exchange"] = combo_inputs_["hft_exchange"]->currentText();
         p["symbol"]   = text_inputs_["hft_symbol"]->text().trimmed();
@@ -4614,11 +4614,11 @@ QWidget* QuantModulePanel::build_hft_panel() {
         return {card, v};
     };
 
-    auto [mid_card, mid_val]         = make_card("MID PRICE", ob_tab);
-    auto [spread_card, spread_val]   = make_card("SPREAD BPS", ob_tab);
-    auto [obi_card, obi_val]         = make_card("ORDER BOOK IMBALANCE", ob_tab);
-    auto [pressure_card, pres_val]   = make_card("PRESSURE", ob_tab);
-    auto [wmid_card, wmid_val]       = make_card("WEIGHTED MID", ob_tab);
+    auto [mid_card, mid_val]         = make_card("中间价", ob_tab);
+    auto [spread_card, spread_val]   = make_card("价差 (BPS)", ob_tab);
+    auto [obi_card, obi_val]         = make_card("订单簿失衡 (OBI)", ob_tab);
+    auto [pressure_card, pres_val]   = make_card("压力值", ob_tab);
+    auto [wmid_card, wmid_val]       = make_card("加权中间价", ob_tab);
 
     // Store for result update
     mid_val->setObjectName("hft_mid_val");
@@ -4645,14 +4645,14 @@ QWidget* QuantModulePanel::build_hft_panel() {
     auto* bids_vl = new QVBoxLayout(bids_frame);
     bids_vl->setContentsMargins(0, 0, 0, 0);
     bids_vl->setSpacing(0);
-    auto* bids_hdr = new QLabel("  BIDS", bids_frame);
+    auto* bids_hdr = new QLabel("  买单 (BIDS)", bids_frame);
     bids_hdr->setFixedHeight(24);
     bids_hdr->setStyleSheet(QString("color:%1; font-size:9px; font-weight:700; letter-spacing:1px;"
                                     "background:%2; border-bottom:1px solid %3;")
                                 .arg(ui::colors::POSITIVE(), ui::colors::BG_SURFACE(), ui::colors::BORDER_DIM()));
     auto* bid_table = new QTableWidget(10, 3, bids_frame);
     bid_table->setObjectName("hft_bid_table");
-    bid_table->setHorizontalHeaderLabels({"Price", "Size", "Cumulative"});
+    bid_table->setHorizontalHeaderLabels({"价格", "数量", "累计"});
     bid_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     bid_table->verticalHeader()->setVisible(false);
     bid_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -4674,14 +4674,14 @@ QWidget* QuantModulePanel::build_hft_panel() {
     auto* asks_vl = new QVBoxLayout(asks_frame);
     asks_vl->setContentsMargins(0, 0, 0, 0);
     asks_vl->setSpacing(0);
-    auto* asks_hdr = new QLabel("  ASKS", asks_frame);
+    auto* asks_hdr = new QLabel("  卖单 (ASKS)", asks_frame);
     asks_hdr->setFixedHeight(24);
     asks_hdr->setStyleSheet(QString("color:%1; font-size:9px; font-weight:700; letter-spacing:1px;"
                                     "background:%2; border-bottom:1px solid %3;")
                                 .arg(ui::colors::NEGATIVE(), ui::colors::BG_SURFACE(), ui::colors::BORDER_DIM()));
     auto* ask_table = new QTableWidget(10, 3, asks_frame);
     ask_table->setObjectName("hft_ask_table");
-    ask_table->setHorizontalHeaderLabels({"Price", "Size", "Cumulative"});
+    ask_table->setHorizontalHeaderLabels({"价格", "数量", "累计"});
     ask_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ask_table->verticalHeader()->setVisible(false);
     ask_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -4694,7 +4694,7 @@ QWidget* QuantModulePanel::build_hft_panel() {
     books_row->addWidget(bids_frame, 1);
     books_row->addWidget(asks_frame, 1);
     ob_root->addLayout(books_row, 1);
-    tabs->addTab(ob_tab, "Live Order Book");
+    tabs->addTab(ob_tab, "实时订单簿");
 
     // ════════════════════════════════════════════════════════
     // TAB 2 — MICROSTRUCTURE (Market Making + Toxic Flow)
@@ -4712,7 +4712,7 @@ QWidget* QuantModulePanel::build_hft_panel() {
     mm_vl->setContentsMargins(12, 10, 12, 10);
     mm_vl->setSpacing(8);
 
-    auto* mm_title = new QLabel("MARKET MAKING  —  Avellaneda-Stoikov Model", mm_section);
+    auto* mm_title = new QLabel("做市商策略 — Avellaneda-Stoikov 模型", mm_section);
     mm_title->setStyleSheet(QString("color:%1; font-size:10px; font-weight:700; letter-spacing:0.5px; background:transparent;")
                                 .arg(accent));
     mm_vl->addWidget(mm_title);
@@ -4722,18 +4722,18 @@ QWidget* QuantModulePanel::build_hft_panel() {
     auto* inv_spin = make_double_spin(-1000, 1000, 0.0, 4, " units", mm_section);
     int_inputs_["hft_inventory"] = nullptr;
     double_inputs_["hft_inventory_d"] = inv_spin;
-    mm_params->addWidget(build_input_row("Inventory", inv_spin, mm_section));
+    mm_params->addWidget(build_input_row("库存", inv_spin, mm_section));
     auto* spread_spin = make_double_spin(1.0, 10.0, 1.5, 2, "×", mm_section);
     double_inputs_["hft_spread_mult"] = spread_spin;
-    mm_params->addWidget(build_input_row("Spread Mult", spread_spin, mm_section));
+    mm_params->addWidget(build_input_row("价差倍数", spread_spin, mm_section));
     auto* risk_spin = make_double_spin(0.001, 0.1, 0.01, 3, "", mm_section);
     double_inputs_["hft_risk_aversion"] = risk_spin;
-    mm_params->addWidget(build_input_row("Risk Aversion", risk_spin, mm_section));
+    mm_params->addWidget(build_input_row("风险厌恶", risk_spin, mm_section));
     mm_vl->addLayout(mm_params);
 
-    auto* mm_run = make_run_button("CALCULATE OPTIMAL QUOTES", mm_section);
+    auto* mm_run = make_run_button("计算最佳报价", mm_section);
     connect(mm_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Fetching live data + computing quotes...");
+        status_label_->setText("正在获取实时数据并计算报价...");
         QJsonObject p;
         p["exchange"]         = combo_inputs_["hft_exchange"]->currentText();
         p["symbol"]           = text_inputs_["hft_symbol"]->text().trimmed();
@@ -4747,11 +4747,11 @@ QWidget* QuantModulePanel::build_hft_panel() {
     // MM result cards
     auto* mm_results = new QHBoxLayout;
     mm_results->setSpacing(6);
-    auto [bid_card, bid_val2] = make_card("BID QUOTE", mm_section);
-    auto [ask_card, ask_val2] = make_card("ASK QUOTE", mm_section);
-    auto [qs_card, qs_val]    = make_card("QUOTED SPREAD BPS", mm_section);
-    auto [edge_card, edge_val] = make_card("EDGE/SIDE BPS", mm_section);
-    auto [rec_card, rec_val]  = make_card("RECOMMENDATION", mm_section);
+    auto [bid_card, bid_val2] = make_card("买入报价", mm_section);
+    auto [ask_card, ask_val2] = make_card("卖出报价", mm_section);
+    auto [qs_card, qs_val]    = make_card("双边价差 (BPS)", mm_section);
+    auto [edge_card, edge_val] = make_card("获利边际 (BPS)", mm_section);
+    auto [rec_card, rec_val]  = make_card("操作建议", mm_section);
     bid_val2->setObjectName("hft_mm_bid");
     ask_val2->setObjectName("hft_mm_ask");
     qs_val->setObjectName("hft_mm_qspread");
@@ -4772,7 +4772,7 @@ QWidget* QuantModulePanel::build_hft_panel() {
     tox_vl->setContentsMargins(12, 10, 12, 10);
     tox_vl->setSpacing(8);
 
-    auto* tox_title = new QLabel("TOXIC FLOW DETECTION  —  PIN Score Model", tox_section);
+    auto* tox_title = new QLabel("毒性流检测 — PIN 评分模型", tox_section);
     tox_title->setStyleSheet(QString("color:%1; font-size:10px; font-weight:700; letter-spacing:0.5px; background:transparent;")
                                  .arg(accent));
     tox_vl->addWidget(tox_title);
@@ -4784,13 +4784,13 @@ QWidget* QuantModulePanel::build_hft_panel() {
     tox_limit->setCurrentIndex(2);
     tox_limit->setStyleSheet(combo_ss());
     combo_inputs_["hft_tox_limit"] = tox_limit;
-    tox_params->addWidget(build_input_row("Trade History", tox_limit, tox_section));
+    tox_params->addWidget(build_input_row("成交历史", tox_limit, tox_section));
     tox_params->addStretch();
     tox_vl->addLayout(tox_params);
 
-    auto* tox_run = make_run_button("DETECT TOXIC FLOW", tox_section);
+    auto* tox_run = make_run_button("检测毒性流", tox_section);
     connect(tox_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Fetching trades + analyzing flow...");
+        status_label_->setText("正在获取成交记录并分析流量...");
         QJsonObject p;
         p["exchange"] = combo_inputs_["hft_exchange"]->currentText();
         p["symbol"]   = text_inputs_["hft_symbol"]->text().trimmed();
@@ -4801,11 +4801,11 @@ QWidget* QuantModulePanel::build_hft_panel() {
 
     auto* tox_results = new QHBoxLayout;
     tox_results->setSpacing(6);
-    auto [pin_card, pin_val]      = make_card("PIN SCORE (0-100)", tox_section);
-    auto [vol_card, vol_val]      = make_card("VOLUME IMBALANCE", tox_section);
-    auto [impact_card, impact_val] = make_card("PRICE IMPACT BPS", tox_section);
-    auto [class_card, class_val]  = make_card("CLASSIFICATION", tox_section);
-    auto [action_card, action_val] = make_card("RECOMMENDED ACTION", tox_section);
+    auto [pin_card, pin_val]      = make_card("PIN 评分 (0-100)", tox_section);
+    auto [vol_card, vol_val]      = make_card("成交量失衡", tox_section);
+    auto [impact_card, impact_val] = make_card("价格影响 (BPS)", tox_section);
+    auto [class_card, class_val]  = make_card("检测分类", tox_section);
+    auto [action_card, action_val] = make_card("建议操作", tox_section);
     pin_val->setObjectName("hft_tox_pin");
     vol_val->setObjectName("hft_tox_vol");
     impact_val->setObjectName("hft_tox_impact");
@@ -4819,7 +4819,7 @@ QWidget* QuantModulePanel::build_hft_panel() {
     tox_vl->addLayout(tox_results);
     micro_root->addWidget(tox_section);
     micro_root->addStretch();
-    tabs->addTab(micro_tab, "Microstructure");
+    tabs->addTab(micro_tab, "市场微观结构");
 
     // ════════════════════════════════════════════════════════
     // TAB 3 — SLIPPAGE ESTIMATOR
@@ -4836,13 +4836,13 @@ QWidget* QuantModulePanel::build_hft_panel() {
     slip_vl->setContentsMargins(12, 10, 12, 10);
     slip_vl->setSpacing(8);
 
-    auto* slip_title = new QLabel("SLIPPAGE ESTIMATOR  —  Real Order Book Walk", slip_section);
+    auto* slip_title = new QLabel("滑点估算器 — 真实订单簿深度测试", slip_section);
     slip_title->setStyleSheet(QString("color:%1; font-size:10px; font-weight:700; letter-spacing:0.5px; background:transparent;")
                                   .arg(accent));
     slip_vl->addWidget(slip_title);
 
     auto* slip_desc = new QLabel(
-        "Walks the live order book level-by-level to compute actual fill price and slippage for a given order size.", slip_section);
+        "逐层模拟实时订单簿的成交路径，计算给定订单规模下的实际成交价格和滑点。", slip_section);
     slip_desc->setWordWrap(true);
     slip_desc->setStyleSheet(QString("color:%1; font-size:10px; background:transparent;").arg(ui::colors::TEXT_SECONDARY()));
     slip_vl->addWidget(slip_desc);
@@ -4874,11 +4874,11 @@ QWidget* QuantModulePanel::build_hft_panel() {
     // Slippage result cards
     auto* slip_results = new QHBoxLayout;
     slip_results->setSpacing(6);
-    auto [avgp_card, avgp_val]     = make_card("AVG FILL PRICE", slip_section);
-    auto [slbps_card, slbps_val]   = make_card("SLIPPAGE BPS", slip_section);
-    auto [cost_card, cost_val]     = make_card("TOTAL COST", slip_section);
-    auto [fills_card, fills_val]   = make_card("FILL LEVELS", slip_section);
-    auto [viable_card, viable_val] = make_card("VIABILITY", slip_section);
+    auto [avgp_card, avgp_val]     = make_card("平均成交价", slip_section);
+    auto [slbps_card, slbps_val]   = make_card("滑点 (BPS)", slip_section);
+    auto [cost_card, cost_val]     = make_card("总成本", slip_section);
+    auto [fills_card, fills_val]   = make_card("成交层级", slip_section);
+    auto [viable_card, viable_val] = make_card("可行性", slip_section);
     avgp_val->setObjectName("hft_slip_avgp");
     slbps_val->setObjectName("hft_slip_bps");
     cost_val->setObjectName("hft_slip_cost");
@@ -4894,7 +4894,7 @@ QWidget* QuantModulePanel::build_hft_panel() {
     // Fills table
     auto* fills_table = new QTableWidget(0, 3, slip_section);
     fills_table->setObjectName("hft_slip_table");
-    fills_table->setHorizontalHeaderLabels({"Fill Price", "Quantity", "Cost"});
+    fills_table->setHorizontalHeaderLabels({"成交价", "数量", "成本"});
     fills_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     fills_table->verticalHeader()->setVisible(false);
     fills_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -4912,7 +4912,7 @@ QWidget* QuantModulePanel::build_hft_panel() {
 
     slip_root->addWidget(slip_section);
     slip_root->addStretch();
-    tabs->addTab(slip_tab, "Slippage Estimator");
+    tabs->addTab(slip_tab, "滑点估算器");
 
     // ── Full Analyze button (bottom bar) ─────────────────────────────────────
     auto* bottom_bar = new QWidget(w);
@@ -4920,10 +4920,10 @@ QWidget* QuantModulePanel::build_hft_panel() {
                                   .arg(ui::colors::BG_SURFACE(), ui::colors::BORDER_DIM()));
     auto* bot_hl = new QHBoxLayout(bottom_bar);
     bot_hl->setContentsMargins(12, 6, 12, 6);
-    auto* analyze_btn = make_run_button("⚡ FULL ANALYSIS — FETCH ALL & COMPUTE", bottom_bar);
-    analyze_btn->setToolTip("Fetches live order book + trades, computes book metrics, market making quotes, toxic flow, and slippage in one call");
+    auto* analyze_btn = make_run_button("⚡ 全量分析 — 获取并计算所有指标", bottom_bar);
+    analyze_btn->setToolTip("获取实时订单簿和成交记录，计算账本指标、做市报价、毒性流分析和滑点");
     connect(analyze_btn, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Running full microstructure analysis...");
+        status_label_->setText("正在运行全量微观结构分析报告...");
         QJsonObject p;
         p["exchange"]          = combo_inputs_["hft_exchange"]->currentText();
         p["symbol"]            = text_inputs_["hft_symbol"]->text().trimmed();
@@ -4964,8 +4964,7 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
     ltvl->setSpacing(10);
 
     auto* lt_info = new QLabel(
-        "Schedules are persisted in ~/.fincept/rolling_schedules.json. "
-        "Click Refresh to load the latest state.", list_tab);
+        "计划任务已持久化在 ~/.fincept/rolling_schedules.json。点击刷新以加载最新状态。", list_tab);
     lt_info->setWordWrap(true);
     lt_info->setStyleSheet(QString("color:%1; font-size:11px;").arg(ui::colors::TEXT_SECONDARY()));
     ltvl->addWidget(lt_info);
@@ -4991,13 +4990,13 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
     // We tag the cards container via objectName
     cards_w->setObjectName("rr_cards_container");
 
-    auto* lt_run = make_run_button("REFRESH SCHEDULES", list_tab);
+    auto* lt_run = make_run_button("刷新计划任务", list_tab);
     connect(lt_run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Loading schedules...");
+        status_label_->setText("正在加载计划...");
         AIQuantLabService::instance().rolling_list_schedules();
     });
     ltvl->addWidget(lt_run);
-    tabs->addTab(list_tab, "Schedules");
+    tabs->addTab(list_tab, "计划列表");
 
     // ── Tab 2: Create Schedule ───────────────────────────────────────────────
     auto* create_tab = new QWidget;
@@ -5006,41 +5005,41 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
     ctvl->setSpacing(8);
 
     auto* rr_model_id = new QLineEdit(create_tab);
-    rr_model_id->setPlaceholderText("Unique model ID (e.g. lgbm_sp500)");
+    rr_model_id->setPlaceholderText("唯一的模型 ID (如 lgbm_sp500)");
     rr_model_id->setStyleSheet(input_ss());
     text_inputs_["rr_model_id"] = rr_model_id;
-    ctvl->addWidget(build_input_row("Model ID *", rr_model_id, create_tab));
+    ctvl->addWidget(build_input_row("模型 ID *", rr_model_id, create_tab));
 
     auto* rr_conf = new QLineEdit(create_tab);
-    rr_conf->setPlaceholderText("Optional: path to Qlib YAML config (leave blank for built-in LightGBM+Alpha158)");
+    rr_conf->setPlaceholderText("可选：Qlib YAML 配置路径 (留空则使用内置 LightGBM+Alpha158)");
     rr_conf->setStyleSheet(input_ss());
     text_inputs_["rr_conf_path"] = rr_conf;
-    ctvl->addWidget(build_input_row("Config Path", rr_conf, create_tab));
+    ctvl->addWidget(build_input_row("配置路径", rr_conf, create_tab));
 
     auto* rr_freq = new QComboBox(create_tab);
     rr_freq->setStyleSheet(combo_ss());
-    rr_freq->addItems({"daily", "weekly", "monthly"});
+    rr_freq->addItems({"daily (每日)", "weekly (每周)", "monthly (每月)"});
     combo_inputs_["rr_frequency"] = rr_freq;
-    ctvl->addWidget(build_input_row("Frequency", rr_freq, create_tab));
+    ctvl->addWidget(build_input_row("频率", rr_freq, create_tab));
 
     auto* rr_window = new QLineEdit(create_tab);
-    rr_window->setPlaceholderText("Rolling window in trading days (default: 252)");
+    rr_window->setPlaceholderText("滚动窗口交易日数 (默认: 252)");
     rr_window->setStyleSheet(input_ss());
     text_inputs_["rr_window"] = rr_window;
-    ctvl->addWidget(build_input_row("Window (days)", rr_window, create_tab));
+    ctvl->addWidget(build_input_row("窗口大小 (天)", rr_window, create_tab));
 
     auto* rr_step = new QLineEdit(create_tab);
-    rr_step->setPlaceholderText("Step size between windows (default: 20)");
+    rr_step->setPlaceholderText("窗口步长 (默认: 20)");
     rr_step->setStyleSheet(input_ss());
     text_inputs_["rr_step"] = rr_step;
-    ctvl->addWidget(build_input_row("Step (days)", rr_step, create_tab));
+    ctvl->addWidget(build_input_row("步长 (天)", rr_step, create_tab));
 
     // Region selector
     auto* rr_region = new QComboBox(create_tab);
     rr_region->setStyleSheet(combo_ss());
-    rr_region->addItems({"us", "cn"});
+    rr_region->addItems({"us (美股)", "cn (港 A 股)"});
     combo_inputs_["rr_region"] = rr_region;
-    ctvl->addWidget(build_input_row("Data Region", rr_region, create_tab));
+    ctvl->addWidget(build_input_row("数据区域", rr_region, create_tab));
 
     // Preview + Create buttons side by side
     auto* btn_row = new QWidget(create_tab);
@@ -5048,7 +5047,7 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
     btn_hl->setContentsMargins(0, 4, 0, 0);
     btn_hl->setSpacing(8);
 
-    auto* rr_preview = make_run_button("PREVIEW WINDOWS", btn_row);
+    auto* rr_preview = make_run_button("预览窗口", btn_row);
     rr_preview->setStyleSheet(QString(
         "QPushButton{background:%1;color:%2;border:1px solid %1;border-radius:4px;"
         "font-size:11px;font-weight:700;padding:6px 14px;}"
@@ -5058,10 +5057,10 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
         const QString mid = text_inputs_["rr_model_id"]->text().trimmed();
         const QString cp  = text_inputs_["rr_conf_path"]->text().trimmed();
         if (mid.isEmpty() && cp.isEmpty()) {
-            status_label_->setText("Enter a Model ID or Config Path to preview.");
+            status_label_->setText("请输入模型 ID 或配置路径以进行预览。");
             return;
         }
-        status_label_->setText("Generating preview...");
+        status_label_->setText("正在生成预览...");
         QJsonObject params;
         if (!mid.isEmpty()) params["model_id"] = mid;
         if (!cp.isEmpty())  params["conf_path"] = cp;
@@ -5071,14 +5070,14 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
     });
     btn_hl->addWidget(rr_preview, 1);
 
-    auto* rr_create = make_run_button("CREATE SCHEDULE", btn_row);
+    auto* rr_create = make_run_button("创建计划任务", btn_row);
     connect(rr_create, &QPushButton::clicked, this, [this]() {
         const QString mid = text_inputs_["rr_model_id"]->text().trimmed();
         if (mid.isEmpty()) {
-            status_label_->setText("Model ID is required.");
+            status_label_->setText("必须输入模型 ID。");
             return;
         }
-        status_label_->setText("Creating schedule...");
+        status_label_->setText("正在创建计划任务...");
         QJsonObject params;
         params["model_id"]  = mid;
         params["frequency"] = combo_inputs_["rr_frequency"]->currentText();
@@ -5094,7 +5093,7 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
     btn_hl->addWidget(rr_create, 1);
     ctvl->addWidget(btn_row);
     ctvl->addStretch();
-    tabs->addTab(create_tab, "Create Schedule");
+    tabs->addTab(create_tab, "创建计划");
 
     // ── Tab 3: Execute Retrain ───────────────────────────────────────────────
     auto* retrain_tab = new QWidget;
@@ -5103,17 +5102,16 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
     retrainvl->setSpacing(10);
 
     auto* rt_info = new QLabel(
-        "Executes a full rolling retrain for a scheduled model. Each window trains "
-        "independently and progress is streamed live below.", retrain_tab);
+        "对已计划的模型执行全量滚动再训练。每个窗口独立训练，进度实时显示在下方。", retrain_tab);
     rt_info->setWordWrap(true);
     rt_info->setStyleSheet(QString("color:%1; font-size:11px;").arg(ui::colors::TEXT_SECONDARY()));
     retrainvl->addWidget(rt_info);
 
     auto* rr_exec_id = new QLineEdit(retrain_tab);
-    rr_exec_id->setPlaceholderText("Model ID (must be in Schedules)");
+    rr_exec_id->setPlaceholderText("模型 ID (必须已在计划列表中)");
     rr_exec_id->setStyleSheet(input_ss());
     text_inputs_["rr_exec_id"] = rr_exec_id;
-    retrainvl->addWidget(build_input_row("Model ID *", rr_exec_id, retrain_tab));
+    retrainvl->addWidget(build_input_row("模型 ID *", rr_exec_id, retrain_tab));
 
     // Progress bar
     auto* rr_progress = new QProgressBar(retrain_tab);
@@ -5121,7 +5119,7 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
     rr_progress->setRange(0, 100);
     rr_progress->setValue(0);
     rr_progress->setTextVisible(true);
-    rr_progress->setFormat("Idle");
+    rr_progress->setFormat("空闲");
     rr_progress->setStyleSheet(QString(
         "QProgressBar{background:%1;border:1px solid %2;border-radius:4px;"
         "color:%3;font-size:11px;font-weight:600;text-align:center;height:20px;}"
@@ -5134,32 +5132,32 @@ QWidget* QuantModulePanel::build_rolling_retraining_panel() {
     auto* rr_log = new QTextEdit(retrain_tab);
     rr_log->setObjectName("rr_log");
     rr_log->setReadOnly(true);
-    rr_log->setPlaceholderText("Training progress will stream here...");
+    rr_log->setPlaceholderText("训练进度将在此处实时显示...");
     rr_log->setStyleSheet(output_ss());
     rr_log->setMinimumHeight(140);
     retrainvl->addWidget(rr_log, 1);
 
-    auto* rr_exec = make_run_button("EXECUTE RETRAIN NOW", retrain_tab);
+    auto* rr_exec = make_run_button("立即执行再训练", retrain_tab);
     connect(rr_exec, &QPushButton::clicked, this, [this]() {
         const QString mid = text_inputs_["rr_exec_id"]->text().trimmed();
         if (mid.isEmpty()) {
-            status_label_->setText("Model ID is required.");
+            status_label_->setText("必须输入模型 ID。");
             return;
         }
         // Reset progress UI
         if (auto* pb = this->findChild<QProgressBar*>("rr_progress")) {
             pb->setValue(0);
-            pb->setFormat("Starting...");
+            pb->setFormat("正在启动...");
         }
         if (auto* log = this->findChild<QTextEdit*>("rr_log"))
             log->clear();
-        status_label_->setText("Retraining...");
+        status_label_->setText("正在执行再训练...");
         QJsonObject params;
         params["model_id"] = mid;
         AIQuantLabService::instance().rolling_execute_retrain(params);
     });
     retrainvl->addWidget(rr_exec);
-    tabs->addTab(retrain_tab, "Execute Retrain");
+    tabs->addTab(retrain_tab, "执行重训");
 
     vl->addWidget(tabs, 1);
     results_layout_ = new QVBoxLayout;

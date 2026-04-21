@@ -20,6 +20,10 @@ class AgentService : public QObject
     Q_OBJECT
   public:
     static AgentService& instance();
+    virtual ~AgentService() override = default;
+
+    AgentService(AgentService&&) = delete;
+    AgentService& operator=(AgentService&&) = delete;
 
     // ── Producer interface ──────────────────────────────────────────────────
     QStringList topic_patterns() const override;
@@ -43,19 +47,20 @@ class AgentService : public QObject
     void execute_routed_query(const QString& query, const QJsonObject& config = {}, const QString& session_id = {});
 
     // ── Multi-query & parallel ───────────────────────────────────────────────
-    void execute_multi_query(const QString& query, bool aggregate = true);
+    void execute_multi_query(const QString& query, bool aggregate = true, const QJsonObject& config = {});
 
     // ── Financial workflows ──────────────────────────────────────────────────
     void run_stock_analysis(const QString& symbol, const QJsonObject& config = {});
-    void run_portfolio_rebalancing(const QJsonObject& portfolio_data = {});
-    void run_risk_assessment(const QJsonObject& portfolio_data = {});
-    void run_portfolio_analysis(const QString& analysis_type, const QJsonObject& portfolio_summary = {});
+    void run_portfolio_rebalancing(const QJsonObject& portfolio_data = {}, const QJsonObject& config = {});
+    void run_risk_assessment(const QJsonObject& portfolio_data = {}, const QJsonObject& config = {});
+    void run_portfolio_analysis(const QString& analysis_type, const QJsonObject& portfolio_summary = {},
+                                const QJsonObject& config = {});
 
     // ── Team execution ───────────────────────────────────────────────────────
     QString run_team(const QString& query, const QJsonObject& team_config);
 
     // ── Workflow execution ───────────────────────────────────────────────────
-    QString run_workflow(const QString& workflow_type, const QJsonObject& params = {});
+    QString run_workflow(const QString& workflow_type, const QJsonObject& params = {}, const QJsonObject& config = {});
 
     // ── Planner ──────────────────────────────────────────────────────────────
     QString create_plan(const QString& query, const QJsonObject& config = {});
@@ -93,11 +98,11 @@ class AgentService : public QObject
     void set_active_config(const QString& id);
 
     // ── Cache management ─────────────────────────────────────────────────────
-    void clear_cache();
-    void clear_response_cache();
-    int cached_agent_count() const;
-    QVector<AgentInfo> cached_agents() const;
-    QJsonObject get_cache_stats() const;
+    static void clear_cache();
+    static void clear_response_cache();
+    static int cached_agent_count();
+    static QVector<AgentInfo> cached_agents();
+    static QJsonObject get_cache_stats();
 
   signals:
     void agents_discovered(QVector<AgentInfo> agents, QVector<AgentCategory> categories);
@@ -129,12 +134,12 @@ class AgentService : public QObject
 
     // ── Python execution helpers ─────────────────────────────────────────────
     void run_python_light(const QString& action, const QJsonObject& params,
-                          std::function<void(bool, QJsonObject)> on_result);
+                          const std::function<void(bool, QJsonObject)>& on_result);
     void run_python_stdin(const QString& action, const QJsonObject& params, const QJsonObject& config,
-                          std::function<void(bool, QJsonObject)> on_result);
-    QJsonObject build_api_keys() const;
-    QJsonObject build_payload(const QString& action, const QJsonObject& params = {},
-                              const QJsonObject& config = {}) const;
+                          const std::function<void(bool, QJsonObject)>& on_result);
+    static QJsonObject build_api_keys();
+    static QJsonObject build_payload(const QString& action, const QJsonObject& params = {},
+                                     const QJsonObject& config = {});
 
     // ── Cache TTLs — delegated to CacheManager ───────────────────────────────
     static constexpr int kAgentCacheTtlSec = 5 * 60;
@@ -143,20 +148,26 @@ class AgentService : public QObject
     static constexpr int kSysInfoCacheTtlSec = 10 * 60;
     static constexpr int kResponseCacheTtlSec = 2 * 60;
 
-    QString make_cache_key(const QString& action, const QJsonObject& params) const;
-    bool get_cached_response(const QString& key, QJsonObject& out) const;
-    void set_cached_response(const QString& key, const QJsonObject& data);
+    static QString make_cache_key(const QString& action, const QJsonObject& params);
+    static bool get_cached_response(const QString& key, QJsonObject& out);
+    static void set_cached_response(const QString& key, const QJsonObject& data);
 
     // ── Hub publishing helpers ──────────────────────────────────────────────
     // AgentService is a push-only producer — it publishes run outputs, stream
     // tokens, status, routing, and errors but never pulls on `refresh()`.
     // `agent:output:<run_id>` is retired at run completion to avoid unbounded
     // hub memory growth from disposable per-run topics.
-    void publish_agent_result(const AgentExecutionResult& r, bool final);
-    void publish_agent_token(const QString& run_id, const QString& token);
-    void publish_agent_status(const QString& run_id, const QString& status);
-    void publish_routing_result(const RoutingResult& r);
-    void publish_agent_error(const QString& context, const QString& message);
+    void publish_agent_result(const AgentExecutionResult& r, bool final) const;
+    void publish_agent_token(const QString& run_id, const QString& token) const;
+    void publish_agent_status(const QString& run_id, const QString& status) const;
+    void publish_routing_result(const RoutingResult& r) const;
+    void publish_agent_error(const QString& context, const QString& message) const;
+    static void setup_python_process(QProcess* proc);
+    static AgentInfo parse_agent_info(const QJsonObject& obj);
+    static QString extract_token_content(const QString& s, const QString& prefix);
+    void handle_discovery_json(const QJsonObject& root);
+    void handle_streaming_line(const QString& line, const QString& req_id, QString& accumulated, QString& final_json, bool& done_emitted);
+
     bool hub_registered_ = false;
 };
 

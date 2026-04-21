@@ -81,11 +81,11 @@ CryptoBottomPanel::CryptoBottomPanel(QWidget* parent) : QWidget(parent) {
 
     // Time & Sales
     time_sales_ = new CryptoTimeSales;
-    tabs_->addTab(time_sales_, "T&S");
+    tabs_->addTab(time_sales_, "逐笔成交");
 
     // Depth Chart
     depth_chart_ = new CryptoDepthChart;
-    tabs_->addTab(depth_chart_, "DEPTH");
+    tabs_->addTab(depth_chart_, "深度图");
 
     setup_market_info_tab();
     setup_stats_tab();
@@ -94,28 +94,28 @@ CryptoBottomPanel::CryptoBottomPanel(QWidget* parent) : QWidget(parent) {
 }
 
 void CryptoBottomPanel::setup_positions_tab() {
-    positions_table_ = make_table(7, {"Symbol", "Side", "Qty", "Entry", "Current", "P&L", "Lev"});
-    tabs_->addTab(positions_table_, "POS");
+    positions_table_ = make_table(7, {"代码", "方向", "数量", "入场价", "当前价", "未实现盈亏", "杠杆"});
+    tabs_->addTab(positions_table_, "当前持仓");
 }
 
 void CryptoBottomPanel::setup_orders_tab() {
-    orders_table_ = make_table(7, {"Symbol", "Side", "Type", "Qty", "Price", "Status", ""});
-    tabs_->addTab(orders_table_, "ORD");
+    orders_table_ = make_table(7, {"代码", "方向", "类型", "数量", "价格", "状态", "操作"});
+    tabs_->addTab(orders_table_, "当前委托");
 }
 
 void CryptoBottomPanel::setup_trades_tab() {
-    trades_table_ = make_table(7, {"Symbol", "Side", "Price", "Qty", "Fee", "P&L", "Time"});
-    tabs_->addTab(trades_table_, "HIST");
+    trades_table_ = make_table(7, {"代码", "方向", "价格", "数量", "手续费", "盈亏", "时间"});
+    tabs_->addTab(trades_table_, "历史记录");
 }
 
 void CryptoBottomPanel::setup_my_trades_tab() {
-    my_trades_table_ = make_table(8, {"Symbol", "Side", "Price", "Amount", "Cost", "Fee", "Ccy", "Time"});
-    tabs_->addTab(my_trades_table_, "MY TRADES");
+    my_trades_table_ = make_table(8, {"代码", "方向", "价格", "成交额", "成本", "手续费", "币种", "时间"});
+    tabs_->addTab(my_trades_table_, "我的成交");
 }
 
 void CryptoBottomPanel::setup_fees_tab() {
-    fees_table_ = make_table(3, {"Symbol", "Maker %", "Taker %"});
-    tabs_->addTab(fees_table_, "FEES");
+    fees_table_ = make_table(3, {"代码", "挂单%", "吃单%"});
+    tabs_->addTab(fees_table_, "费率");
 }
 
 void CryptoBottomPanel::setup_market_info_tab() {
@@ -143,15 +143,15 @@ void CryptoBottomPanel::setup_market_info_tab() {
         return val;
     };
 
-    funding_label_ = make_row("FUNDING RATE");
-    mark_label_ = make_row("MARK PRICE");
-    index_label_ = make_row("INDEX PRICE");
-    oi_label_ = make_row("OPEN INTEREST");
-    fees_label_ = make_row("MAKER / TAKER");
-    next_funding_label_ = make_row("NEXT FUNDING");
+    funding_label_ = make_row("资金费率");
+    mark_label_ = make_row("标记价格");
+    index_label_ = make_row("指数价格");
+    oi_label_ = make_row("未平仓总量");
+    fees_label_ = make_row("挂单 / 吃单费率");
+    next_funding_label_ = make_row("下次资金结算");
     grid->addStretch();
 
-    tabs_->addTab(widget, "MKT");
+    tabs_->addTab(widget, "详情");
 }
 
 void CryptoBottomPanel::setup_stats_tab() {
@@ -160,7 +160,7 @@ void CryptoBottomPanel::setup_stats_tab() {
     grid->setContentsMargins(8, 4, 8, 4);
     grid->setSpacing(0);
 
-    const char* labels[] = {"TOTAL P&L", "WIN RATE", "TOTAL TRADES", "BEST TRADE", "WORST TRADE"};
+    const char* labels[] = {"总盈亏", "胜率", "总交易次数", "最佳交易", "最差交易"};
     for (int i = 0; i < 5; ++i) {
         auto* row = new QWidget(this);
         row->setObjectName("cryptoStatRow");
@@ -180,7 +180,7 @@ void CryptoBottomPanel::setup_stats_tab() {
     }
     grid->addStretch();
 
-    tabs_->addTab(widget, "STATS");
+    tabs_->addTab(widget, "统计");
 }
 
 // ── Forwarding methods for new widgets ──────────────────────────────────────
@@ -265,8 +265,8 @@ void CryptoBottomPanel::set_orders(const QVector<trading::PtOrder>& orders) {
         set(1, o.side.toUpper(), o.side == "buy" ? kColorPos() : kColorNeg());
         set(2, o.order_type.toUpper());
         set(3, QString::number(o.quantity, 'f', 6), QColor(), Qt::AlignRight | Qt::AlignVCenter);
-        set(4, o.price ? QString::number(*o.price, 'f', 2) : "MKT", QColor(), Qt::AlignRight | Qt::AlignVCenter);
-        set(5, o.status.toUpper(), kColorSec());
+        set(4, o.price ? QString::number(*o.price, 'f', 2) : "市价", QColor(), Qt::AlignRight | Qt::AlignVCenter);
+        set(5, o.status == "pending" ? "等待中" : (o.status == "partial" ? "部分成交" : o.status.toUpper()), kColorSec());
 
         // Cancel button — reuse existing widget, update its order_id property
         auto* existing = qobject_cast<QPushButton*>(orders_table_->cellWidget(i, 6));
@@ -327,7 +327,7 @@ void CryptoBottomPanel::set_stats(const trading::PtStats& stats) {
 
     stat_values_[1]->setText(QString("%1%").arg(stats.win_rate, 0, 'f', 1));
     stat_values_[2]->setText(
-        QString("%1 (W:%2 L:%3)").arg(stats.total_trades).arg(stats.winning_trades).arg(stats.losing_trades));
+        QString("%1 (胜:%2 负:%3)").arg(stats.total_trades).arg(stats.winning_trades).arg(stats.losing_trades));
 
     stat_values_[3]->setText(QString("$%1").arg(stats.largest_win, 0, 'f', 2));
     stat_values_[3]->setProperty("pnl", "positive");

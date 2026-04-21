@@ -15,8 +15,8 @@ QVector<DashboardTemplate> all_dashboard_templates() {
 
         // ── Portfolio Manager ────────────────────────────────────────────────
         {"portfolio_manager",
-         "Portfolio Manager",
-         "Holdings, performance, risk and watchlist",
+         "投资组合管理",
+         "持仓、绩效、风险和自选股",
          {
              gi("indices", 0, 0, 4, 5, 3, 4),
              gi("performance", 4, 0, 4, 5, 3, 4),
@@ -29,8 +29,8 @@ QVector<DashboardTemplate> all_dashboard_templates() {
 
         // ── Hedge Fund ────────────────────────────────────────────────────────
         {"hedge_fund",
-         "Hedge Fund",
-         "Sector heatmap, screener, risk and macro",
+         "对冲基金",
+         "板块热图、筛选器、风险和宏观",
          {
              gi("sector_heatmap", 0, 0, 6, 5, 3, 4),
              gi("screener", 6, 0, 6, 5, 3, 4),
@@ -42,8 +42,8 @@ QVector<DashboardTemplate> all_dashboard_templates() {
 
         // ── Crypto Trader ─────────────────────────────────────────────────────
         {"crypto_trader",
-         "Crypto Trader",
-         "Crypto prices, quick trade, sentiment and movers",
+         "加密货币交易员",
+         "加密货币价格、快速交易、情绪和涨跌榜",
          {
              gi("crypto", 0, 0, 6, 4),
              gi("top_movers", 6, 0, 6, 5, 3, 4),
@@ -55,8 +55,8 @@ QVector<DashboardTemplate> all_dashboard_templates() {
 
         // ── Equity Trader ─────────────────────────────────────────────────────
         {"equity_trader",
-         "Equity Trader",
-         "Indices, forex, commodities, screener and movers",
+         "股票交易员",
+         "指数、外汇、商品、筛选器和涨跌榜",
          {
              gi("indices", 0, 0, 4, 5, 3, 4),
              gi("forex", 4, 0, 4, 4),
@@ -69,8 +69,8 @@ QVector<DashboardTemplate> all_dashboard_templates() {
 
         // ── Macro Economist ───────────────────────────────────────────────────
         {"macro_economist",
-         "Macro Economist",
-         "Economic calendar, indices, commodities and news",
+         "宏观经济学家",
+         "经济日历、指数、商品和新闻",
          {
              gi("econ_calendar", 0, 0, 6, 5, 3, 4),
              gi("indices", 6, 0, 6, 4),
@@ -82,8 +82,8 @@ QVector<DashboardTemplate> all_dashboard_templates() {
 
         // ── Geopolitics Analyst ───────────────────────────────────────────────
         {"geopolitics",
-         "Geopolitics Analyst",
-         "News, sentiment, economic calendar and screener",
+         "地缘政治分析师",
+         "新闻、情绪、经济日历和筛选器",
          {
              gi("news", 0, 0, 8, 5),
              gi("sentiment", 8, 0, 4, 4),

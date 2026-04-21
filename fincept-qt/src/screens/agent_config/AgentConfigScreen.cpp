@@ -29,10 +29,10 @@ struct ViewMeta {
 };
 
 static constexpr ViewMeta kViews[] = {
-    {services::AgentViewMode::Agents, "AGENTS"},   {services::AgentViewMode::Create, "CREATE"},
-    {services::AgentViewMode::Teams, "TEAMS"},     {services::AgentViewMode::Workflows, "WORKFLOWS"},
-    {services::AgentViewMode::Planner, "PLANNER"}, {services::AgentViewMode::Tools, "TOOLS"},
-    {services::AgentViewMode::Chat, "CHAT"},       {services::AgentViewMode::System, "SYSTEM"},
+    {services::AgentViewMode::Agents, "智能体"},   {services::AgentViewMode::Create, "新建"},
+    {services::AgentViewMode::Teams, "团队"},     {services::AgentViewMode::Workflows, "工作流"},
+    {services::AgentViewMode::Planner, "规划器"}, {services::AgentViewMode::Tools, "工具"},
+    {services::AgentViewMode::Chat, "聊天"},       {services::AgentViewMode::System, "系统"},
 };
 
 // ── Constructor ──────────────────────────────────────────────────────────────
@@ -75,7 +75,7 @@ void AgentConfigScreen::build_nav_bar(QVBoxLayout* root) {
     hl->setContentsMargins(12, 0, 12, 0);
     hl->setSpacing(0);
 
-    auto* title = new QLabel("AGENT STUDIO");
+    auto* title = new QLabel("智能体工作室");
     title->setStyleSheet(QString("color:%1;font-size:13px;font-weight:700;letter-spacing:2px;padding-right:16px;")
                              .arg(ui::colors::AMBER()));
     hl->addWidget(title);
@@ -112,7 +112,7 @@ void AgentConfigScreen::build_status_bar(QVBoxLayout* root) {
     auto* hl = new QHBoxLayout(bar);
     hl->setContentsMargins(12, 0, 12, 0);
 
-    status_label_ = new QLabel("READY");
+    status_label_ = new QLabel("就绪");
     status_label_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::TEXT_TERTIARY()));
     hl->addWidget(status_label_);
     hl->addStretch();
@@ -302,20 +302,20 @@ void AgentConfigScreen::setup_service_connections() {
 
     connect(&svc, &services::AgentService::agents_discovered, this,
             [this](QVector<services::AgentInfo> agents, QVector<services::AgentCategory>) {
-                agent_count_label_->setText(QString("%1 agents").arg(agents.size()));
+                agent_count_label_->setText(QString("%1 个智能体").arg(agents.size()));
             });
 
     connect(&svc, &services::AgentService::error_occurred, this, [this](const QString& ctx, const QString& msg) {
-        status_label_->setText(QString("ERROR [%1]: %2").arg(ctx, msg.left(60)));
+        status_label_->setText(QString("错误 [%1]: %2").arg(ctx, msg.left(60)));
         status_label_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::NEGATIVE()));
     });
 
     connect(&svc, &services::AgentService::agent_result, this, [this](services::AgentExecutionResult r) {
         if (r.success) {
-            status_label_->setText(QString("DONE (%1ms)").arg(r.execution_time_ms));
+            status_label_->setText(QString("完成 (%1ms)").arg(r.execution_time_ms));
             status_label_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::POSITIVE()));
         } else {
-            status_label_->setText(QString("FAILED: %1").arg(r.error.left(60)));
+            status_label_->setText(QString("失败: %1").arg(r.error.left(60)));
             status_label_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::NEGATIVE()));
         }
     });

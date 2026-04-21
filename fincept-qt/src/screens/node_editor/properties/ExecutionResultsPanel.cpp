@@ -119,7 +119,7 @@ static QWidget* make_result_card(const NodeExecutionResult& result) {
 
             // Show exec time if present
             if (obj.contains("exec_ms")) {
-                auto* meta = new QLabel(QString("Agent ran in %1ms").arg(obj.value("exec_ms").toInt()));
+                auto* meta = new QLabel(QString("主体运行耗时 %1ms").arg(obj.value("exec_ms").toInt()));
                 meta->setStyleSheet(
                     QString("color: %1; font-family: Consolas; font-size: 9px;").arg(ui::colors::TEXT_TERTIARY()));
                 vl->addWidget(meta);
@@ -212,11 +212,11 @@ void ExecutionResultsPanel::build_ui() {
                                          "  border: none; font-size: 10px; }"
                                          "QPushButton:hover { color: %2; }")
                                      .arg(ui::colors::TEXT_SECONDARY(), ui::colors::TEXT_PRIMARY()));
-    collapse_btn_->setToolTip("Expand / Collapse");
+    collapse_btn_->setToolTip("展开 / 折叠");
     connect(collapse_btn_, &QPushButton::clicked, this, [this]() { set_collapsed(!collapsed_); });
     hl->addWidget(collapse_btn_);
 
-    auto* title = new QLabel("EXECUTION RESULTS");
+    auto* title = new QLabel("运行结果");
     title->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 10px;"
                                  " font-weight: bold; letter-spacing: 0.5px;")
                              .arg(ui::colors::AMBER()));
@@ -231,7 +231,7 @@ void ExecutionResultsPanel::build_ui() {
     hl->addStretch();
 
     // Status label
-    status_label_ = new QLabel("IDLE");
+    status_label_ = new QLabel("待机");
     status_label_->setStyleSheet(QString("color: %1; font-family: Consolas;"
                                          " font-size: 10px; font-weight: bold;")
                                      .arg(ui::colors::TEXT_TERTIARY()));
@@ -244,7 +244,7 @@ void ExecutionResultsPanel::build_ui() {
     hl->addWidget(vsep);
 
     // Clear button
-    clear_btn_ = new QPushButton("CLEAR");
+    clear_btn_ = new QPushButton("清空");
     clear_btn_->setFixedHeight(20);
     clear_btn_->setStyleSheet(QString("QPushButton { background: transparent; color: %1;"
                                       "  border: none; font-family: Consolas; font-size: 10px; }"
@@ -254,21 +254,21 @@ void ExecutionResultsPanel::build_ui() {
     hl->addWidget(clear_btn_);
 
     // Copy button
-    copy_btn_ = new QPushButton("COPY");
+    copy_btn_ = new QPushButton("复制");
     copy_btn_->setFixedHeight(20);
     copy_btn_->setStyleSheet(QString("QPushButton { background: transparent; color: %1;"
                                      "  border: none; font-family: Consolas; font-size: 10px; }"
                                      "QPushButton:hover { color: %2; }")
                                  .arg(ui::colors::TEXT_TERTIARY(), ui::colors::AMBER()));
-    copy_btn_->setToolTip("Copy all results to clipboard");
+    copy_btn_->setToolTip("复制所有结果到剪贴板");
     connect(copy_btn_, &QPushButton::clicked, this, [this]() {
         QGuiApplication::clipboard()->setText(copy_buffer_);
-        copy_btn_->setText("COPIED!");
+        copy_btn_->setText("已复制!");
         copy_btn_->setStyleSheet(QString("QPushButton { background: transparent; color: %1;"
                                          "  border: none; font-family: Consolas; font-size: 10px; }")
                                      .arg(ui::colors::POSITIVE()));
         QTimer::singleShot(1500, copy_btn_, [this]() {
-            copy_btn_->setText("COPY");
+            copy_btn_->setText("复制");
             copy_btn_->setStyleSheet(QString("QPushButton { background: transparent; color: %1;"
                                              "  border: none; font-family: Consolas; font-size: 10px; }"
                                              "QPushButton:hover { color: %2; }")
@@ -321,7 +321,7 @@ void ExecutionResultsPanel::clear() {
     error_count_ = 0;
     copy_buffer_.clear();
     node_counter_->setText("");
-    status_label_->setText("IDLE");
+    status_label_->setText("待机");
     status_label_->setStyleSheet(QString("color: %1; font-family: Consolas;"
                                          " font-size: 10px; font-weight: bold;")
                                      .arg(ui::colors::TEXT_TERTIARY()));
@@ -332,7 +332,7 @@ void ExecutionResultsPanel::set_started(const QString& workflow_id) {
     clear();
     show();
     set_collapsed(false); // auto-expand when execution starts
-    status_label_->setText("RUNNING…");
+    status_label_->setText("运行中…");
     status_label_->setStyleSheet(QString("color: %1; font-family: Consolas;"
                                          " font-size: 10px; font-weight: bold;")
                                      .arg(ui::colors::AMBER()));
@@ -344,9 +344,9 @@ void ExecutionResultsPanel::add_node_result(const NodeExecutionResult& result) {
         ++error_count_;
 
     // Update counter
-    QString counter = QString("%1 node%2").arg(node_count_).arg(node_count_ == 1 ? "" : "s");
+    QString counter = QString("%1 个节点").arg(node_count_);
     if (error_count_ > 0)
-        counter += QString("  %1 error%2").arg(error_count_).arg(error_count_ == 1 ? "" : "s");
+        counter += QString("  %1 个错误").arg(error_count_);
     node_counter_->setText(counter);
     node_counter_->setStyleSheet(
         QString("color: %1; font-family: Consolas; font-size: 10px;")
@@ -385,13 +385,13 @@ void ExecutionResultsPanel::add_node_result(const NodeExecutionResult& result) {
 
 void ExecutionResultsPanel::set_finished(const WorkflowExecutionResult& result) {
     if (result.success) {
-        status_label_->setText(QString("DONE  %1").arg(format_duration(result.total_duration_ms)));
+        status_label_->setText(QString("完成  %1").arg(format_duration(result.total_duration_ms)));
         status_label_->setStyleSheet(QString("color: %1; font-family: Consolas;"
                                              " font-size: 10px; font-weight: bold;")
                                          .arg(ui::colors::POSITIVE()));
     } else {
         QString msg =
-            result.error.startsWith("Execution stopped") ? "STOPPED" : QString("FAILED  %1").arg(result.error);
+            result.error.startsWith("Execution stopped") ? "已停止" : QString("失败  %1").arg(result.error);
         status_label_->setText(msg);
         status_label_->setStyleSheet(QString("color: %1; font-family: Consolas;"
                                              " font-size: 10px; font-weight: bold;")

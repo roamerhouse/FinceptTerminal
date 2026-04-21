@@ -38,12 +38,16 @@ bool Database::is_open() const {
 
 Result<QSqlQuery> Database::execute(const QString& sql, const QVariantList& params) {
     QSqlQuery query(db_);
-    query.prepare(sql);
+    if (!query.prepare(sql)) {
+        LOG_ERROR("DB", "Prepare failed: " + query.lastError().text() + " | SQL: " + sql);
+        return Result<QSqlQuery>::err("Prepare Error: " + query.lastError().text().toStdString());
+    }
     for (int i = 0; i < params.size(); ++i) {
         query.bindValue(i, params[i]);
     }
     if (!query.exec()) {
-        return Result<QSqlQuery>::err(query.lastError().text().toStdString());
+        LOG_ERROR("DB", "Exec failed: " + query.lastError().text() + " | SQL: " + sql);
+        return Result<QSqlQuery>::err("Exec Error: " + query.lastError().text().toStdString());
     }
     return Result<QSqlQuery>::ok(std::move(query));
 }

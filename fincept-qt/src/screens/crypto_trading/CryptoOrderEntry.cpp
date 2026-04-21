@@ -25,12 +25,12 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
     auto* h_layout = new QHBoxLayout(header);
     h_layout->setContentsMargins(8, 0, 8, 0);
 
-    auto* title = new QLabel("ORDER ENTRY");
+    auto* title = new QLabel("订单入口");
     title->setObjectName("cryptoOeTitle");
     h_layout->addWidget(title);
     h_layout->addStretch();
 
-    mode_label_ = new QLabel("PAPER");
+    mode_label_ = new QLabel("模拟交易");
     mode_label_->setObjectName("cryptoOeMode");
     mode_label_->setProperty("mode", "paper");
     h_layout->addWidget(mode_label_);
@@ -47,7 +47,7 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
     auto* side_row = new QHBoxLayout;
     side_row->setSpacing(0);
 
-    buy_tab_ = new QPushButton("BUY");
+    buy_tab_ = new QPushButton("买入");
     buy_tab_->setObjectName("cryptoBuyTab");
     buy_tab_->setProperty("active", true);
     buy_tab_->setCursor(Qt::PointingHandCursor);
@@ -55,7 +55,7 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
     connect(buy_tab_, &QPushButton::clicked, this, [this]() { set_buy_side(true); });
     side_row->addWidget(buy_tab_, 1);
 
-    sell_tab_ = new QPushButton("SELL");
+    sell_tab_ = new QPushButton("卖出");
     sell_tab_->setObjectName("cryptoSellTab");
     sell_tab_->setProperty("active", false);
     sell_tab_->setCursor(Qt::PointingHandCursor);
@@ -67,7 +67,7 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
     // Order type toggle buttons
     auto* type_row = new QHBoxLayout;
     type_row->setSpacing(2);
-    const char* type_labels[] = {"MKT", "LMT", "STP", "S/L"};
+    const char* type_labels[] = {"市价", "限价", "止损", "止损限价"};
     for (int i = 0; i < 4; ++i) {
         type_btns_[i] = new QPushButton(type_labels[i]);
         type_btns_[i]->setObjectName("cryptoOeTypeBtn");
@@ -83,23 +83,23 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
     form->addSpacing(2);
 
     // Balance
-    balance_label_ = new QLabel("$0.00");
+    balance_label_ = new QLabel("余额: $0.00");
     balance_label_->setObjectName("cryptoOeBalance");
     form->addWidget(balance_label_);
 
     // Market price
-    market_price_label_ = new QLabel("MKT: --");
+    market_price_label_ = new QLabel("行情: --");
     market_price_label_->setObjectName("cryptoOeMarketPrice");
     form->addWidget(market_price_label_);
 
     // Quantity
-    auto* qty_lbl = new QLabel("QTY");
+    auto* qty_lbl = new QLabel("数量");
     qty_lbl->setObjectName("cryptoOeLabel");
     form->addWidget(qty_lbl);
 
     qty_edit_ = new QLineEdit;
     qty_edit_->setObjectName("cryptoOeInput");
-    qty_edit_->setPlaceholderText("0.00");
+    qty_edit_->setPlaceholderText("输入数量");
     qty_edit_->setFixedHeight(26);
     connect(qty_edit_, &QLineEdit::textChanged, this, [this]() { update_cost_preview(); });
     form->addWidget(qty_edit_);
@@ -118,32 +118,32 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
     form->addLayout(pct_row);
 
     // Price
-    auto* price_lbl = new QLabel("PRICE");
+    auto* price_lbl = new QLabel("价格");
     price_lbl->setObjectName("cryptoOeLabel");
     form->addWidget(price_lbl);
 
     price_edit_ = new QLineEdit;
     price_edit_->setObjectName("cryptoOeInput");
-    price_edit_->setPlaceholderText("Limit price");
+    price_edit_->setPlaceholderText("限价");
     price_edit_->setEnabled(false);
     price_edit_->setFixedHeight(26);
     connect(price_edit_, &QLineEdit::textChanged, this, [this]() { update_cost_preview(); });
     form->addWidget(price_edit_);
 
     // Stop price
-    auto* stop_lbl = new QLabel("STOP");
+    auto* stop_lbl = new QLabel("止损触发价");
     stop_lbl->setObjectName("cryptoOeLabel");
     form->addWidget(stop_lbl);
 
     stop_price_edit_ = new QLineEdit;
     stop_price_edit_->setObjectName("cryptoOeInput");
-    stop_price_edit_->setPlaceholderText("Stop price");
+    stop_price_edit_->setPlaceholderText("止损触发价");
     stop_price_edit_->setEnabled(false);
     stop_price_edit_->setFixedHeight(26);
     form->addWidget(stop_price_edit_);
 
-    // Advanced toggle
-    advanced_toggle_ = new QPushButton("+ ADVANCED");
+    // 高级设置切换
+    advanced_toggle_ = new QPushButton("+ 高级设置");
     advanced_toggle_->setObjectName("cryptoAdvToggle");
     advanced_toggle_->setCursor(Qt::PointingHandCursor);
     advanced_toggle_->setFixedHeight(18);
@@ -160,14 +160,14 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
     sl_lbl->setObjectName("cryptoOeLabel");
     sl_edit_ = new QLineEdit;
     sl_edit_->setObjectName("cryptoOeInput");
-    sl_edit_->setPlaceholderText("Stop Loss");
+    sl_edit_->setPlaceholderText("止损价");
     sl_edit_->setFixedHeight(26);
 
     auto* tp_lbl = new QLabel("TP");
     tp_lbl->setObjectName("cryptoOeLabel");
     tp_edit_ = new QLineEdit;
     tp_edit_->setObjectName("cryptoOeInput");
-    tp_edit_->setPlaceholderText("Take Profit");
+    tp_edit_->setPlaceholderText("止盈价");
     tp_edit_->setFixedHeight(26);
 
     adv_layout->addWidget(sl_lbl);
@@ -179,7 +179,7 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
     connect(advanced_toggle_, &QPushButton::clicked, this, [this]() {
         const bool show = !advanced_section_->isVisible();
         advanced_section_->setVisible(show);
-        advanced_toggle_->setText(show ? "- ADVANCED" : "+ ADVANCED");
+        advanced_toggle_->setText(show ? "- 隐藏高级" : "+ 高级设置");
     });
 
     // Futures controls (leverage + margin mode) — hidden for spot markets
@@ -191,7 +191,7 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
 
     auto* lev_row = new QHBoxLayout;
     lev_row->setSpacing(4);
-    auto* lev_lbl = new QLabel("LEVERAGE");
+    auto* lev_lbl = new QLabel("杠杆倍数");
     lev_lbl->setObjectName("cryptoOeLabel");
     leverage_spin_ = new QSpinBox;
     leverage_spin_->setObjectName("cryptoOeSpinBox");
@@ -206,12 +206,13 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
 
     auto* margin_row = new QHBoxLayout;
     margin_row->setSpacing(4);
-    auto* margin_lbl = new QLabel("MARGIN");
+    // Margin mode
+    auto* margin_lbl = new QLabel("保证金模式");
     margin_lbl->setObjectName("cryptoOeLabel");
     margin_mode_combo_ = new QComboBox;
     margin_mode_combo_->setObjectName("cryptoOeCombo");
-    margin_mode_combo_->addItem("Cross", "cross");
-    margin_mode_combo_->addItem("Isolated", "isolated");
+    margin_mode_combo_->addItem("全仓", "cross");
+    margin_mode_combo_->addItem("逐仓", "isolated");
     margin_mode_combo_->setFixedHeight(26);
     margin_row->addWidget(margin_lbl);
     margin_row->addStretch();
@@ -225,7 +226,7 @@ CryptoOrderEntry::CryptoOrderEntry(QWidget* parent) : QWidget(parent) {
             [this](int idx) { emit margin_mode_changed(margin_mode_combo_->itemData(idx).toString()); });
 
     // Cost preview
-    cost_label_ = new QLabel("Est: --");
+    cost_label_ = new QLabel("预计: --");
     cost_label_->setObjectName("cryptoOeCost");
     form->addWidget(cost_label_);
 
@@ -255,7 +256,8 @@ void CryptoOrderEntry::set_buy_side(bool is_buy) {
     sell_tab_->setProperty("active", !is_buy);
 
     // Update submit button
-    const QString label = QString("%1 %2").arg(is_buy ? "BUY" : "SELL", current_symbol_);
+    const QString side_str = is_buy ? "买入" : "卖出";
+    const QString label = QString("%1 %2").arg(side_str, current_symbol_);
     submit_btn_->setText(label);
     submit_btn_->setObjectName(is_buy ? "cryptoBuySubmit" : "cryptoSellSubmit");
 
@@ -311,7 +313,7 @@ void CryptoOrderEntry::set_current_price(double price) {
 
 void CryptoOrderEntry::set_mode(bool is_paper) {
     is_paper_ = is_paper;
-    mode_label_->setText(is_paper ? "PAPER" : "LIVE");
+    mode_label_->setText(is_paper ? "模拟交易" : "实盘交易");
     mode_label_->setProperty("mode", is_paper ? "paper" : "live");
     mode_label_->style()->unpolish(mode_label_);
     mode_label_->style()->polish(mode_label_);
@@ -319,7 +321,7 @@ void CryptoOrderEntry::set_mode(bool is_paper) {
 
 void CryptoOrderEntry::set_symbol(const QString& symbol) {
     current_symbol_ = symbol;
-    submit_btn_->setText(QString("%1 %2").arg(is_buy_side_ ? "BUY" : "SELL", symbol));
+    submit_btn_->setText(QString("%1 %2").arg(is_buy_side_ ? "买入" : "卖出", symbol));
 }
 
 void CryptoOrderEntry::on_submit() {
@@ -329,7 +331,7 @@ void CryptoOrderEntry::on_submit() {
 
     const double qty = qty_edit_->text().toDouble();
     if (qty <= 0) {
-        status_label_->setText("Enter a valid quantity");
+        status_label_->setText("请输入有效的数量");
         status_label_->setProperty("error", true);
         status_label_->style()->unpolish(status_label_);
         status_label_->style()->polish(status_label_);
@@ -366,9 +368,9 @@ void CryptoOrderEntry::update_cost_preview() {
             price = limit_p;
     }
     if (qty > 0 && price > 0)
-        cost_label_->setText(QString("Est: $%1").arg(qty * price, 0, 'f', 2));
+        cost_label_->setText(QString("预计: $%1").arg(qty * price, 0, 'f', 2));
     else
-        cost_label_->setText("Est: --");
+        cost_label_->setText("预计: --");
 }
 
 } // namespace fincept::screens::crypto

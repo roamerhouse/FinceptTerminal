@@ -88,7 +88,7 @@ QWidget* ChatMessagePanel::build_header() {
     hl->setContentsMargins(14, 0, 14, 0);
     hl->setSpacing(10);
 
-    hdr_title_lbl_ = new QLabel("New Conversation");
+    hdr_title_lbl_ = new QLabel("新对话");
     hdr_title_lbl_->setStyleSheet(QString("color:%1;font-size:14px;font-weight:600;"
                                           "font-family:%2;background:transparent;")
                                       .arg(ui::colors::TEXT_PRIMARY(), FONT));
@@ -108,7 +108,7 @@ QWidget* ChatMessagePanel::build_header() {
 
     mode_btn_ = new QPushButton("LITE");
     mode_btn_->setFixedHeight(22);
-    mode_btn_->setToolTip("Toggle Lite / Deep mode");
+    mode_btn_->setToolTip("切换 轻量 / 深度 模式");
     mode_btn_->setStyleSheet(
         QString("QPushButton{background:%1;color:%2;border:1px solid %3;"
                 "border-radius:0px;font-size:11px;font-weight:600;padding:0 10px;"
@@ -117,7 +117,7 @@ QWidget* ChatMessagePanel::build_header() {
             .arg(ui::colors::BG_RAISED(), ui::colors::AMBER(), ui::colors::BORDER_MED(), FONT, ui::colors::BG_HOVER()));
     connect(mode_btn_, &QPushButton::clicked, this, [this]() {
         current_mode_ = (current_mode_ == StreamMode::Lite) ? StreamMode::Deep : StreamMode::Lite;
-        mode_btn_->setText(current_mode_ == StreamMode::Lite ? "LITE" : "DEEP");
+        mode_btn_->setText(current_mode_ == StreamMode::Lite ? "轻量" : "深度");
         emit mode_toggled(current_mode_);
     });
     hl->addWidget(mode_btn_);
@@ -168,23 +168,23 @@ QWidget* ChatMessagePanel::build_welcome() {
     vl->setSpacing(14);
     vl->setAlignment(Qt::AlignCenter);
 
-    auto* logo = new QLabel("FINCEPT AGENT");
+    auto* logo = new QLabel("FINCEPT 智能助手");
     logo->setAlignment(Qt::AlignCenter);
     logo->setStyleSheet(QString("color:%1;font-size:20px;font-weight:700;letter-spacing:1px;"
                                 "font-family:%2;background:transparent;")
                             .arg(ui::colors::AMBER(), FONT));
     vl->addWidget(logo);
 
-    auto* sub = new QLabel("AI-powered financial intelligence.\n"
-                           "Markets, equities, portfolio, macro insights.");
+    auto* sub = new QLabel("AI 赋能的金融情报系统。\n"
+                           "涵盖市场、股票、投资组合及宏观洞察。");
     sub->setAlignment(Qt::AlignCenter);
     sub->setWordWrap(true);
     sub->setStyleSheet(
         QString("color:%1;font-size:13px;font-family:%2;background:transparent;").arg(ui::colors::TEXT_TERTIARY(), FONT));
     vl->addWidget(sub);
 
-    const QStringList chips = {"Outlook for AAPL?", "Today's market news", "Portfolio risk analysis",
-                               "Key indicators this week"};
+    const QStringList chips = {"AAPL 的前景如何？", "今日市场新闻", "投资组合风险分析",
+                               "本周关键指标"};
     auto* row = new QWidget(this);
     auto* rl = new QHBoxLayout(row);
     rl->setContentsMargins(0, 8, 0, 0);
@@ -218,7 +218,7 @@ QWidget* ChatMessagePanel::build_typing_indicator() {
     hl->setContentsMargins(14, 4, 14, 4);
     hl->setSpacing(6);
 
-    auto* lbl = new QLabel("Agent");
+    auto* lbl = new QLabel("助手");
     lbl->setStyleSheet(QString("color:%1;font-size:12px;font-weight:600;"
                                "font-family:%2;background:transparent;")
                            .arg(ui::colors::AMBER(), FONT));
@@ -250,7 +250,7 @@ QWidget* ChatMessagePanel::build_input_area() {
     vl->setSpacing(6);
 
     input_box_ = new QPlainTextEdit;
-    input_box_->setPlaceholderText("Ask anything... (Enter to send, Shift+Enter for new line)");
+    input_box_->setPlaceholderText("请输入您的问题... (Enter 发送, Shift+Enter 换行)");
     input_box_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     input_box_->setFixedHeight(36);
     input_box_->setStyleSheet(QString("QPlainTextEdit{background:%1;color:%2;border:1px solid %3;"
@@ -290,9 +290,9 @@ QWidget* ChatMessagePanel::build_input_area() {
         emit draft_changed();
     });
 
-    optimize_btn_ = new QPushButton("Optimize");
+    optimize_btn_ = new QPushButton("提示词优化");
     optimize_btn_->setFixedHeight(26);
-    optimize_btn_->setToolTip("Optimize prompt with AI");
+    optimize_btn_->setToolTip("使用 AI 优化提示词");
     optimize_btn_->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:1px solid %3;"
                                          "border-radius:0px;font-size:12px;padding:0 10px;font-family:%4;}"
                                          "QPushButton:hover{background:%5;color:%6;border-color:%6;}"
@@ -302,7 +302,7 @@ QWidget* ChatMessagePanel::build_input_area() {
     connect(optimize_btn_, &QPushButton::clicked, this, &ChatMessagePanel::on_optimize_clicked);
     bottom->addWidget(optimize_btn_);
 
-    stop_btn_ = new QPushButton("Stop");
+    stop_btn_ = new QPushButton("停止");
     stop_btn_->setFixedHeight(26);
     stop_btn_->setVisible(false);
     stop_btn_->setStyleSheet(QString("QPushButton{background:rgba(50,12,12,0.7);color:%1;"
@@ -313,7 +313,7 @@ QWidget* ChatMessagePanel::build_input_area() {
     connect(stop_btn_, &QPushButton::clicked, this, []() { ChatModeService::instance().abort_stream(); });
     bottom->addWidget(stop_btn_);
 
-    send_btn_ = new QPushButton("Send");
+    send_btn_ = new QPushButton("发送");
     send_btn_->setFixedHeight(26);
     send_btn_->setStyleSheet(
         QString("QPushButton{background:%1;color:%2;border:none;"
@@ -359,12 +359,12 @@ void ChatMessagePanel::clear_messages() {
 }
 
 void ChatMessagePanel::set_session_title(const QString& title) {
-    hdr_title_lbl_->setText(title.isEmpty() ? "New Conversation" : title);
+    hdr_title_lbl_->setText(title.isEmpty() ? "新对话" : title);
 }
 
 void ChatMessagePanel::set_stream_mode(StreamMode mode) {
     current_mode_ = mode;
-    mode_btn_->setText(mode == StreamMode::Lite ? "LITE" : "DEEP");
+    mode_btn_->setText(mode == StreamMode::Lite ? "轻量" : "深度");
 }
 
 // ── Bubble creation ──────────────────────────────────────────────────────────
@@ -404,7 +404,7 @@ void ChatMessagePanel::add_message_bubble(const QString& role, const QString& co
 
     auto* meta = new QHBoxLayout;
     meta->setSpacing(6);
-    auto* role_lbl = new QLabel(role == "user" ? "You" : "Agent");
+    auto* role_lbl = new QLabel(role == "user" ? "您" : "助手");
     role_lbl->setStyleSheet(
         QString("color:%1;font-size:11px;font-weight:600;font-family:%2;"
                 "background:transparent;letter-spacing:0.5px;")
@@ -443,7 +443,7 @@ QTextEdit* ChatMessagePanel::add_streaming_bubble() {
     auto* row_vl = new QVBoxLayout(row);
     row_vl->setContentsMargins(0, 0, 0, 0);
     row_vl->setSpacing(2);
-    auto* lbl = new QLabel("Agent");
+    auto* lbl = new QLabel("助手");
     lbl->setStyleSheet(QString("color:%1;font-size:11px;font-weight:600;font-family:%2;"
                                "background:transparent;letter-spacing:0.5px;")
                            .arg(ui::colors::AMBER(), FONT));
@@ -471,9 +471,9 @@ void ChatMessagePanel::insert_collapsed_thinking_card(int before_index) {
         QStringList tool_names;
         for (const auto& [name, ms] : pending_tools_)
             tool_names.append(QString("%1 (%2ms)").arg(name).arg(ms));
-        summary = QString("> %1 thinking steps | tools: %2").arg(pending_thinking_.size()).arg(tool_names.join(", "));
+        summary = QString("> %1 个思考步骤 | 工具: %2").arg(pending_thinking_.size()).arg(tool_names.join(", "));
     } else {
-        summary = QString("> %1 thinking steps").arg(pending_thinking_.size());
+        summary = QString("> %1 个思考步骤").arg(pending_thinking_.size());
     }
 
     auto* header = new QPushButton(summary);
@@ -539,11 +539,11 @@ void ChatMessagePanel::on_stream_text_delta(const QString& text) {
 
 void ChatMessagePanel::on_stream_tool_end(const QString& tool_name, int duration_ms) {
     pending_tools_.append({tool_name, duration_ms});
-    typing_status_lbl_->setText(QString("used %1").arg(tool_name));
+    typing_status_lbl_->setText(QString("已使用 %1").arg(tool_name));
 }
 
 void ChatMessagePanel::on_stream_step_start(int step_number) {
-    typing_status_lbl_->setText(QString("step %1").arg(step_number));
+    typing_status_lbl_->setText(QString("步骤 %1").arg(step_number));
 }
 
 void ChatMessagePanel::on_stream_step_finish(int tokens_used) {
@@ -554,7 +554,7 @@ void ChatMessagePanel::on_stream_step_finish(int tokens_used) {
 void ChatMessagePanel::on_stream_thinking(const QString& content) {
     if (!content.isEmpty()) {
         pending_thinking_.append(content);
-        typing_status_lbl_->setText("thinking...");
+        typing_status_lbl_->setText("正在思考...");
     }
 }
 
@@ -616,18 +616,18 @@ void ChatMessagePanel::on_stream_error(const QString& message) {
 void ChatMessagePanel::on_stream_heartbeat() {}
 
 void ChatMessagePanel::on_insufficient_credits() {
-    on_stream_error("Insufficient credits. Top up to continue.");
+    on_stream_error("余额不足。请充值后继续。");
 }
 
 void ChatMessagePanel::on_tools_registered(int count) {
-    hdr_tools_lbl_->setText(count > 0 ? QString("%1 tools").arg(count) : QString());
+    hdr_tools_lbl_->setText(count > 0 ? QString("%1 个工具").arg(count) : QString());
 }
 
 void ChatMessagePanel::set_credits(int credits) {
     if (credits > 0)
-        hdr_credits_lbl_->setText(QString("%1 credits").arg(QLocale(QLocale::English).toString(credits)));
+        hdr_credits_lbl_->setText(QString("%1 点数").arg(QLocale(QLocale::English).toString(credits)));
     else
-        hdr_credits_lbl_->setText("0 credits");
+        hdr_credits_lbl_->setText("0 点数");
 }
 
 // ── Send / Optimize ──────────────────────────────────────────────────────────
@@ -671,9 +671,9 @@ void ChatMessagePanel::on_optimize_clicked() {
                                                     if (!self)
                                                         return;
                                                     self->optimize_btn_->setEnabled(true);
-                                                    self->optimize_btn_->setText("Optimize");
+                                                    self->optimize_btn_->setText("提示词优化");
                                                     if (!ok) {
-                                                        self->on_stream_error("Optimize failed: " + err);
+                                                        self->on_stream_error("优化失败: " + err);
                                                         return;
                                                     }
                                                     if (!result.optimized.isEmpty())

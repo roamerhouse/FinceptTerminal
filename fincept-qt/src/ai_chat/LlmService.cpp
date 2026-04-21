@@ -246,6 +246,8 @@ QString LlmService::get_endpoint_url() const {
         return "https://api.minimax.io/v1/chat/completions";
     if (p == "ollama")
         return "http://localhost:11434/v1/chat/completions";
+    if (p == "llama")
+        return "http://localhost:8080/v1/chat/completions";
     return {};
 }
 

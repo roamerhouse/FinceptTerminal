@@ -76,14 +76,14 @@ ToolBar::ToolBar(QWidget* parent) : QWidget(parent) {
     sep();
     fincept_label_ = mk("FINCEPT ");
     hl->addWidget(fincept_label_);
-    branding_label_ = mk("TERMINAL");
+    branding_label_ = mk("终端");
     hl->addWidget(branding_label_);
-    subtitle_label_ = mk("  |  PROFESSIONAL RESEARCH DESK");
+    subtitle_label_ = mk("  |  专业研究工作台");
     hl->addWidget(subtitle_label_);
     hl->addWidget(mk("  "));
     live_dot_ = mk("\xe2\x97\x8f");
     hl->addWidget(live_dot_);
-    live_label_ = mk(" LIVE");
+    live_label_ = mk(" 实时");
     hl->addWidget(live_label_);
 
     hl->addStretch(1);
@@ -110,16 +110,16 @@ ToolBar::ToolBar(QWidget* parent) : QWidget(parent) {
     hl->addWidget(plan_btn_);
     sep();
 
-    chat_mode_btn_ = new QPushButton(QString::fromUtf8("⬡ CHAT"));
+    chat_mode_btn_ = new QPushButton(QString::fromUtf8("⬡ 聊天模式"));
     chat_mode_btn_->setFixedHeight(20);
     chat_mode_btn_->setCursor(Qt::PointingHandCursor);
-    chat_mode_btn_->setToolTip("Switch to Chat Mode (F9)");
+    chat_mode_btn_->setToolTip("切换到聊天模式 (F9)");
     chat_mode_btn_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     connect(chat_mode_btn_, &QPushButton::clicked, this, &ToolBar::chat_mode_toggled);
     hl->addWidget(chat_mode_btn_);
     sep();
 
-    logout_btn_ = new QPushButton("LOGOUT");
+    logout_btn_ = new QPushButton("退出登录");
     logout_btn_->setFixedHeight(20);
     logout_btn_->setCursor(Qt::PointingHandCursor);
     logout_btn_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -262,26 +262,26 @@ void ToolBar::refresh_user_display() {
 }
 
 QMenu* ToolBar::build_file_menu() {
-    auto* m = new QMenu("File", this);
+    auto* m = new QMenu("文件", this);
     m->setStyleSheet(popup_ss());
-    m->addAction("New Window", this, [this]() { emit action_triggered("new_window"); });
+    m->addAction("新建窗口", this, [this]() { emit action_triggered("new_window"); });
     m->addSeparator();
-    m->addAction("New Workspace", this, [this]() { emit action_triggered("new_workspace"); });
-    m->addAction("Open Workspace", this, [this]() { emit action_triggered("open_workspace"); });
-    m->addAction("Save Workspace", this, [this]() { emit action_triggered("save_workspace"); });
-    m->addAction("Save Workspace As", this, [this]() { emit action_triggered("save_workspace_as"); });
+    m->addAction("新建工作区", this, [this]() { emit action_triggered("new_workspace"); });
+    m->addAction("打开工作区", this, [this]() { emit action_triggered("open_workspace"); });
+    m->addAction("保存工作区", this, [this]() { emit action_triggered("save_workspace"); });
+    m->addAction("另存为工作区", this, [this]() { emit action_triggered("save_workspace_as"); });
     m->addSeparator();
-    m->addAction("Import Workspace", this, [this]() { emit action_triggered("import_data"); });
-    m->addAction("Export Workspace", this, [this]() { emit action_triggered("export_data"); });
+    m->addAction("导入工作区", this, [this]() { emit action_triggered("import_data"); });
+    m->addAction("导出工作区", this, [this]() { emit action_triggered("export_data"); });
     m->addSeparator();
-    m->addAction("File Manager", this, [this]() { emit navigate_to("file_manager"); });
+    m->addAction("文件管理器", this, [this]() { emit navigate_to("file_manager"); });
     m->addSeparator();
-    m->addAction("Refresh All", this, [this]() { emit action_triggered("refresh"); });
+    m->addAction("刷新全部", this, [this]() { emit action_triggered("refresh"); });
     return m;
 }
 
 QMenu* ToolBar::build_navigate_menu() {
-    auto* m = new QMenu("Navigate", this);
+    auto* m = new QMenu("导航", this);
     m->setStyleSheet(QString("QMenu{background:%1;color:%2;border:1px solid %3;padding:2px 0;}"
                              "QMenu::item{padding:3px 20px 3px 10px;}"
                              "QMenu::item:selected{background:%4;}"
@@ -307,145 +307,145 @@ QMenu* ToolBar::build_navigate_menu() {
     };
 
     // Markets & Data
-    auto* mkt = add_sub("Markets & Data");
-    nav(mkt, "Economics", "economics");
-    nav(mkt, "GOVT Data", "gov_data");
-    nav(mkt, "DBnomics", "dbnomics");
-    nav(mkt, "AKShare Data", "akshare");
-    nav(mkt, "Asia Markets", "asia_markets");
-    nav(mkt, "Relationship Map", "relationship_map");
+    auto* mkt = add_sub("市场与数据");
+    nav(mkt, "宏观经济", "economics");
+    nav(mkt, "政府数据", "gov_data");
+    nav(mkt, "DBnomics数据", "dbnomics");
+    nav(mkt, "AKShare 财经数据", "akshare");
+    nav(mkt, "亚洲市场", "asia_markets");
+    nav(mkt, "关系图谱", "relationship_map");
 
     // Trading & Portfolio
-    auto* trd = add_sub("Trading & Portfolio");
-    nav(trd, "Equity Trading", "equity_trading");
-    nav(trd, "Alpha Arena", "alpha_arena");
-    nav(trd, "Polymarket", "polymarket");
-    nav(trd, "Derivatives", "derivatives");
-    nav(trd, "Watchlist", "watchlist");
+    auto* trd = add_sub("交易与持仓");
+    nav(trd, "股票交易", "equity_trading");
+    nav(trd, "阿尔法竞技场", "alpha_arena");
+    nav(trd, "多重预测市场", "polymarket");
+    nav(trd, "衍生品", "derivatives");
+    nav(trd, "自选股", "watchlist");
 
     // Research & Intelligence
-    auto* res = add_sub("Research & Intelligence");
-    nav(res, "Equity Research", "equity_research");
-    nav(res, "M&A Analytics", "ma_analytics");
-    nav(res, "Alt. Investments", "alt_investments");
-    nav(res, "Geopolitics", "geopolitics");
-    nav(res, "Maritime", "maritime");
-    nav(res, "Surface Analytics", "surface_analytics");
+    auto* res = add_sub("研究与情报");
+    nav(res, "股权研究", "equity_research");
+    nav(res, "并购分析", "ma_analytics");
+    nav(res, "另类投资", "alt_investments");
+    nav(res, "地缘政治", "geopolitics");
+    nav(res, "海运航运", "maritime");
+    nav(res, "表层分析", "surface_analytics");
 
     // Tools
-    auto* tools = add_sub("Tools");
-    nav(tools, "Agent Config", "agent_config");
-    nav(tools, "MCP Servers", "mcp_servers");
-    nav(tools, "Data Mapping", "data_mapping");
-    nav(tools, "Data Sources", "data_sources");
-    nav(tools, "Report Builder", "report_builder");
-    nav(tools, "Excel", "excel");
-    nav(tools, "Trade Viz", "trade_viz");
-    nav(tools, "File Manager", "file_manager");
-    nav(tools, "Notes", "notes");
+    auto* tools = add_sub("工具");
+    nav(tools, "AI代理配置", "agent_config");
+    nav(tools, "MCP 服务器", "mcp_servers");
+    nav(tools, "数据映射", "data_mapping");
+    nav(tools, "数据源管理", "data_sources");
+    nav(tools, "报告生成器", "report_builder");
+    nav(tools, "Excel集成", "excel");
+    nav(tools, "交易可视化", "trade_viz");
+    nav(tools, "文件管理器", "file_manager");
+    nav(tools, "笔记项", "notes");
 
     m->addSeparator();
 
     // Direct items (no submenu)
-    nav(m, "Forum", "forum");
-    nav(m, "Docs", "docs");
-    nav(m, "Support", "support");
-    nav(m, "About", "about");
+    nav(m, "社区论坛", "forum");
+    nav(m, "文档中心", "docs");
+    nav(m, "技术支持", "support");
+    nav(m, "关于软件", "about");
 
     return m;
 }
 
 QMenu* ToolBar::build_view_menu() {
-    auto* m = new QMenu("View", this);
+    auto* m = new QMenu("视图", this);
     m->setStyleSheet(popup_ss());
-    m->addAction("Fullscreen\tF11", this, [this]() { emit action_triggered("fullscreen"); });
+    m->addAction("全屏\tF11", this, [this]() { emit action_triggered("fullscreen"); });
     m->addSeparator();
-    m->addAction("Focus Mode\tF10", this, [this]() { emit action_triggered("focus_mode"); });
-    m->addAction("Always on Top", this, [this]() { emit action_triggered("always_on_top"); });
+    m->addAction("聚焦模式\tF10", this, [this]() { emit action_triggered("focus_mode"); });
+    m->addAction("始终置顶", this, [this]() { emit action_triggered("always_on_top"); });
     m->addSeparator();
 
     // Float any screen as a separate window on another monitor
-    auto* panels = m->addMenu("Float Panel");
+    auto* panels = m->addMenu("浮动面板");
     panels->setStyleSheet(popup_ss());
-    panels->addAction("Dashboard", this, [this]() { emit action_triggered("panel_dashboard"); });
-    panels->addAction("Watchlist", this, [this]() { emit action_triggered("panel_watchlist"); });
-    panels->addAction("News Feed", this, [this]() { emit action_triggered("panel_news"); });
-    panels->addAction("Portfolio", this, [this]() { emit action_triggered("panel_portfolio"); });
-    panels->addAction("Markets", this, [this]() { emit action_triggered("panel_markets"); });
+    panels->addAction("仪表盘", this, [this]() { emit action_triggered("panel_dashboard"); });
+    panels->addAction("自选股", this, [this]() { emit action_triggered("panel_watchlist"); });
+    panels->addAction("新闻流", this, [this]() { emit action_triggered("panel_news"); });
+    panels->addAction("投资组合", this, [this]() { emit action_triggered("panel_portfolio"); });
+    panels->addAction("市场监控", this, [this]() { emit action_triggered("panel_markets"); });
     panels->addSeparator();
-    panels->addAction("Crypto Trading", this, [this]() { emit action_triggered("panel_crypto"); });
-    panels->addAction("Equity Trading", this, [this]() { emit action_triggered("panel_equity"); });
-    panels->addAction("Algo Trading", this, [this]() { emit action_triggered("panel_algo"); });
+    panels->addAction("加密交易", this, [this]() { emit action_triggered("panel_crypto"); });
+    panels->addAction("股票交易", this, [this]() { emit action_triggered("panel_equity"); });
+    panels->addAction("算法交易", this, [this]() { emit action_triggered("panel_algo"); });
     panels->addSeparator();
-    panels->addAction("Equity Research", this, [this]() { emit action_triggered("panel_research"); });
-    panels->addAction("Economics", this, [this]() { emit action_triggered("panel_economics"); });
-    panels->addAction("Geopolitics", this, [this]() { emit action_triggered("panel_geopolitics"); });
-    panels->addAction("AI Chat", this, [this]() { emit action_triggered("panel_ai_chat"); });
+    panels->addAction("股权研究", this, [this]() { emit action_triggered("panel_research"); });
+    panels->addAction("宏观经济", this, [this]() { emit action_triggered("panel_economics"); });
+    panels->addAction("地缘政治", this, [this]() { emit action_triggered("panel_geopolitics"); });
+    panels->addAction("AI 聊天", this, [this]() { emit action_triggered("panel_ai_chat"); });
     m->addSeparator();
 
     // Quick Switch — jump to a preset screen layout
-    auto* persp = m->addMenu("Quick Switch");
+    auto* persp = m->addMenu("快速切换布局");
     persp->setStyleSheet(popup_ss());
-    persp->addAction("Save Workspace", this, [this]() { emit action_triggered("perspective_save"); });
+    persp->addAction("保存当前工作区", this, [this]() { emit action_triggered("perspective_save"); });
     persp->addSeparator();
 
     // Trading
-    auto* qs_trading = persp->addMenu("Trading");
+    auto* qs_trading = persp->addMenu("交易布局");
     qs_trading->setStyleSheet(popup_ss());
-    qs_trading->addAction("Crypto Trading", this, [this]() { emit action_triggered("perspective_trading"); });
-    qs_trading->addAction("Equity Trading", this, [this]() { emit action_triggered("perspective_equity"); });
-    qs_trading->addAction("Algo Trading", this, [this]() { emit action_triggered("perspective_algo"); });
+    qs_trading->addAction("加密交易布局", this, [this]() { emit action_triggered("perspective_trading"); });
+    qs_trading->addAction("股票交易布局", this, [this]() { emit action_triggered("perspective_equity"); });
+    qs_trading->addAction("算法交易布局", this, [this]() { emit action_triggered("perspective_algo"); });
 
     // Research
-    auto* qs_research = persp->addMenu("Research");
+    auto* qs_research = persp->addMenu("研究布局");
     qs_research->setStyleSheet(popup_ss());
-    qs_research->addAction("Equity Research", this, [this]() { emit action_triggered("perspective_research"); });
-    qs_research->addAction("Derivatives", this, [this]() { emit action_triggered("perspective_derivatives"); });
-    qs_research->addAction("M&&A Analytics", this, [this]() { emit action_triggered("perspective_ma"); });
+    qs_research->addAction("股权研究布局", this, [this]() { emit action_triggered("perspective_research"); });
+    qs_research->addAction("衍生品研究布局", this, [this]() { emit action_triggered("perspective_derivatives"); });
+    qs_research->addAction("并购分析布局", this, [this]() { emit action_triggered("perspective_ma"); });
 
     // Portfolio & Markets
-    persp->addAction("Portfolio View", this, [this]() { emit action_triggered("perspective_portfolio"); });
-    persp->addAction("Markets View", this, [this]() { emit action_triggered("perspective_markets"); });
-    persp->addAction("News View", this, [this]() { emit action_triggered("perspective_news"); });
+    persp->addAction("投资组合视图", this, [this]() { emit action_triggered("perspective_portfolio"); });
+    persp->addAction("市场监控视图", this, [this]() { emit action_triggered("perspective_markets"); });
+    persp->addAction("情报资讯视图", this, [this]() { emit action_triggered("perspective_news"); });
 
     // Economics & Data
-    auto* qs_econ = persp->addMenu("Economics && Data");
+    auto* qs_econ = persp->addMenu("经济与数据布局");
     qs_econ->setStyleSheet(popup_ss());
-    qs_econ->addAction("Economics", this, [this]() { emit action_triggered("perspective_economics"); });
-    qs_econ->addAction("Data Sources", this, [this]() { emit action_triggered("perspective_data"); });
+    qs_econ->addAction("宏观经济视图", this, [this]() { emit action_triggered("perspective_economics"); });
+    qs_econ->addAction("数据源视图", this, [this]() { emit action_triggered("perspective_data"); });
 
     // Geopolitics
-    persp->addAction("Geopolitics View", this, [this]() { emit action_triggered("perspective_geopolitics"); });
+    persp->addAction("地缘政治视图", this, [this]() { emit action_triggered("perspective_geopolitics"); });
 
     // AI & Quant
-    auto* qs_ai = persp->addMenu("AI && Quant");
+    auto* qs_ai = persp->addMenu("AI 与量化布局");
     qs_ai->setStyleSheet(popup_ss());
-    qs_ai->addAction("Quant Lab", this, [this]() { emit action_triggered("perspective_quant"); });
-    qs_ai->addAction("AI Chat", this, [this]() { emit action_triggered("perspective_ai"); });
+    qs_ai->addAction("量化实验室", this, [this]() { emit action_triggered("perspective_quant"); });
+    qs_ai->addAction("AI 聊天窗口", this, [this]() { emit action_triggered("perspective_ai"); });
 
     // Tools
-    persp->addAction("Tools View", this, [this]() { emit action_triggered("perspective_tools"); });
+    persp->addAction("工具视图", this, [this]() { emit action_triggered("perspective_tools"); });
     m->addSeparator();
 
-    m->addAction("Refresh Screen\tF5", this, [this]() { emit action_triggered("refresh"); });
-    m->addAction("Take Screenshot\tCtrl+P", this, [this]() { emit action_triggered("screenshot"); });
+    m->addAction("刷新屏幕\tF5", this, [this]() { emit action_triggered("refresh"); });
+    m->addAction("截屏保存\tCtrl+P", this, [this]() { emit action_triggered("screenshot"); });
     return m;
 }
 
 QMenu* ToolBar::build_help_menu() {
-    auto* m = new QMenu("Help", this);
+    auto* m = new QMenu("帮助", this);
     m->setStyleSheet(popup_ss());
-    m->addAction("About Fincept", this, [this]() { emit navigate_to("about"); });
-    m->addAction("Help Center", this, [this]() { emit navigate_to("help"); });
+    m->addAction("关于 Fincept", this, [this]() { emit navigate_to("about"); });
+    m->addAction("帮助中心", this, [this]() { emit navigate_to("help"); });
     m->addSeparator();
-    m->addAction("Contact Us", this, [this]() { emit navigate_to("contact"); });
-    m->addAction("Terms of Service", this, [this]() { emit navigate_to("terms"); });
-    m->addAction("Privacy Policy", this, [this]() { emit navigate_to("privacy"); });
-    m->addAction("Trademarks", this, [this]() { emit navigate_to("trademarks"); });
+    m->addAction("联系我们", this, [this]() { emit navigate_to("contact"); });
+    m->addAction("服务条款", this, [this]() { emit navigate_to("terms"); });
+    m->addAction("隐私政策", this, [this]() { emit navigate_to("privacy"); });
+    m->addAction("商标声明", this, [this]() { emit navigate_to("trademarks"); });
     m->addSeparator();
-    m->addAction("Check for Updates", this, [this]() { emit action_triggered("check_updates"); });
+    m->addAction("检查更新", this, [this]() { emit action_triggered("check_updates"); });
     m->addSeparator();
-    m->addAction("Logout", this, [this]() { emit action_triggered("logout"); });
+    m->addAction("安全退出", this, [this]() { emit action_triggered("logout"); });
     return m;
 }
 

@@ -150,7 +150,7 @@ SettingsScreen::SettingsScreen(QWidget* parent) : QWidget(parent) {
     nvl->setContentsMargins(8, 16, 8, 8);
     nvl->setSpacing(2);
 
-    auto* title = new QLabel("SETTINGS");
+    auto* title = new QLabel("系统设置");
     title->setStyleSheet(section_title_ss());
     nvl->addWidget(title);
     nvl->addSpacing(12);
@@ -193,19 +193,19 @@ SettingsScreen::SettingsScreen(QWidget* parent) : QWidget(parent) {
         return btn;
     };
 
-    auto* first = make_btn("Credentials", 0);
-    make_btn("Appearance", 1);
-    make_btn("Notifications", 2);
-    make_btn("Storage & Cache", 3);
-    make_btn("Data Sources", 4);
-    make_btn("LLM Config", 5);
-    make_btn("MCP Servers", 6);
-    make_btn("Logging", 7);
-    make_btn("Security", 8);
-    make_btn("Profiles", 9);
-    make_btn("Keybindings", 10);
-    make_btn("Python Env", 11);
-    make_btn("Developer", 12);
+    auto* first = make_btn("API 凭据", 0);
+    make_btn("外观设置", 1);
+    make_btn("通知设置", 2);
+    make_btn("存储与缓存", 3);
+    make_btn("数据源", 4);
+    make_btn("LLM 配置", 5);
+    make_btn("MCP 服务器", 6);
+    make_btn("日志查看", 7);
+    make_btn("安全设置", 8);
+    make_btn("用户概览", 9);
+    make_btn("按键绑定", 10);
+    make_btn("Python 环境", 11);
+    make_btn("开发工具", 12);
 
     first->setChecked(true);
 
@@ -298,13 +298,13 @@ QWidget* SettingsScreen::build_credentials() {
     vl->setSpacing(0);
 
     // Title
-    auto* t = new QLabel("API CREDENTIALS");
+    auto* t = new QLabel("API 凭据凭证");
     t->setStyleSheet(section_title_ss());
     vl->addWidget(t);
     vl->addSpacing(4);
 
     auto* info =
-        new QLabel("Store API keys securely in the OS keychain. Keys are never written to disk in plain text.");
+        new QLabel("将 API 密钥安全地存储在操作系统钥匙串中。密钥绝不会以明文形式写入磁盘。");
     info->setWordWrap(true);
     info->setStyleSheet(QString("color:%1;background:transparent;").arg(ui::colors::TEXT_SECONDARY()));
     vl->addWidget(info);
@@ -339,7 +339,7 @@ QWidget* SettingsScreen::build_credentials() {
         hhl->addStretch();
 
         // Status label — persisted across load_credentials calls
-        auto* status_lbl = new QLabel("Not set");
+        auto* status_lbl = new QLabel("未设置");
         status_lbl->setStyleSheet(QString("color:%1;background:transparent;").arg(ui::colors::TEXT_SECONDARY()));
         hhl->addWidget(status_lbl);
         cred_status_[key] = status_lbl;
@@ -355,12 +355,12 @@ QWidget* SettingsScreen::build_credentials() {
 
         auto* field = new QLineEdit;
         field->setEchoMode(QLineEdit::Password);
-        field->setPlaceholderText("Not configured");
+        field->setPlaceholderText("未配置");
         field->setStyleSheet(input_ss());
         cred_fields_[key] = field;
         bhl->addWidget(field, 1);
 
-        auto* save_btn = new QPushButton("Save");
+        auto* save_btn = new QPushButton("保存");
         save_btn->setFixedHeight(30);
         save_btn->setFixedWidth(70);
         save_btn->setStyleSheet(btn_primary_ss());
@@ -370,8 +370,8 @@ QWidget* SettingsScreen::build_credentials() {
             QString val = field->text().trimmed();
             if (val.isEmpty()) {
                 SecureStorage::instance().remove(key);
-                field->setPlaceholderText("Not configured");
-                status_lbl->setText("Cleared");
+                field->setPlaceholderText("未配置");
+                status_lbl->setText("已清除");
                 status_lbl->setStyleSheet(
                     QString("color:%1;background:transparent;").arg(ui::colors::TEXT_SECONDARY()));
                 LOG_INFO("Credentials", "Cleared key: " + key);
@@ -379,12 +379,12 @@ QWidget* SettingsScreen::build_credentials() {
                 auto r = SecureStorage::instance().store(key, val);
                 if (r.is_ok()) {
                     field->clear();
-                    field->setPlaceholderText("•••••••• (saved)");
-                    status_lbl->setText("Saved ✓");
+                    field->setPlaceholderText("•••••••• (已保存)");
+                    status_lbl->setText("已保存 ✓");
                     status_lbl->setStyleSheet(QString("color:%1;background:transparent;").arg(ui::colors::POSITIVE()));
                     LOG_INFO("Credentials", "Stored key: " + key);
                 } else {
-                    status_lbl->setText("Save failed");
+                    status_lbl->setText("保存失败");
                     status_lbl->setStyleSheet(QString("color:%1;background:transparent;").arg(ui::colors::NEGATIVE()));
                     LOG_ERROR("Credentials", "Failed to store " + key);
                 }
@@ -412,13 +412,13 @@ void SettingsScreen::load_credentials() {
         auto r = SecureStorage::instance().retrieve(key);
         if (r.is_ok() && !r.value().isEmpty()) {
             field->clear();
-            field->setPlaceholderText("•••••••• (saved)");
-            status->setText("Saved ✓");
+            field->setPlaceholderText("•••••••• (已保存)");
+            status->setText("已保存 ✓");
             status->setStyleSheet(QString("color:%1;background:transparent;").arg(ui::colors::POSITIVE()));
         } else {
             field->clear();
-            field->setPlaceholderText("Not configured");
-            status->setText("Not set");
+            field->setPlaceholderText("未配置");
+            status->setText("未设置");
             status->setStyleSheet(QString("color:%1;background:transparent;").arg(ui::colors::TEXT_SECONDARY()));
         }
     }
@@ -430,7 +430,7 @@ void SettingsScreen::load_credentials() {
 namespace {
 constexpr const char* kDefaultFontSize = "14px";
 constexpr const char* kDefaultFontFamily = "Consolas";
-constexpr const char* kDefaultDensity = "Default";
+constexpr const char* kDefaultDensity = "默认";
 } // namespace
 
 QWidget* SettingsScreen::build_appearance() {
@@ -448,7 +448,7 @@ QWidget* SettingsScreen::build_appearance() {
     vl->setSpacing(8);
 
     // ── TYPOGRAPHY ────────────────────────────────────────────────────────────
-    auto* t = new QLabel("TYPOGRAPHY");
+    auto* t = new QLabel("字体排版");
     t->setStyleSheet(section_title_ss());
     vl->addWidget(t);
     vl->addWidget(make_sep());
@@ -459,13 +459,13 @@ QWidget* SettingsScreen::build_appearance() {
         app_font_size_->addItem(QString("%1px").arg(px));
     app_font_size_->setCurrentText(kDefaultFontSize);
     app_font_size_->setStyleSheet(combo_ss());
-    vl->addWidget(make_row("Font Size", app_font_size_));
+    vl->addWidget(make_row("字体大小", app_font_size_));
 
     app_font_family_ = new QComboBox;
     app_font_family_->addItems(QFontDatabase::families());
     app_font_family_->setCurrentText(kDefaultFontFamily);
     app_font_family_->setStyleSheet(combo_ss());
-    vl->addWidget(make_row("Font Family", app_font_family_));
+    vl->addWidget(make_row("字体名称", app_font_family_));
 
     // Debounced live preview — coalesce rapid changes into one apply after 300ms idle
     appearance_debounce_ = new QTimer(this);
@@ -488,16 +488,16 @@ QWidget* SettingsScreen::build_appearance() {
     vl->addSpacing(8);
 
     // ── THEME ─────────────────────────────────────────────────────────────────
-    auto* t2 = new QLabel("THEME");
+    auto* t2 = new QLabel("主题");
     t2->setStyleSheet(sub_title_ss());
     vl->addWidget(t2);
     vl->addSpacing(4);
 
     app_density_ = new QComboBox;
     app_density_->addItems(fincept::ui::ThemeManager::available_densities());
-    app_density_->setCurrentText("Default");
+    app_density_->setCurrentText("默认");
     app_density_->setStyleSheet(combo_ss());
-    vl->addWidget(make_row("Content Density", app_density_, "Controls padding and spacing throughout the UI."));
+    vl->addWidget(make_row("内容密度", app_density_, "控制整个 UI 的内边距和间距。"));
 
     connect(app_density_, &QComboBox::currentTextChanged, this, restart_debounce);
 
@@ -506,31 +506,31 @@ QWidget* SettingsScreen::build_appearance() {
     vl->addSpacing(8);
 
     // ── INTERFACE ─────────────────────────────────────────────────────────────
-    auto* t3 = new QLabel("INTERFACE");
+    auto* t3 = new QLabel("界面设置");
     t3->setStyleSheet(sub_title_ss());
     vl->addWidget(t3);
     vl->addSpacing(4);
 
-    chat_bubble_toggle_ = new QCheckBox("Show AI Chat Bubble");
+    chat_bubble_toggle_ = new QCheckBox("显示 AI 聊天球");
     chat_bubble_toggle_->setChecked(true);
     chat_bubble_toggle_->setStyleSheet(check_ss());
     vl->addWidget(
-        make_row("AI Chat Bubble", chat_bubble_toggle_, "Floating chat assistant in the bottom-right corner."));
+        make_row("AI 聊天球", chat_bubble_toggle_, "显示在屏幕右下角的悬浮聊天助手。"));
 
-    ticker_bar_toggle_ = new QCheckBox("Show Ticker Bar");
+    ticker_bar_toggle_ = new QCheckBox("显示行情滚动条");
     ticker_bar_toggle_->setChecked(true);
     ticker_bar_toggle_->setStyleSheet(check_ss());
-    vl->addWidget(make_row("Ticker Bar", ticker_bar_toggle_, "Live price ticker at the bottom of the screen."));
+    vl->addWidget(make_row("行情滚动条", ticker_bar_toggle_, "在屏幕底部显示实时行情。"));
 
-    animations_toggle_ = new QCheckBox("Enable Animations");
+    animations_toggle_ = new QCheckBox("启用动画效果");
     animations_toggle_->setChecked(true);
     animations_toggle_->setStyleSheet(check_ss());
-    vl->addWidget(make_row("Animations", animations_toggle_, "Fade and transition effects throughout the UI."));
+    vl->addWidget(make_row("动画", animations_toggle_, "在 UI 各处显示渐变和过渡效果。"));
 
     vl->addSpacing(16);
 
     // ── SAVE ──────────────────────────────────────────────────────────────────
-    auto* apply_btn = new QPushButton("Save Settings");
+    auto* apply_btn = new QPushButton("保存设置");
     apply_btn->setFixedWidth(160);
     apply_btn->setStyleSheet(btn_primary_ss());
     connect(apply_btn, &QPushButton::clicked, this, [this]() {
@@ -629,8 +629,8 @@ const QVector<ProviderDef>& provider_defs() {
          "Telegram",
          "✈",
          {
-             {"bot_token", "Bot Token", "Enter bot token from @BotFather", true},
-             {"chat_id", "Chat ID", "e.g. 123456789"},
+             {"bot_token", "机器人令牌", "从 @BotFather 获取令牌", true},
+             {"chat_id", "聊天 ID", "例如 123456789"},
          }},
         {"discord",
          "Discord",
@@ -643,64 +643,64 @@ const QVector<ProviderDef>& provider_defs() {
          "💬",
          {
              {"webhook_url", "Webhook URL", "https://hooks.slack.com/services/..."},
-             {"channel", "Channel", "#alerts (optional)"},
+             {"channel", "频道", "#alerts (可选)"},
          }},
         {"email",
-         "Email",
+         "电子邮件",
          "📧",
          {
-             {"smtp_host", "SMTP Host", "smtp.gmail.com"},
-             {"smtp_port", "Port", "587"},
-             {"smtp_user", "Username", "you@gmail.com"},
-             {"smtp_pass", "Password", "App password", true},
-             {"to_addr", "To Address", "recipient@example.com"},
-             {"from_addr", "From Address", "you@gmail.com (optional)"},
+             {"smtp_host", "SMTP 主机", "smtp.gmail.com"},
+             {"smtp_port", "端口", "587"},
+             {"smtp_user", "用户名", "you@gmail.com"},
+             {"smtp_pass", "密码", "应用专用密码", true},
+             {"to_addr", "收件人", "recipient@example.com"},
+             {"from_addr", "发件人", "you@gmail.com (可选)"},
          }},
         {"whatsapp",
          "WhatsApp",
          "📱",
          {
-             {"account_sid", "Account SID", "Twilio Account SID"},
-             {"auth_token", "Auth Token", "Twilio Auth Token", true},
-             {"from_number", "From Number", "+14155238886"},
-             {"to_number", "To Number", "+1XXXXXXXXXX"},
+             {"account_sid", "账户 SID", "Twilio 账户 SID"},
+             {"auth_token", "授权令牌", "Twilio 授权令牌", true},
+             {"from_number", "发送号码", "+14155238886"},
+             {"to_number", "接收号码", "+1XXXXXXXXXX"},
          }},
         {"pushover",
          "Pushover",
          "🔔",
          {
-             {"api_token", "API Token", "Your Pushover app token", true},
-             {"user_key", "User Key", "Your Pushover user key", true},
+             {"api_token", "API 令牌", "您的 Pushover 应用令牌", true},
+             {"user_key", "用户密钥", "您的 Pushover 用户密钥", true},
          }},
         {"ntfy",
          "ntfy",
          "📢",
          {
-             {"server_url", "Server URL", "https://ntfy.sh (leave empty for default)"},
-             {"topic", "Topic", "your-topic-name"},
-             {"token", "Auth Token", "Optional auth token", true},
+             {"server_url", "服务器 URL", "https://ntfy.sh (留空使用默认)"},
+             {"topic", "主题", "您的主题名称"},
+             {"token", "授权令牌", "可选授权令牌", true},
          }},
         {"pushbullet",
          "Pushbullet",
          "🔵",
          {
-             {"api_key", "API Key", "Your Pushbullet API key", true},
-             {"channel_tag", "Channel Tag", "Optional channel tag"},
+             {"api_key", "API 密钥", "您的 Pushbullet API 密钥", true},
+             {"channel_tag", "频道标签", "可选频道标签"},
          }},
         {"gotify",
          "Gotify",
          "🔊",
          {
-             {"server_url", "Server URL", "https://your-gotify-server.com"},
-             {"app_token", "App Token", "Application token", true},
+             {"server_url", "服务器 URL", "https://your-gotify-server.com"},
+             {"app_token", "应用令牌", "应用令牌", true},
          }},
         {"mattermost",
          "Mattermost",
          "🟦",
          {
              {"webhook_url", "Webhook URL", "https://your-mattermost.com/hooks/..."},
-             {"channel", "Channel", "#town-square (optional)"},
-             {"username", "Username", "Fincept (optional)"},
+             {"channel", "频道", "#town-square (可选)"},
+             {"username", "用户名", "Fincept (可选)"},
          }},
         {"teams",
          "MS Teams",
@@ -709,32 +709,32 @@ const QVector<ProviderDef>& provider_defs() {
              {"webhook_url", "Webhook URL", "https://outlook.office.com/webhook/..."},
          }},
         {"webhook",
-         "Webhook",
+         "通用 Webhook",
          "🌐",
          {
              {"url", "URL", "https://your-endpoint.com/notify"},
-             {"method", "Method", "POST"},
+             {"method", "方法 (Method)", "POST"},
          }},
         {"pagerduty",
          "PagerDuty",
          "🚨",
          {
-             {"routing_key", "Routing Key", "32-character integration key", true},
+             {"routing_key", "路由密钥", "32位集成密钥", true},
          }},
         {"opsgenie",
          "Opsgenie",
          "🔴",
          {
-             {"api_key", "API Key", "Your Opsgenie API key", true},
+             {"api_key", "API 密钥", "您的 Opsgenie API 密钥", true},
          }},
         {"sms",
-         "SMS (Twilio)",
+         "短信 (Twilio)",
          "💬",
          {
-             {"account_sid", "Account SID", "Twilio Account SID"},
-             {"auth_token", "Auth Token", "Twilio Auth Token", true},
-             {"from_number", "From Number", "+15005550006"},
-             {"to_number", "To Number", "+1XXXXXXXXXX"},
+             {"account_sid", "账户 SID", "Twilio 账户 SID"},
+             {"auth_token", "授权令牌", "Twilio 授权令牌", true},
+             {"from_number", "发送号码", "+15005550006"},
+             {"to_number", "接收号码", "+1XXXXXXXXXX"},
          }},
     };
     return defs;
@@ -758,7 +758,7 @@ QWidget* SettingsScreen::build_notifications() {
     vl->setContentsMargins(24, 24, 24, 24);
     vl->setSpacing(6);
 
-    auto* hdr_lbl = new QLabel("NOTIFICATION PROVIDERS");
+    auto* hdr_lbl = new QLabel("通知服务商");
     hdr_lbl->setStyleSheet(section_title_ss());
     vl->addWidget(hdr_lbl);
     vl->addWidget(make_sep());
@@ -1135,7 +1135,6 @@ static QWidget* make_category_row(const QString& name, QLabel* count_lbl, QPushB
     auto* hl = new QHBoxLayout(row);
     hl->setContentsMargins(12, 0, 12, 0);
     hl->setSpacing(8);
-
     auto* lbl = new QLabel(name);
     lbl->setStyleSheet(QString("color:%1;background:transparent;").arg(ui::colors::TEXT_PRIMARY()));
     hl->addWidget(lbl, 1);
@@ -1146,6 +1145,7 @@ static QWidget* make_category_row(const QString& name, QLabel* count_lbl, QPushB
     count_lbl->setStyleSheet(QString("color:%1;font-weight:700;background:transparent;").arg(ui::colors::CYAN()));
     hl->addWidget(count_lbl);
 
+    clear_btn->setText("清空");
     clear_btn->setFixedSize(56, 20);
     clear_btn->setStyleSheet(
         QString("QPushButton{background:rgba(220,38,38,0.1);color:%1;border:1px solid %3;font-weight:700;}"

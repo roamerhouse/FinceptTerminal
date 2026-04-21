@@ -72,7 +72,7 @@ void PricingScreen::build_ui() {
     vl->setSpacing(10);
 
     // ── Header ───────────────────────────────────────────────────────────────
-    auto* title = new QLabel("PLANS & PRICING");
+    auto* title = new QLabel("会员方案与定价");
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet(QString("color: %1; font-size: 20px; font-weight: 700; "
                                  "letter-spacing: 1px; background: transparent; %2")
@@ -80,7 +80,7 @@ void PricingScreen::build_ui() {
                              .arg(MF));
     vl->addWidget(title);
 
-    auto* subtitle = new QLabel("Unlock the full power of Fincept Terminal");
+    auto* subtitle = new QLabel("解锁 Fincept 终端的高级量化功能");
     subtitle->setAlignment(Qt::AlignCenter);
     subtitle->setStyleSheet(
         QString("color: %1; font-size: 13px; background: transparent; %2").arg(ui::colors::TEXT_TERTIARY()).arg(MF));
@@ -93,7 +93,7 @@ void PricingScreen::build_ui() {
     vl->addWidget(user_info_label_);
 
     // ── Loading ──────────────────────────────────────────────────────────────
-    loading_label_ = new QLabel("Loading plans...");
+    loading_label_ = new QLabel("正在载入方案...");
     loading_label_->setAlignment(Qt::AlignCenter);
     loading_label_->setStyleSheet(
         QString("color: %1; font-size: 13px; background: transparent; %2").arg(ui::colors::TEXT_DIM()).arg(MF));
@@ -144,7 +144,7 @@ void PricingScreen::showEvent(QShowEvent* event) {
     auto& auth = auth::AuthManager::instance();
     if (auth.is_authenticated()) {
         // Show loading while we fetch fresh data
-        loading_label_->setText("Updating plan status...");
+        loading_label_->setText("正在同步方案状态...");
         loading_label_->show();
         user_info_label_->hide();
 
@@ -194,7 +194,7 @@ void PricingScreen::fetch_plans() {
         loading_label_->hide();
 
         if (!r.success) {
-            error_label_->setText(r.error.isEmpty() ? "Failed to load plans" : r.error);
+            error_label_->setText(r.error.isEmpty() ? "无法加载订阅方案" : r.error);
             error_label_->show();
             return;
         }
@@ -267,7 +267,7 @@ void PricingScreen::render_plan_cards() {
     cards_container_->setLayout(cards_layout_);
 
     if (plans_.empty()) {
-        auto* empty = new QLabel("No plans available.");
+        auto* empty = new QLabel("暂无可用方案");
         empty->setAlignment(Qt::AlignCenter);
         empty->setStyleSheet(
             QString("color: %1; font-size: 13px; background: transparent; %2").arg(ui::colors::TEXT_DIM()).arg(MF));
@@ -301,7 +301,7 @@ QWidget* PricingScreen::create_plan_card(const auth::SubscriptionPlan& plan, int
 
     // Popular badge
     if (is_popular) {
-        auto* badge = new QLabel("RECOMMENDED");
+        auto* badge = new QLabel("热门推荐");
         badge->setAlignment(Qt::AlignCenter);
         badge->setFixedHeight(20);
         badge->setStyleSheet(QString("color: %1; background: rgba(217,119,6,0.1); "
@@ -336,7 +336,7 @@ QWidget* PricingScreen::create_plan_card(const auth::SubscriptionPlan& plan, int
 
     // Price
     if (plan.is_free) {
-        auto* price = new QLabel("FREE");
+        auto* price = new QLabel("免费");
         price->setAlignment(Qt::AlignCenter);
         price->setStyleSheet(QString("color: %1; font-size: 28px; font-weight: 700; "
                                      "background: transparent; %2")
@@ -352,7 +352,7 @@ QWidget* PricingScreen::create_plan_card(const auth::SubscriptionPlan& plan, int
                                  .arg(MF));
         vl->addWidget(price);
 
-        auto* period = new QLabel(QString("/ %1 days").arg(plan.validity_days));
+        auto* period = new QLabel(QString("/ %1 天").arg(plan.validity_days));
         period->setAlignment(Qt::AlignCenter);
         period->setStyleSheet(
             QString("color: %1; font-size: 12px; background: transparent; %2").arg(ui::colors::TEXT_DIM()).arg(MF));
@@ -362,7 +362,7 @@ QWidget* PricingScreen::create_plan_card(const auth::SubscriptionPlan& plan, int
     vl->addSpacing(2);
 
     // Credits
-    auto* credits = new QLabel(QString("%1 credits").arg(plan.credits));
+    auto* credits = new QLabel(QString("%1 积分 (CR)").arg(plan.credits));
     credits->setAlignment(Qt::AlignCenter);
     credits->setStyleSheet(QString("color: %1; font-size: 13px; font-weight: 700; "
                                    "background: transparent; %2")
@@ -371,7 +371,7 @@ QWidget* PricingScreen::create_plan_card(const auth::SubscriptionPlan& plan, int
     vl->addWidget(credits);
 
     // Support
-    auto* support = new QLabel(QString("%1 support").arg(plan.support_type));
+    auto* support = new QLabel(QString("%1 技术支持").arg(plan.support_type));
     support->setAlignment(Qt::AlignCenter);
     support->setStyleSheet(
         QString("color: %1; font-size: 12px; background: transparent; %2").arg(ui::colors::TEXT_TERTIARY()).arg(MF));
@@ -402,7 +402,7 @@ QWidget* PricingScreen::create_plan_card(const auth::SubscriptionPlan& plan, int
     btn->setCursor(Qt::PointingHandCursor);
 
     if (is_current) {
-        btn->setText("ACTIVE");
+        btn->setText("使用中");
         btn->setEnabled(false);
         btn->setStyleSheet(QString("QPushButton { background: rgba(22,163,74,0.1); color: %1; "
                                    "border: 1px solid %1; font-size: 11px; font-weight: 700; %2 }"
@@ -412,14 +412,14 @@ QWidget* PricingScreen::create_plan_card(const auth::SubscriptionPlan& plan, int
     } else if (plan.is_free) {
         bool user_has_paid = auth_mgr.is_authenticated() && auth_mgr.session().has_paid_plan();
         if (user_has_paid) {
-            btn->setText("FREE TIER");
+            btn->setText("当前版本");
             btn->setEnabled(false);
             btn->setStyleSheet(QString("QPushButton { background: %1; color: %2; "
                                        "border: 1px solid %3; font-size: 11px; font-weight: 700; %4 }")
                                    .arg(ui::colors::BG_RAISED(), ui::colors::TEXT_DIM(), ui::colors::BORDER_DIM())
                                    .arg(MF));
         } else {
-            btn->setText("CONTINUE FREE");
+            btn->setText("继续试用");
             btn->setStyleSheet(QString("QPushButton { background: %1; color: %2; "
                                        "border: 1px solid %3; font-size: 11px; font-weight: 700; %4 }"
                                        "QPushButton:hover { color: %5; background: %6; }")
@@ -429,7 +429,7 @@ QWidget* PricingScreen::create_plan_card(const auth::SubscriptionPlan& plan, int
             connect(btn, &QPushButton::clicked, this, &PricingScreen::navigate_dashboard);
         }
     } else {
-        btn->setText("SELECT PLAN");
+        btn->setText("选择此方案");
         btn->setStyleSheet(
             QString("QPushButton { background: rgba(217,119,6,0.1); color: %1; "
                     "border: 1px solid %2; font-size: 11px; font-weight: 700; %3 }"
@@ -451,23 +451,23 @@ QWidget* PricingScreen::create_plan_card(const auth::SubscriptionPlan& plan, int
 
 void PricingScreen::on_select_plan(const QString& plan_id) {
     for (auto* btn : cards_container_->findChildren<QPushButton*>()) {
-        if (btn->text() == "SELECT PLAN") {
+        if (btn->text() == "选择此方案") {
             btn->setEnabled(false);
-            btn->setText("PROCESSING...");
+            btn->setText("处理中...");
         }
     }
     error_label_->hide();
 
     auth::AuthApi::instance().generate_checkout_token(plan_id, [this, plan_id](auth::ApiResponse r) {
         for (auto* btn : cards_container_->findChildren<QPushButton*>()) {
-            if (btn->text() == "PROCESSING...") {
+            if (btn->text() == "处理中...") {
                 btn->setEnabled(true);
-                btn->setText("SELECT PLAN");
+                btn->setText("选择此方案");
             }
         }
 
         if (!r.success) {
-            error_label_->setText(r.error.isEmpty() ? "Failed to generate checkout token" : r.error);
+            error_label_->setText(r.error.isEmpty() ? "支付令牌生成失败" : r.error);
             error_label_->show();
             return;
         }
@@ -575,7 +575,7 @@ void PricingScreen::update_footer() {
     bool user_has_paid = auth_mgr.is_authenticated() && auth_mgr.session().has_paid_plan();
 
     if (user_has_paid) {
-        auto* back_btn = new QPushButton("Back to Dashboard");
+        auto* back_btn = new QPushButton("返回主页");
         back_btn->setCursor(Qt::PointingHandCursor);
         back_btn->setStyleSheet(QString("QPushButton { color: %1; background: transparent; border: none; "
                                         "font-size: 12px; %2 }"
@@ -594,12 +594,12 @@ void PricingScreen::update_footer() {
         hl->setAlignment(Qt::AlignCenter);
         hl->setSpacing(6);
 
-        auto* explore = new QLabel("Want to explore first?");
+        auto* explore = new QLabel("先去四处看看？");
         explore->setStyleSheet(
             QString("color: %1; font-size: 12px; background: transparent; %2").arg(ui::colors::TEXT_DIM()).arg(MF));
         hl->addWidget(explore);
 
-        auto* free_btn = new QPushButton("Continue with Free Plan");
+        auto* free_btn = new QPushButton("继续使用免费方案");
         free_btn->setCursor(Qt::PointingHandCursor);
         free_btn->setStyleSheet(QString("QPushButton { color: %1; background: transparent; border: none; "
                                         "font-size: 12px; %2 }"

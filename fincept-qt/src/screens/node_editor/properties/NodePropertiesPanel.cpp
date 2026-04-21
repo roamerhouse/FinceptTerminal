@@ -29,7 +29,7 @@ void NodePropertiesPanel::build_ui() {
     auto* el = new QVBoxLayout(empty_page_);
     el->setContentsMargins(20, 40, 20, 20);
     el->setAlignment(Qt::AlignCenter);
-    auto* empty_label = new QLabel("Select a node\nto edit properties");
+    auto* empty_label = new QLabel("选择一个节点\n以编辑属性");
     empty_label->setAlignment(Qt::AlignCenter);
     empty_label->setStyleSheet(
         QString("color: %1; font-family: Consolas; font-size: 12px;").arg(ui::colors::TEXT_TERTIARY()));
@@ -106,14 +106,14 @@ void NodePropertiesPanel::build_editor(const NodeDef& node, const NodeTypeDef& t
     auto* hl = new QHBoxLayout(header);
     hl->setContentsMargins(10, 0, 10, 0);
 
-    auto* title = new QLabel("PROPERTIES");
+    auto* title = new QLabel("属性");
     title->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 12px;"
                                  "font-weight: bold; letter-spacing: 0.5px;")
                              .arg(ui::colors::AMBER()));
     hl->addWidget(title);
     hl->addStretch();
 
-    auto* del_btn = new QPushButton("DEL");
+    auto* del_btn = new QPushButton("删除");
     del_btn->setFixedSize(36, 22);
     del_btn->setStyleSheet(QString("QPushButton {"
                                    "  background: %1; color: %2;"
@@ -140,7 +140,7 @@ void NodePropertiesPanel::build_editor(const NodeDef& node, const NodeTypeDef& t
     nsl->setContentsMargins(0, 8, 0, 8);
     nsl->setSpacing(4);
 
-    auto* name_label = new QLabel("NAME");
+    auto* name_label = new QLabel("名称");
     name_label->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 11px; font-weight: bold;")
                                   .arg(ui::colors::TEXT_SECONDARY()));
     nsl->addWidget(name_label);
@@ -176,7 +176,7 @@ void NodePropertiesPanel::build_editor(const NodeDef& node, const NodeTypeDef& t
 
     // ── Parameters ─────────────────────────────────────────────────
     if (!type_def.parameters.isEmpty()) {
-        auto* param_header = new QLabel("PARAMETERS");
+        auto* param_header = new QLabel("参数");
         param_header->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 11px;"
                                             "font-weight: bold; padding: 8px 0 4px 0; letter-spacing: 0.5px;")
                                         .arg(ui::colors::AMBER()));
@@ -201,14 +201,14 @@ void NodePropertiesPanel::build_editor(const NodeDef& node, const NodeTypeDef& t
     sep3->setStyleSheet(QString("background: %1; border: none;").arg(ui::colors::BORDER_MED()));
     editor_layout_->insertWidget(pos++, sep3);
 
-    auto* settings_header = new QLabel("SETTINGS");
+    auto* settings_header = new QLabel("设置");
     settings_header->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 11px;"
                                            "font-weight: bold; padding: 8px 0 4px 0; letter-spacing: 0.5px;")
                                        .arg(ui::colors::AMBER()));
     editor_layout_->insertWidget(pos++, settings_header);
 
     // Disabled toggle
-    auto* disabled_check = new QCheckBox("Disabled");
+    auto* disabled_check = new QCheckBox("已禁用");
     disabled_check->setChecked(node.disabled);
     disabled_check->setStyleSheet(
         QString("QCheckBox { color: %1; font-family: Consolas; font-size: 12px; }"
@@ -218,7 +218,7 @@ void NodePropertiesPanel::build_editor(const NodeDef& node, const NodeTypeDef& t
     editor_layout_->insertWidget(pos++, disabled_check);
 
     // Continue on fail toggle
-    auto* cof_check = new QCheckBox("Continue on Fail");
+    auto* cof_check = new QCheckBox("失败时继续");
     cof_check->setChecked(node.continue_on_fail);
     cof_check->setStyleSheet(disabled_check->styleSheet());
     editor_layout_->insertWidget(pos++, cof_check);

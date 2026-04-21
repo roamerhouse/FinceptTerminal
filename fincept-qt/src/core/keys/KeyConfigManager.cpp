@@ -4,7 +4,7 @@
 #include "core/logging/Logger.h"
 #include "storage/repositories/SettingsRepository.h"
 
-#include <optional>
+// #include <optional> - removed for compatibility
 
 namespace fincept {
 
@@ -189,14 +189,14 @@ void KeyConfigManager::reset_all() {
     LOG_INFO("KeyConfig", "All keybindings reset to defaults");
 }
 
-std::optional<KeyAction> KeyConfigManager::find_conflict(const QKeySequence& seq, KeyAction exclude) const {
+KeyAction KeyConfigManager::find_conflict(const QKeySequence& seq, KeyAction exclude) const {
     for (auto it = actions_.begin(); it != actions_.end(); ++it) {
         if (it.key() == exclude)
             continue;
         if (it.value()->shortcut() == seq)
             return it.key();
     }
-    return std::nullopt;
+    return KeyAction::Invalid;
 }
 
 } // namespace fincept

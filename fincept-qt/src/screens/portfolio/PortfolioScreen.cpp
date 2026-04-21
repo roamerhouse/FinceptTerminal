@@ -198,7 +198,7 @@ void PortfolioScreen::build_ui() {
     connect(command_bar_, &PortfolioCommandBar::export_csv_requested, this, [this]() {
         if (selected_id_.isEmpty())
             return;
-        QString path = QFileDialog::getSaveFileName(this, "Export CSV", "portfolio.csv", "CSV Files (*.csv)");
+        QString path = QFileDialog::getSaveFileName(this, "导出 CSV", "portfolio.csv", "CSV 文件 (*.csv)");
         if (!path.isEmpty()) {
             services::PortfolioService::instance().export_csv(selected_id_, path);
             services::FileManagerService::instance().import_file(path, "portfolio");
@@ -207,7 +207,7 @@ void PortfolioScreen::build_ui() {
     connect(command_bar_, &PortfolioCommandBar::export_json_requested, this, [this]() {
         if (selected_id_.isEmpty())
             return;
-        QString path = QFileDialog::getSaveFileName(this, "Export JSON", "portfolio.json", "JSON Files (*.json)");
+        QString path = QFileDialog::getSaveFileName(this, "导出 JSON", "portfolio.json", "JSON 文件 (*.json)");
         if (!path.isEmpty()) {
             services::PortfolioService::instance().export_json(selected_id_, path);
             services::FileManagerService::instance().import_file(path, "portfolio");
@@ -319,13 +319,13 @@ QWidget* PortfolioScreen::build_empty_state() {
     accent_dot->setStyleSheet(QString("color:%1; font-size:14px; letter-spacing:4px;").arg(ui::colors::AMBER()));
     layout->addWidget(accent_dot);
 
-    auto* title = new QLabel("PORTFOLIO WORKSPACE");
+    auto* title = new QLabel("投资组合工作区");
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet(
         QString("color:%1; font-size:18px; font-weight:700; letter-spacing:2px;").arg(ui::colors::TEXT_PRIMARY()));
     layout->addWidget(title);
 
-    auto* sub = new QLabel("Create, import, or explore a sample portfolio to get started.");
+    auto* sub = new QLabel("创建、导入或加载演示组合以开始使用。");
     sub->setAlignment(Qt::AlignCenter);
     sub->setStyleSheet(QString("color:%1; font-size:12px; letter-spacing:0.2px;").arg(ui::colors::TEXT_SECONDARY()));
     layout->addWidget(sub);
@@ -337,22 +337,19 @@ QWidget* PortfolioScreen::build_empty_state() {
     card_row->setAlignment(Qt::AlignCenter);
     card_row->setSpacing(14);
 
-    auto* create_card = make_cta_card("\u25A2", "CREATE NEW",
-                                      "Start a fresh portfolio. Name it, pick a currency, "
-                                      "and add holdings one at a time.",
+    auto* create_card = make_cta_card("\u25A2", "创建新组合",
+                                      "从零开始创建。为其命名、选择币种，并逐一添加持仓。",
                                       ui::colors::AMBER(), content);
     connect(create_card, &QPushButton::clicked, this, &PortfolioScreen::on_create_requested);
 
-    auto* import_card = make_cta_card("\u2913", "IMPORT JSON",
-                                      "Load an existing portfolio from an exported JSON file. "
-                                      "Merge into an existing portfolio or create a new one.",
+    auto* import_card = make_cta_card("\u2913", "导入 JSON",
+                                      "从导出的 JSON 文件加载现有组合。支持合并到已有组合或创建新组合。",
                                       ui::colors::CYAN(), content);
     connect(import_card, &QPushButton::clicked, command_bar_, &PortfolioCommandBar::import_requested);
 
-    auto* demo_card = make_cta_card("\u25B6", "LOAD DEMO",
-                                    "Preview the workspace with a sample diversified portfolio "
-                                    "of 12 major equities.",
-                                    ui::colors::POSITIVE(), content);
+    auto* demo_card = make_cta_card("\u25B6", "加载演示资料",
+                                      "使用包含 12 支主要股票的样本分散组合来预览工作区。",
+                                      ui::colors::POSITIVE(), content);
     connect(demo_card, &QPushButton::clicked, this, [this]() { load_demo_portfolio(); });
 
     card_row->addWidget(create_card);
@@ -408,7 +405,7 @@ QWidget* PortfolioScreen::build_loading_state() {
     outer->addLayout(row4);
 
     // Subtle label beneath skeleton
-    auto* text = new QLabel("Loading portfolio data…");
+    auto* text = new QLabel("正在加载投资组合数据...");
     text->setAlignment(Qt::AlignCenter);
     text->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:600; letter-spacing:0.8px;").arg(ui::colors::AMBER()));
@@ -771,7 +768,7 @@ QWidget* PortfolioScreen::build_main_view() {
     title_tick->setStyleSheet(QString("background:%1; border-radius:1px;").arg(ui::colors::AMBER()));
     header_hl->addWidget(title_tick);
 
-    auto* title = new QLabel("POSITIONS");
+    auto* title = new QLabel("当前持仓");
     title->setStyleSheet(QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1.2px; background:transparent;")
                              .arg(ui::colors::TEXT_PRIMARY()));
     header_hl->addWidget(title);

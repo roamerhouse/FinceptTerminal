@@ -17,7 +17,7 @@ static QString deploy_input_style() {
 }
 
 DeployDialog::DeployDialog(const QString& current_name, QWidget* parent) : QDialog(parent) {
-    setWindowTitle("Deploy Workflow");
+    setWindowTitle("部署工作流");
     setFixedSize(420, 320);
     setStyleSheet(QString("QDialog { background: %1; }").arg(ui::colors::BG_SURFACE()));
     build_ui(current_name);
@@ -36,7 +36,7 @@ void DeployDialog::build_ui(const QString& current_name) {
     root->setSpacing(12);
 
     // ── Title ──────────────────────────────────────────────────────
-    auto* title = new QLabel("DEPLOY WORKFLOW");
+    auto* title = new QLabel("部署工作流");
     title->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 14px;"
                                  "font-weight: bold; letter-spacing: 0.5px;")
                              .arg(ui::colors::AMBER()));
@@ -49,7 +49,7 @@ void DeployDialog::build_ui(const QString& current_name) {
     root->addWidget(sep);
 
     // ── Name ───────────────────────────────────────────────────────
-    auto* name_label = new QLabel("WORKFLOW NAME");
+    auto* name_label = new QLabel("工作流名称");
     name_label->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 11px; font-weight: bold;")
                                   .arg(ui::colors::TEXT_SECONDARY()));
     root->addWidget(name_label);
@@ -60,13 +60,13 @@ void DeployDialog::build_ui(const QString& current_name) {
     root->addWidget(name_edit_);
 
     // ── Description ────────────────────────────────────────────────
-    auto* desc_label = new QLabel("DESCRIPTION");
+    auto* desc_label = new QLabel("描述");
     desc_label->setStyleSheet(QString("color: %1; font-family: Consolas; font-size: 11px; font-weight: bold;")
                                   .arg(ui::colors::TEXT_SECONDARY()));
     root->addWidget(desc_label);
 
     desc_edit_ = new QPlainTextEdit;
-    desc_edit_->setPlaceholderText("Describe what this workflow does...");
+    desc_edit_->setPlaceholderText("描述此工作流的功能...");
     desc_edit_->setMaximumHeight(80);
     desc_edit_->setStyleSheet(QString("QPlainTextEdit { %1 } QPlainTextEdit:focus { border: 1px solid %2; }")
                                   .arg(deploy_input_style(), ui::colors::AMBER()));
@@ -78,7 +78,7 @@ void DeployDialog::build_ui(const QString& current_name) {
     auto* btn_row = new QHBoxLayout;
     btn_row->setSpacing(8);
 
-    auto* cancel_btn = new QPushButton("CANCEL");
+    auto* cancel_btn = new QPushButton("取消");
     cancel_btn->setFixedHeight(28);
     cancel_btn->setStyleSheet(QString("QPushButton {"
                                       "  background: %1; color: %2; border: 1px solid %3;"
@@ -92,7 +92,7 @@ void DeployDialog::build_ui(const QString& current_name) {
 
     btn_row->addStretch();
 
-    auto* draft_btn = new QPushButton("SAVE DRAFT");
+    auto* draft_btn = new QPushButton("保存草稿");
     draft_btn->setFixedHeight(28);
     draft_btn->setStyleSheet(
         QString("QPushButton {"
@@ -107,7 +107,7 @@ void DeployDialog::build_ui(const QString& current_name) {
     });
     btn_row->addWidget(draft_btn);
 
-    auto* deploy_btn = new QPushButton("DEPLOY");
+    auto* deploy_btn = new QPushButton("执行部署");
     deploy_btn->setFixedHeight(28);
     deploy_btn->setStyleSheet(
         QString("QPushButton {"

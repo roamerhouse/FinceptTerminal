@@ -109,7 +109,7 @@ RegisterScreen::RegisterScreen(QWidget* parent) : QWidget(parent) {
     auto& auth = auth::AuthManager::instance();
     connect(&auth, &auth::AuthManager::signup_succeeded, this, [this]() {
         register_btn_->setEnabled(true);
-        register_btn_->setText("  CREATE ACCOUNT  ");
+        register_btn_->setText("  创 建 账 户  ");
         otp_email_->setText(email_->text().trimmed());
         otp_input_->clear();
         otp_error_->hide();
@@ -117,14 +117,14 @@ RegisterScreen::RegisterScreen(QWidget* parent) : QWidget(parent) {
     });
     connect(&auth, &auth::AuthManager::signup_failed, this, [this](const QString& err) {
         register_btn_->setEnabled(true);
-        register_btn_->setText("  CREATE ACCOUNT  ");
+        register_btn_->setText("  创 建 账 户  ");
         error_label_->setText(err);
         error_label_->show();
     });
     connect(&auth, &auth::AuthManager::otp_verified, this, [this]() { verify_btn_->setEnabled(true); });
     connect(&auth, &auth::AuthManager::otp_failed, this, [this](const QString& err) {
         verify_btn_->setEnabled(true);
-        verify_btn_->setText("  VERIFY  ");
+        verify_btn_->setText("  验 证  ");
         otp_error_->setText(err);
         otp_error_->show();
     });
@@ -170,7 +170,7 @@ void RegisterScreen::build_form_page() {
     connect(back, &QPushButton::clicked, this, &RegisterScreen::navigate_login);
     hl->addWidget(back);
 
-    auto* title = new QLabel("CREATE ACCOUNT");
+    auto* title = new QLabel("创建账户");
     title->setStyleSheet(QString("color: %1; font-size: 14px; font-weight: 700;"
                                  "background: transparent; letter-spacing: 1px;"
                                  "font-family: 'Consolas','Courier New',monospace;")
@@ -205,16 +205,16 @@ void RegisterScreen::build_form_page() {
 
     auto* fn_col = new QVBoxLayout;
     fn_col->setSpacing(2);
-    add_field(first_name_, "FIRST NAME", "First", fn_col);
+    add_field(first_name_, "名", "名", fn_col);
     nrl->addLayout(fn_col);
 
     auto* ln_col = new QVBoxLayout;
     ln_col->setSpacing(2);
-    add_field(last_name_, "LAST NAME", "Last", ln_col);
+    add_field(last_name_, "姓", "姓", ln_col);
     nrl->addLayout(ln_col);
     vl->addWidget(name_row);
 
-    add_field(email_, "EMAIL", "user@domain.com", vl);
+    add_field(email_, "电子邮箱", "user@domain.com", vl);
 
     // Phone + country code side by side
     auto* ph_row = new QWidget(this);
@@ -225,18 +225,18 @@ void RegisterScreen::build_form_page() {
 
     auto* cc_col = new QVBoxLayout;
     cc_col->setSpacing(2);
-    add_field(country_code_, "CODE", "+1", cc_col);
+    add_field(country_code_, "区号", "+86", cc_col);
     country_code_->setFixedWidth(72);
     phl->addLayout(cc_col);
 
     auto* ph_col = new QVBoxLayout;
     ph_col->setSpacing(2);
-    add_field(phone_, "PHONE", "234 567 8900", ph_col);
+    add_field(phone_, "电话号码", "138 0000 0000", ph_col);
     phl->addLayout(ph_col);
 
     vl->addWidget(ph_row);
 
-    add_field(password_, "PASSWORD", "min 8 characters", vl);
+    add_field(password_, "登录密码", "至少 8 个字符", vl);
     password_->setEchoMode(QLineEdit::Password);
 
     // Password strength — compact single row hints
@@ -261,7 +261,7 @@ void RegisterScreen::build_form_page() {
 
     connect(password_, &QLineEdit::textChanged, this, &RegisterScreen::update_password_strength);
 
-    add_field(confirm_pw_, "CONFIRM PASSWORD", "re-enter password", vl);
+    add_field(confirm_pw_, "确认密码", "请再次输入密码", vl);
     confirm_pw_->setEchoMode(QLineEdit::Password);
 
     // Error
@@ -277,7 +277,7 @@ void RegisterScreen::build_form_page() {
 
     vl->addSpacing(2);
 
-    register_btn_ = new QPushButton("  CREATE ACCOUNT  ");
+    register_btn_ = new QPushButton("  立 即 注 册  ");
     register_btn_->setFixedHeight(32);
     register_btn_->setStyleSheet(btn_primary());
     connect(register_btn_, &QPushButton::clicked, this, &RegisterScreen::on_register);
@@ -292,11 +292,11 @@ void RegisterScreen::build_form_page() {
     lrl->setAlignment(Qt::AlignCenter);
     lrl->setContentsMargins(0, 0, 0, 0);
 
-    auto* have = new QLabel("Already have an account?");
+    auto* have = new QLabel("已经有账号了？");
     have->setStyleSheet(muted_style());
     lrl->addWidget(have);
 
-    auto* signin = new QPushButton("SIGN IN");
+    auto* signin = new QPushButton("登录");
     signin->setStyleSheet(QString("QPushButton { color: %1; background: transparent; border: none;"
                                   "  font-size: 12px; font-weight: 700;"
                                   "  font-family: 'Consolas','Courier New',monospace; }"
@@ -326,7 +326,7 @@ void RegisterScreen::build_otp_page() {
     auto* hl = new QHBoxLayout(header);
     hl->setContentsMargins(14, 0, 14, 0);
 
-    auto* title = new QLabel("VERIFY EMAIL");
+    auto* title = new QLabel("验证邮箱");
     title->setStyleSheet(QString("color: %1; font-size: 14px; font-weight: 700;"
                                  "background: transparent; letter-spacing: 1px;"
                                  "font-family: 'Consolas','Courier New',monospace;")
@@ -342,12 +342,12 @@ void RegisterScreen::build_otp_page() {
 
     vl->addWidget(make_separator());
 
-    auto* lbl = new QLabel("VERIFICATION CODE");
+    auto* lbl = new QLabel("验证码");
     lbl->setStyleSheet(label_style());
     vl->addWidget(lbl);
 
     otp_input_ = new QLineEdit;
-    otp_input_->setPlaceholderText("enter code from email");
+    otp_input_->setPlaceholderText("输入邮箱收到的验证码");
     otp_input_->setFixedHeight(34);
     otp_input_->setStyleSheet(QString("QLineEdit {"
                                       "  background: %1; color: %2;"
@@ -371,18 +371,18 @@ void RegisterScreen::build_otp_page() {
     otp_error_->hide();
     vl->addWidget(otp_error_);
 
-    verify_btn_ = new QPushButton("  VERIFY  ");
+    verify_btn_ = new QPushButton("  立即验证  ");
     verify_btn_->setFixedHeight(32);
     verify_btn_->setStyleSheet(btn_primary());
     connect(verify_btn_, &QPushButton::clicked, this, &RegisterScreen::on_verify_otp);
     vl->addWidget(verify_btn_);
 
-    auto* resend = new QPushButton("DIDN'T RECEIVE? RESEND");
+    auto* resend = new QPushButton("没收到？重新发送");
     resend->setStyleSheet(link_style());
     connect(resend, &QPushButton::clicked, this, &RegisterScreen::on_resend_otp);
     vl->addWidget(resend, 0, Qt::AlignCenter);
 
-    auto* back2 = new QPushButton("BACK TO FORM");
+    auto* back2 = new QPushButton("返回修改资料");
     back2->setStyleSheet(link_style());
     connect(back2, &QPushButton::clicked, this, [this]() { pages_->setCurrentIndex(0); });
     vl->addWidget(back2, 0, Qt::AlignCenter);
@@ -417,12 +417,12 @@ void RegisterScreen::on_register() {
     QString cpw = confirm_pw_->text();
 
     if (fn.isEmpty() || ln.isEmpty() || em.isEmpty() || ph.isEmpty() || pw.isEmpty() || cpw.isEmpty()) {
-        error_label_->setText("All fields are required");
+        error_label_->setText("请填写所有必填项");
         error_label_->show();
         return;
     }
     if (cc.isEmpty()) {
-        error_label_->setText("Country code is required (e.g. +1, +91)");
+        error_label_->setText("请输入区号 (例如 +86, +1)");
         error_label_->show();
         return;
     }
@@ -438,25 +438,25 @@ void RegisterScreen::on_register() {
         return;
     }
     if (pw != cpw) {
-        error_label_->setText("Passwords do not match");
+        error_label_->setText("两次输入的密码不一致");
         error_label_->show();
         return;
     }
     if (pw.length() < 8) {
-        error_label_->setText("Password must be at least 8 characters");
+        error_label_->setText("密码长度至少为 8 位");
         error_label_->show();
         return;
     }
 
     QString username = auth::sanitize_input(fn + ln).toLower();
     if (username.length() < 3 || username.length() > 50) {
-        error_label_->setText("Username must be 3-50 characters");
+        error_label_->setText("用户名必须在 3-50 个字符之间");
         error_label_->show();
         return;
     }
 
     register_btn_->setEnabled(false);
-    register_btn_->setText("  CREATING...  ");
+    register_btn_->setText("  正在创建...  ");
     auth::AuthManager::instance().signup(username, em, pw, ph, {}, cc);
 }
 
@@ -464,12 +464,12 @@ void RegisterScreen::on_verify_otp() {
     otp_error_->hide();
     QString code = otp_input_->text().trimmed();
     if (code.isEmpty()) {
-        otp_error_->setText("Enter the verification code");
+        otp_error_->setText("请输入验证码");
         otp_error_->show();
         return;
     }
     verify_btn_->setEnabled(false);
-    verify_btn_->setText("  VERIFYING...  ");
+    verify_btn_->setText("  正在验证...  ");
     auth::AuthManager::instance().verify_otp(email_->text().trimmed(), code);
 }
 

@@ -27,6 +27,7 @@ enum class KeyAction {
     RunCell,
     RunAndNext,
     RenameCell,
+    Invalid,
 };
 
 } // namespace fincept

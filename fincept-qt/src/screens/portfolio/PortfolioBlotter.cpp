@@ -22,8 +22,8 @@
 
 namespace fincept::screens {
 
-static const QStringList kColumns = {"SYMBOL", "QTY",  "LAST", "AVG COST", "MKT VAL", "COST BASIS",
-                                     "P&L",    "P&L%", "CHG%", "TREND",    "WT%"};
+static const QStringList kColumns = {"代码", "数量",  "价格", "平均成本", "市值", "成本",
+                                     "盈亏",    "盈亏%", "涨跌%", "趋势",    "权重%"};
 
 PortfolioBlotter::PortfolioBlotter(QWidget* parent) : QWidget(parent) {
     build_ui();
@@ -404,8 +404,8 @@ void PortfolioBlotter::on_context_menu(const QPoint& pos) {
     }());
     menu.addSeparator();
 
-    auto* edit_act = menu.addAction("Edit Transaction");
-    auto* delete_act = menu.addAction("Close / Delete Position");
+    auto* edit_act = menu.addAction("编辑交易");
+    auto* delete_act = menu.addAction("平仓 / 删除仓位");
 
     edit_act->setIcon(QIcon());
     delete_act->setIcon(QIcon());

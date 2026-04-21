@@ -59,7 +59,7 @@ CryptoWatchlist::CryptoWatchlist(QWidget* parent) : QWidget(parent) {
     auto* header_layout = new QHBoxLayout(header_widget);
     header_layout->setContentsMargins(8, 0, 8, 0);
 
-    auto* header = new QLabel("WATCHLIST");
+    auto* header = new QLabel("自选列表");
     header->setObjectName("cryptoWatchlistTitle");
     header_layout->addWidget(header);
     header_layout->addStretch();
@@ -72,7 +72,7 @@ CryptoWatchlist::CryptoWatchlist(QWidget* parent) : QWidget(parent) {
     // Search
     filter_edit_ = new QLineEdit;
     filter_edit_->setObjectName("cryptoWatchlistSearch");
-    filter_edit_->setPlaceholderText("Search...");
+    filter_edit_->setPlaceholderText("搜索...");
     filter_edit_->setFixedHeight(24);
     connect(filter_edit_, &QLineEdit::textChanged, this, &CryptoWatchlist::on_filter_changed);
     layout->addWidget(filter_edit_);
@@ -82,7 +82,7 @@ CryptoWatchlist::CryptoWatchlist(QWidget* parent) : QWidget(parent) {
     table_ = new QTableWidget;
     table_->setObjectName("cryptoWatchlistTable");
     table_->setColumnCount(3);
-    table_->setHorizontalHeaderLabels({"Symbol", "Price", "%"});
+    table_->setHorizontalHeaderLabels({"代码", "价格", "%"});
     table_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     table_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     table_->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);

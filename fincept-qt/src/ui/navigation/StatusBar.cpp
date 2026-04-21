@@ -49,7 +49,7 @@ void StatusBar::refresh_theme() {
 }
 
 void StatusBar::set_ready(bool ready) {
-    ready_label_->setText(ready ? "READY" : "BUSY");
+    ready_label_->setText(ready ? "就 绪" : "忙 碌");
     ready_label_->setStyleSheet(QString("color:%1;font-weight:700;background:transparent;")
                                     .arg(ready ? colors::POSITIVE() : colors::TEXT_TERTIARY()));
 }

@@ -336,8 +336,7 @@ def main(args=None):
             }
             chunks.append(chunk)
             # Escape backslashes first, then newlines so each printed line is one
-            # logical chunk. The host unescapes 
- -> newline after stripping prefix.
+            # logical chunk. The host unescapes \n -> newline after stripping prefix.
             safe = content.replace("\\", "\\\\").replace("\n", "\\n").replace("\r", "")
             if chunk_type in ["token", "agent_token"]:
                 full_response += content

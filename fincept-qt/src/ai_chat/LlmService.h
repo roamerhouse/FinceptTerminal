@@ -26,11 +26,11 @@ namespace fincept::ai_chat {
 inline bool provider_supports_streaming(const QString& provider) {
     return provider == "openai" || provider == "anthropic" || provider == "gemini" || provider == "google" ||
            provider == "groq" || provider == "deepseek" || provider == "openrouter" || provider == "minimax" ||
-           provider == "ollama" || provider == "fincept";
+           provider == "ollama" || provider == "llama" || provider == "fincept";
 }
 
 inline bool provider_requires_api_key(const QString& provider) {
-    return provider != "ollama" && provider != "fincept";
+    return provider != "ollama" && provider != "llama" && provider != "fincept";
 }
 
 // ── Data types ────────────────────────────────────────────────────────────────

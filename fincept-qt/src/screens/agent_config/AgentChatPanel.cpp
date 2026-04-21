@@ -7,6 +7,7 @@
 #include "storage/repositories/LlmConfigRepository.h"
 #include "storage/repositories/PortfolioRepository.h"
 #include "ui/markdown/MarkdownRenderer.h"
+#include "ui/Localization.h"
 #include "ui/theme/Theme.h"
 #include "ui/theme/ThemeManager.h"
 
@@ -22,7 +23,8 @@
 #include <QSizePolicy>
 #include <QTextOption>
 
-namespace fincept::screens {
+namespace fincept {
+namespace screens {
 
 namespace col = fincept::ui::colors;
 namespace fnt = fincept::ui::fonts;
@@ -30,39 +32,39 @@ namespace fnt = fincept::ui::fonts;
 // ── Style helpers ─────────────────────────────────────────────────────────────
 
 static QString bubble_style(const QString& role) {
-    if (role == "user")
-        return "background:rgba(120,53,15,0.45);border:1px solid rgba(217,119,6,0.28);"
-               "border-radius:6px;padding:10px 14px;";
-    if (role == "system")
+    if (role == QStringLiteral("user"))
+        return QStringLiteral("background:rgba(120,53,15,0.45);border:1px solid rgba(217,119,6,0.28);"
+                             "border-radius:6px;padding:10px 14px;");
+    if (role == QStringLiteral("system"))
         return QString("background:%1;border:1px solid %2;"
                        "border-radius:6px;padding:10px 14px;")
-            .arg(col::BG_SURFACE(), col::BORDER_DIM());
+            .arg(col::BG_SURFACE()).arg(col::BORDER_DIM());
     return QString("background:%1;border:1px solid %2;border-radius:6px;padding:10px 14px;")
-        .arg(col::BG_RAISED(), col::BORDER_MED());
+        .arg(col::BG_RAISED()).arg(col::BORDER_MED());
 }
 
 static QString body_color(const QString& role) {
-    if (role == "user")
-        return "#fff7ed";
-    if (role == "system")
-        return col::TEXT_SECONDARY;
-    return col::TEXT_PRIMARY;
+    if (role == QStringLiteral("user"))
+        return QStringLiteral("#fff7ed");
+    if (role == QStringLiteral("system"))
+        return col::TEXT_SECONDARY();
+    return col::TEXT_PRIMARY();
 }
 
 static QString role_color(const QString& role) {
-    if (role == "user")
-        return col::AMBER;
-    if (role == "system")
-        return col::TEXT_TERTIARY;
-    return col::CYAN;
+    if (role == QStringLiteral("user"))
+        return col::AMBER();
+    if (role == QStringLiteral("system"))
+        return col::TEXT_TERTIARY();
+    return col::CYAN();
 }
 
 static QString role_label(const QString& role) {
     if (role == "user")
-        return "You";
+        return "您";
     if (role == "system")
-        return "System";
-    return "Agent";
+        return "系统";
+    return "智能体";
 }
 
 // ── Constructor ───────────────────────────────────────────────────────────────
@@ -73,8 +75,8 @@ AgentChatPanel::AgentChatPanel(QWidget* parent) : QWidget(parent) {
     typing_timer_ = new QTimer(this);
     typing_timer_->setInterval(400);
     connect(typing_timer_, &QTimer::timeout, this, [this]() {
-        static const QStringList states = {"Agent is thinking", "Agent is thinking.", "Agent is thinking..",
-                                           "Agent is thinking..."};
+        static const QStringList states = {"智能体正在思考", "智能体正在思考.", "智能体正在思考..",
+                                           "智能体正在思考..."};
         typing_step_ = (typing_step_ + 1) % states.size();
         typing_dots_lbl_->setText(states[typing_step_]);
     });
@@ -87,9 +89,20 @@ AgentChatPanel::AgentChatPanel(QWidget* parent) : QWidget(parent) {
     if (!cached.isEmpty()) {
         agent_selector_->blockSignals(true);
         agent_selector_->clear();
-        agent_selector_->addItem("Default (global LLM)", QString{});
-        for (const auto& a : cached)
-            agent_selector_->addItem(QString("[%1] %2").arg(a.category, a.name), a.id);
+        agent_selector_->addItem("默认 (全局 LLM)", QString{});
+        for (const auto& a : cached) {
+            QString labelCat = a.category;
+            if (labelCat == "trading") labelCat = "交易";
+            else if (labelCat == "finagent_core") labelCat = "系统";
+            else if (labelCat == "hedgeFundAgents") labelCat = "对冲基金";
+            else if (labelCat == "TraderInvestorsAgent") labelCat = "投资者";
+            else if (labelCat == "GeopoliticsAgent") labelCat = "地缘政治";
+            
+            QString agentName = a.name;
+            if (agentName == "Core Agent") agentName = "核心智能体";
+            
+            agent_selector_->addItem(QString("%1 [%2]").arg(agentName).arg(labelCat), a.id);
+        }
         agent_selector_->blockSignals(false);
     }
 
@@ -115,7 +128,7 @@ void AgentChatPanel::build_ui() {
     hl->setContentsMargins(14, 0, 12, 0);
     hl->setSpacing(10);
 
-    auto* title = new QLabel("AGENT CHAT");
+    auto* title = new QLabel("智能体聊天");
     title->setStyleSheet(QString("color:%1;font-size:13px;font-weight:700;letter-spacing:1.5px;").arg(col::AMBER()));
     hl->addWidget(title);
 
@@ -127,25 +140,25 @@ void AgentChatPanel::build_ui() {
     hl->addWidget(div1);
 
     // Agent selector
-    auto* agent_lbl = new QLabel("AGENT:");
+    auto* agent_lbl = new QLabel("智能体:");
     agent_lbl->setStyleSheet(
         QString("color:%1;font-size:9px;font-weight:600;letter-spacing:0.5px;").arg(col::TEXT_TERTIARY()));
     hl->addWidget(agent_lbl);
 
     agent_selector_ = new QComboBox;
-    agent_selector_->addItem("Default (global LLM)", QString{});
+    agent_selector_->addItem("默认 (全局 LLM)", QString{});
     agent_selector_->setMinimumWidth(200);
     agent_selector_->setMaximumWidth(420);
     agent_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     agent_selector_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     agent_selector_->setCursor(Qt::PointingHandCursor);
-    agent_selector_->setToolTip("Select a configured agent, or Default to use the global LLM.");
+    agent_selector_->setToolTip("选择已配置的智能体，或选择“默认”以使用全局 LLM。");
 
     // Editable + completer gives us an inline search bar inside the dropdown.
     // PopupCompletion shows filtered matches as a popup list while typing.
     agent_selector_->setEditable(true);
     agent_selector_->setInsertPolicy(QComboBox::NoInsert);
-    agent_selector_->lineEdit()->setPlaceholderText("Search agent...");
+    agent_selector_->lineEdit()->setPlaceholderText("搜索智能体...");
     agent_selector_->lineEdit()->setClearButtonEnabled(true);
     {
         auto* completer = new QCompleter(agent_selector_->model(), agent_selector_);
@@ -165,15 +178,18 @@ void AgentChatPanel::build_ui() {
     agent_selector_->setStyleSheet(
         QString("QComboBox{background:%1;color:%2;border:1px solid %3;padding:3px 10px;"
                 "font-size:10px;border-radius:3px;}"
-                "QComboBox::drop-down{border:none;width:18px;}"
+                "QComboBox::drop-down{border:none;width:24px;subcontrol-origin:padding;subcontrol-position:top right;}"
+                "QComboBox::down-arrow{image:none; border-left:5px solid transparent; border-right:5px solid transparent; border-top:5px solid %4; width:0; height:0; margin-right:8px;}"
                 "QComboBox:hover{border-color:%4;}"
                 "QComboBox QAbstractItemView{background:%1;color:%2;"
                 "selection-background-color:%5;border:1px solid %3;"
                 "font-size:11px;padding:2px;outline:none;}"
                 "QComboBox QAbstractItemView::item{padding:4px 10px;min-height:22px;}"
-                "QComboBox QLineEdit{background:%1;color:%2;border:none;"
-                "selection-background-color:%5;font-size:10px;padding:0 4px;}")
+                "QComboBox QLineEdit{background:transparent;color:%2;border:none;"
+                "selection-background-color:%5;font-size:10px;padding:0 30px 0 4px;}")
             .arg(col::BG_BASE(), col::TEXT_PRIMARY(), col::BORDER_MED(), col::AMBER(), col::AMBER_DIM()));
+
+    hl->addWidget(agent_selector_);
 
     // When user picks an item from popup, clear search text and show the selected name
     connect(agent_selector_, QOverload<int>::of(&QComboBox::activated), agent_selector_, [this](int idx) {
@@ -182,20 +198,18 @@ void AgentChatPanel::build_ui() {
         agent_selector_->lineEdit()->setCursorPosition(0);
     });
 
-    hl->addWidget(agent_selector_);
-
     hl->addStretch();
 
     // Active model pill
-    hdr_model_lbl_ = new QLabel("No model");
+    hdr_model_lbl_ = new QLabel("无模型");
     hdr_model_lbl_->setStyleSheet(QString("color:%1;font-size:9px;background:%2;border:1px solid %3;"
                                           "border-radius:3px;padding:2px 8px;")
                                       .arg(col::TEXT_SECONDARY(), col::BG_BASE(), col::BORDER_MED()));
-    hdr_model_lbl_->setToolTip("Active LLM — configure in Settings > LLM Configuration");
+    hdr_model_lbl_->setToolTip("当前活跃 LLM — 在 设置 > LLM 配置 中进行配置");
     hl->addWidget(hdr_model_lbl_);
 
     // Status chip
-    hdr_status_lbl_ = new QLabel("Ready");
+    hdr_status_lbl_ = new QLabel("就绪");
     hdr_status_lbl_->setFixedWidth(72);
     hdr_status_lbl_->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     hdr_status_lbl_->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;").arg(col::POSITIVE()));
@@ -208,11 +222,11 @@ void AgentChatPanel::build_ui() {
     hl->addWidget(div2);
 
     // Auto-route toggle
-    route_toggle_ = new QPushButton("AUTO-ROUTE");
+    route_toggle_ = new QPushButton("自动路由");
     route_toggle_->setCheckable(true);
     route_toggle_->setCursor(Qt::PointingHandCursor);
     route_toggle_->setFixedHeight(28);
-    route_toggle_->setToolTip("When ON, the system picks the best agent for each query.");
+    route_toggle_->setToolTip("开启后，系统将为每个查询匹配最佳的智能体。");
     route_toggle_->setStyleSheet(
         QString("QPushButton{background:transparent;color:%1;border:1px solid %2;"
                 "padding:3px 10px;font-size:9px;font-weight:600;border-radius:3px;}"
@@ -222,7 +236,7 @@ void AgentChatPanel::build_ui() {
     hl->addWidget(route_toggle_);
 
     // Clear button
-    clear_btn_ = new QPushButton("CLEAR");
+    clear_btn_ = new QPushButton("清空");
     clear_btn_->setCursor(Qt::PointingHandCursor);
     clear_btn_->setFixedHeight(28);
     clear_btn_->setStyleSheet(QString("QPushButton{background:transparent;color:%1;border:1px solid %2;"
@@ -240,13 +254,13 @@ void AgentChatPanel::build_ui() {
     pl->setContentsMargins(14, 0, 14, 0);
     pl->setSpacing(8);
 
-    auto* plbl = new QLabel("PORTFOLIO:");
+    auto* plbl = new QLabel("投资组合:");
     plbl->setStyleSheet(
         QString("color:%1;font-size:9px;font-weight:600;letter-spacing:0.5px;").arg(col::TEXT_TERTIARY()));
     pl->addWidget(plbl);
 
     portfolio_combo_ = new QComboBox;
-    portfolio_combo_->addItem("None");
+    portfolio_combo_->addItem("无");
     portfolio_combo_->setFixedWidth(160);
     portfolio_combo_->setStyleSheet(QString("QComboBox{background:%1;color:%2;border:1px solid %3;padding:2px 8px;"
                                             "font-size:10px;border-radius:3px;}"
@@ -266,9 +280,9 @@ void AgentChatPanel::build_ui() {
                              .arg(clr, col::BORDER_DIM()));
         return b;
     };
-    analyze_btn_ = qbtn("ANALYZE", col::CYAN);
-    rebalance_btn_ = qbtn("REBALANCE", col::AMBER);
-    risk_btn_ = qbtn("RISK", col::NEGATIVE);
+    analyze_btn_ = qbtn("分析", col::CYAN);
+    rebalance_btn_ = qbtn("再平衡", col::AMBER);
+    risk_btn_ = qbtn("风险", col::NEGATIVE);
     pl->addWidget(analyze_btn_);
     pl->addWidget(rebalance_btn_);
     pl->addWidget(risk_btn_);
@@ -301,14 +315,14 @@ void AgentChatPanel::build_ui() {
     wvl->setSpacing(16);
     wvl->addStretch();
 
-    auto* w_title = new QLabel("How can I help you?");
+    auto* w_title = new QLabel("我能为您做些什么？");
     w_title->setAlignment(Qt::AlignCenter);
     w_title->setStyleSheet(
         QString("color:%1;font-size:22px;font-weight:700;background:transparent;").arg(col::TEXT_PRIMARY()));
     wvl->addWidget(w_title);
 
-    auto* w_sub = new QLabel("Ask about markets, portfolios, or any financial topic.\n"
-                             "Select an agent above, or use Auto-Route to let the system decide.");
+    auto* w_sub = new QLabel("您可以询问有关市场、投资组合或任何金融话题的问题。\n"
+                             "请在上方选择一个智能体，或使用“自动路由”让系统决定。");
     w_sub->setAlignment(Qt::AlignCenter);
     w_sub->setWordWrap(true);
     w_sub->setStyleSheet(QString("color:%1;font-size:12px;background:transparent;").arg(col::TEXT_SECONDARY()));
@@ -324,10 +338,10 @@ void AgentChatPanel::build_ui() {
         const char* query;
     };
     const Chip chips[] = {
-        {"Markets", col::CYAN, "Show today's top market movers"},
-        {"Portfolio", col::POSITIVE, "Analyze my portfolio performance"},
-        {"Analytics", col::AMBER, "Calculate valuation for AAPL"},
-        {"Risk", col::NEGATIVE, "Run risk analysis on my portfolio"},
+        {"市场异动", col::CYAN, "显示今日市场热门股票"},
+        {"组合分析", col::POSITIVE, "分析我的投资组合表现"},
+        {"估值计算器", col::AMBER, "计算苹果 (AAPL) 的估值"},
+        {"风险评估", col::NEGATIVE, "对我的投资组合进行风险分析"},
     };
     for (const auto& c : chips) {
         auto* btn = new QPushButton(c.label);
@@ -355,7 +369,7 @@ void AgentChatPanel::build_ui() {
     typing_indicator_->setStyleSheet("background:transparent;");
     auto* til = new QHBoxLayout(typing_indicator_);
     til->setContentsMargins(4, 0, 0, 0);
-    typing_dots_lbl_ = new QLabel("Agent is thinking");
+    typing_dots_lbl_ = new QLabel("智能体正在思考");
     typing_dots_lbl_->setStyleSheet(
         QString("color:%1;font-size:11px;font-style:italic;background:transparent;").arg(col::TEXT_DIM()));
     til->addWidget(typing_dots_lbl_);
@@ -373,7 +387,7 @@ void AgentChatPanel::build_ui() {
     il->setSpacing(10);
 
     input_edit_ = new QTextEdit;
-    input_edit_->setPlaceholderText("Message agent... (Shift+Enter for new line, Enter to send)");
+    input_edit_->setPlaceholderText("给智能体发消息... (Shift+Enter 换行, Enter 发送)");
     input_edit_->setFixedHeight(44);
     input_edit_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     input_edit_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -392,7 +406,7 @@ void AgentChatPanel::build_ui() {
     });
     il->addWidget(input_edit_, 1);
 
-    send_btn_ = new QPushButton("Send");
+    send_btn_ = new QPushButton("发送");
     send_btn_->setFixedSize(76, 44);
     send_btn_->setCursor(Qt::PointingHandCursor);
     send_btn_->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:none;border-radius:6px;"
@@ -433,7 +447,7 @@ void AgentChatPanel::setup_connections() {
 
     connect(route_toggle_, &QPushButton::toggled, this, [this](bool on) {
         auto_routing_ = on;
-        route_toggle_->setText(on ? "AUTO-ROUTE: ON" : "AUTO-ROUTE");
+        route_toggle_->setText(on ? "自动路由: 开启" : "自动路由");
         agent_selector_->setEnabled(!on);
     });
 
@@ -444,9 +458,12 @@ void AgentChatPanel::setup_connections() {
                 const QString prev_id = agent_selector_->currentData().toString();
                 agent_selector_->blockSignals(true);
                 agent_selector_->clear();
-                agent_selector_->addItem("Default (global LLM)", QString{});
-                for (const auto& a : agents)
-                    agent_selector_->addItem(QString("[%1] %2").arg(a.category, a.name), a.id);
+                agent_selector_->addItem("默认 (全局 LLM)", QString{});
+                for (const auto& a : agents) {
+                    QString name = ui::Localization::translate_agent_name(a.name);
+                    QString cat = ui::Localization::translate_category(a.category);
+                    agent_selector_->addItem(QString("[%1] %2").arg(cat, name), a.id);
+                }
                 // Restore previous selection
                 int restore = 0;
                 if (!prev_id.isEmpty()) {
@@ -493,7 +510,7 @@ void AgentChatPanel::setup_connections() {
                     }
                     scroll_to_bottom();
                 }
-                status_label_->setText("Streaming...");
+                status_label_->setText("正在传输...");
             });
 
     connect(&svc, &services::AgentService::agent_stream_done, this, [this](services::AgentExecutionResult r) {
@@ -526,12 +543,12 @@ void AgentChatPanel::setup_connections() {
 
         streaming_text_.clear();
         if (r.success) {
-            status_label_->setText(QString("Response received (%1ms)").arg(r.execution_time_ms));
-            hdr_status_lbl_->setText("Ready");
+            status_label_->setText(QString("执行完毕，耗时 %1ms").arg(r.execution_time_ms));
+            hdr_status_lbl_->setText("就绪");
             hdr_status_lbl_->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;").arg(col::POSITIVE()));
         } else {
-            status_label_->setText("Agent execution failed");
-            hdr_status_lbl_->setText("Error");
+            status_label_->setText("智能体执行失败");
+            hdr_status_lbl_->setText("错误");
             hdr_status_lbl_->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;").arg(col::NEGATIVE()));
         }
         scroll_to_bottom();
@@ -542,12 +559,12 @@ void AgentChatPanel::setup_connections() {
         if (r.request_id != pending_request_id_)
             return;
         if (r.success) {
-            add_system_bubble(QString("Routed to: %1 (intent: %2, confidence: %3%)")
+            add_system_bubble(QString("路由至: %1 (意图: %2, 置信度: %3%)")
                                   .arg(r.agent_id, r.intent)
                                   .arg(static_cast<int>(r.confidence * 100)));
             pending_request_id_ = services::AgentService::instance().run_agent_streaming(last_query_, r.config);
         } else {
-            add_system_bubble("Auto-routing failed — using default agent.");
+            add_system_bubble("自动路由失败 — 使用默认智能体。");
             pending_request_id_ = services::AgentService::instance().run_agent_streaming(last_query_, {});
         }
     });
@@ -557,14 +574,14 @@ void AgentChatPanel::setup_connections() {
         const QString pf = portfolio_combo_->currentText();
         if (pf == "None")
             return;
-        input_edit_->setPlainText(QString("Analyze my portfolio '%1' — give key metrics and recommendations.").arg(pf));
+        input_edit_->setPlainText(QString("分析我的投资组合“%1” — 提供关键指标和建议。").arg(pf));
         send_message();
     });
     connect(rebalance_btn_, &QPushButton::clicked, this, [this]() {
         const QString pf = portfolio_combo_->currentText();
         if (pf == "None")
             return;
-        input_edit_->setPlainText(QString("Suggest rebalancing for portfolio '%1' to optimize risk-return.").arg(pf));
+        input_edit_->setPlainText(QString("为投资组合“%1”建议再平衡方案，以优化风险回报。").arg(pf));
         send_message();
     });
     connect(risk_btn_, &QPushButton::clicked, this, [this]() {
@@ -572,7 +589,7 @@ void AgentChatPanel::setup_connections() {
         if (pf == "None")
             return;
         input_edit_->setPlainText(
-            QString("Perform risk analysis on portfolio '%1' — VaR, drawdown, stress test.").arg(pf));
+            QString("对投资组合“%1”执行风险分析 — VaR、回撤、压力测试。").arg(pf));
         send_message();
     });
 }
@@ -596,16 +613,16 @@ void AgentChatPanel::update_llm_status() {
         hdr_model_lbl_->setStyleSheet(QString("color:%1;font-size:9px;background:%2;border:1px solid %3;"
                                               "border-radius:3px;padding:2px 8px;")
                                           .arg(col::TEXT_SECONDARY(), col::BG_BASE(), col::BORDER_MED()));
-        hdr_status_lbl_->setText("Ready");
+        hdr_status_lbl_->setText("就绪");
         hdr_status_lbl_->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;").arg(col::POSITIVE()));
     } else {
-        hdr_model_lbl_->setText("No LLM configured");
+        hdr_model_lbl_->setText("未配置 LLM");
         hdr_model_lbl_->setStyleSheet(QString("color:%1;font-size:9px;background:%2;border:1px solid %3;"
                                               "border-radius:3px;padding:2px 8px;")
                                           .arg(col::NEGATIVE(), col::BG_BASE(), col::NEGATIVE()));
-        hdr_status_lbl_->setText("Unconfigured");
+        hdr_status_lbl_->setText("未配置");
         hdr_status_lbl_->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;").arg(col::NEGATIVE()));
-        status_label_->setText("No LLM provider configured — go to Settings > LLM Configuration");
+        status_label_->setText("未配置 LLM 提供商 — 请前往 设置 > LLM 配置 进行设置");
     }
 }
 
@@ -619,7 +636,7 @@ void AgentChatPanel::send_message() {
     // Guard: require LLM config
     auto& llm = ai_chat::LlmService::instance();
     if (!llm.is_configured()) {
-        add_system_bubble("No LLM provider configured. Go to Settings > LLM Configuration to set one up.");
+        add_system_bubble("未配置 LLM 提供商。请前往“设置 > LLM 配置”进行配置。");
         return;
     }
 
@@ -638,7 +655,7 @@ void AgentChatPanel::send_message() {
     // Show which portfolio is active in the status bar
     if (!pf_ctx.isEmpty()) {
         const QString pf_name = portfolio_combo_->currentText();
-        status_label_->setText(QString("Portfolio context: %1").arg(pf_name));
+        status_label_->setText(QString("投资组合上下文: %1").arg(pf_name));
     }
 
     // Create streaming bubble — seed with "..." so height bootstraps correctly
@@ -799,7 +816,7 @@ void AgentChatPanel::add_assistant_bubble(const QString& text, const QString& ag
     cvl->setSpacing(4);
 
     auto* hdr_row = new QHBoxLayout;
-    auto* role_lbl = new QLabel(agent_name.isEmpty() ? "Agent" : agent_name);
+    auto* role_lbl = new QLabel(agent_name.isEmpty() ? "智能体" : agent_name);
     role_lbl->setStyleSheet(
         QString("color:%1;font-size:9px;font-weight:600;background:transparent;").arg(role_color(role)));
     hdr_row->addWidget(role_lbl);
@@ -885,7 +902,7 @@ QTextEdit* AgentChatPanel::add_streaming_bubble(const QString& agent_name) {
     cvl->setContentsMargins(0, 0, 0, 0);
     cvl->setSpacing(4);
 
-    auto* role_lbl = new QLabel(agent_name.isEmpty() ? "Agent" : agent_name);
+    auto* role_lbl = new QLabel(agent_name.isEmpty() ? "智能体" : agent_name);
     role_lbl->setStyleSheet(QString("color:%1;font-size:9px;font-weight:600;background:transparent;").arg(col::CYAN()));
     cvl->addWidget(role_lbl);
 
@@ -934,11 +951,11 @@ void AgentChatPanel::scroll_to_bottom() {
 void AgentChatPanel::set_executing(bool on) {
     executing_ = on;
     send_btn_->setEnabled(!on);
-    send_btn_->setText(on ? "..." : "Send");
+    send_btn_->setText(on ? "..." : "发送");
     if (on) {
-        hdr_status_lbl_->setText("Streaming");
+        hdr_status_lbl_->setText("正在输出");
         hdr_status_lbl_->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;").arg(col::AMBER()));
-        status_label_->setText("Processing...");
+        status_label_->setText("正在处理...");
     }
     if (!on) {
         pending_request_id_.clear();
@@ -955,7 +972,7 @@ void AgentChatPanel::show_typing(bool on) {
         return;
     if (on) {
         typing_step_ = 0;
-        typing_dots_lbl_->setText("Agent is thinking");
+        typing_dots_lbl_->setText("智能体正在思考");
         typing_indicator_->show();
         typing_timer_->start();
     } else {
@@ -986,10 +1003,11 @@ void AgentChatPanel::clear_chat() {
     }
 
     show_welcome(true);
-    hdr_status_lbl_->setText("Ready");
+    hdr_status_lbl_->setText("就绪");
     hdr_status_lbl_->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;").arg(col::POSITIVE()));
     status_label_->clear();
     update_llm_status();
 }
 
-} // namespace fincept::screens
+} // namespace screens
+} // namespace fincept

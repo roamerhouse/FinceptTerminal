@@ -1,5 +1,8 @@
-// src/screens/agent_config/CreateAgentPanel.cpp
-#include "screens/agent_config/CreateAgentPanel.h"
+#include "CreateAgentPanel.h"
+#include <QString>
+#include <QLabel>
+#include <QCheckBox>
+#include <QJsonObject>
 
 #include "ai_chat/LlmService.h"
 #include "core/logging/Logger.h"
@@ -7,6 +10,7 @@
 #include "services/agents/AgentService.h"
 #include "storage/repositories/LlmProfileRepository.h"
 #include "storage/repositories/McpServerRepository.h"
+#include "ui/Localization.h"
 #include "ui/theme/Theme.h"
 #include "ui/theme/ThemeManager.h"
 
@@ -62,7 +66,8 @@ static QLabel* field_lbl(const QString& text) {
 
 } // namespace
 
-namespace fincept::screens {
+namespace fincept {
+namespace screens {
 
 CreateAgentPanel::CreateAgentPanel(QWidget* parent) : QWidget(parent) {
     setObjectName("CreateAgentPanel");
@@ -111,7 +116,7 @@ QWidget* CreateAgentPanel::build_saved_panel() {
         QString("background:%1;border-bottom:1px solid %2;").arg(ui::colors::BG_RAISED(), ui::colors::BORDER_DIM()));
     auto* hl = new QHBoxLayout(hdr);
     hl->setContentsMargins(10, 0, 10, 0);
-    auto* t = new QLabel("SAVED AGENTS");
+    auto* t = new QLabel("已保存的智能体");
     t->setStyleSheet(QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::AMBER()));
     hl->addWidget(t);
     hl->addStretch();
@@ -144,7 +149,7 @@ QWidget* CreateAgentPanel::build_saved_panel() {
         return b;
     };
 
-    auto* load_btn = make_bar_btn("LOAD", ui::colors::AMBER);
+    auto* load_btn = make_bar_btn("加载", ui::colors::AMBER);
     connect(load_btn, &QPushButton::clicked, this, [this]() {
         int row = saved_list_->currentRow();
         if (row >= 0 && row < saved_agents_.size())
@@ -152,17 +157,17 @@ QWidget* CreateAgentPanel::build_saved_panel() {
     });
     bl->addWidget(load_btn);
 
-    auto* del_btn = make_bar_btn("DEL", ui::colors::NEGATIVE);
+    auto* del_btn = make_bar_btn("删除", ui::colors::NEGATIVE);
     connect(del_btn, &QPushButton::clicked, this, &CreateAgentPanel::delete_agent);
     bl->addWidget(del_btn);
 
     bl->addStretch();
 
-    auto* exp_btn = make_bar_btn("EXP", ui::colors::TEXT_SECONDARY);
+    auto* exp_btn = make_bar_btn("导出", ui::colors::TEXT_SECONDARY);
     connect(exp_btn, &QPushButton::clicked, this, &CreateAgentPanel::export_json);
     bl->addWidget(exp_btn);
 
-    auto* imp_btn = make_bar_btn("IMP", ui::colors::TEXT_SECONDARY);
+    auto* imp_btn = make_bar_btn("导入", ui::colors::TEXT_SECONDARY);
     connect(imp_btn, &QPushButton::clicked, this, &CreateAgentPanel::import_json);
     bl->addWidget(imp_btn);
 
@@ -189,16 +194,16 @@ QWidget* CreateAgentPanel::build_form_panel() {
     vl->setSpacing(3);
 
     // ── IDENTITY ─────────────────────────────────────────────────────────────
-    vl->addWidget(section_label("IDENTITY"));
+    vl->addWidget(section_label("身份信息 (Identity)"));
 
     auto* r1 = new QHBoxLayout;
     r1->setSpacing(8);
-    r1->addWidget(field_lbl("Name"));
+    r1->addWidget(field_lbl("名称"));
     name_edit_ = new QLineEdit;
-    name_edit_->setPlaceholderText("e.g. My Equity Analyst");
+    name_edit_->setPlaceholderText("例如：我的股票分析师");
     name_edit_->setStyleSheet(input_style());
     r1->addWidget(name_edit_, 1);
-    r1->addWidget(field_lbl("Category"));
+    r1->addWidget(field_lbl("分类"));
     category_combo_ = new QComboBox;
     for (const auto& c : {"general", "trader", "hedge-fund", "economic", "geopolitics", "research", "custom"})
         category_combo_->addItem(c);
@@ -207,16 +212,16 @@ QWidget* CreateAgentPanel::build_form_panel() {
     vl->addLayout(r1);
 
     desc_edit_ = new QPlainTextEdit;
-    desc_edit_->setPlaceholderText("Brief description of what this agent does...");
+    desc_edit_->setPlaceholderText("简单描述该智能体的功能...");
     desc_edit_->setFixedHeight(52);
     desc_edit_->setStyleSheet(QString("QPlainTextEdit{%1}").arg(input_style()));
     vl->addWidget(desc_edit_);
 
     // ── MODEL ────────────────────────────────────────────────────────────────
-    vl->addWidget(section_label("MODEL"));
+    vl->addWidget(section_label("模型配置 (Model)"));
 
     llm_profile_combo_ = new QComboBox;
-    llm_profile_combo_->setToolTip("LLM profile for this agent. Configure profiles in Settings > LLM Config.");
+    llm_profile_combo_->setToolTip("此智能体的 LLM 配置文件。请在 设置 > LLM 配置 中进行配置。");
     llm_profile_combo_->setStyleSheet(combo_style());
     vl->addWidget(llm_profile_combo_);
 
@@ -226,19 +231,19 @@ QWidget* CreateAgentPanel::build_form_panel() {
     vl->addWidget(llm_resolved_lbl_);
 
     // ── INSTRUCTIONS ─────────────────────────────────────────────────────────
-    vl->addWidget(section_label("INSTRUCTIONS"));
+    vl->addWidget(section_label("系统指令 (Instructions)"));
 
     instructions_edit_ = new QPlainTextEdit;
-    instructions_edit_->setPlaceholderText("System prompt — role, goals, constraints, persona...");
+    instructions_edit_->setPlaceholderText("系统提示词 — 角色、目标、约束、人格...");
     instructions_edit_->setMinimumHeight(110);
     instructions_edit_->setStyleSheet(QString("QPlainTextEdit{%1}").arg(input_style()));
     vl->addWidget(instructions_edit_);
 
     // ── TOOLS ────────────────────────────────────────────────────────────────
-    vl->addWidget(section_label("TOOLS"));
+    vl->addWidget(section_label("工具 (Tools)"));
 
     tool_search_edit_ = new QLineEdit;
-    tool_search_edit_->setPlaceholderText("Filter tools...");
+    tool_search_edit_->setPlaceholderText("筛选工具...");
     tool_search_edit_->setStyleSheet(input_style());
     vl->addWidget(tool_search_edit_);
 
@@ -248,7 +253,7 @@ QWidget* CreateAgentPanel::build_form_panel() {
     vl->addWidget(tools_list_);
 
     // ── FEATURES ─────────────────────────────────────────────────────────────
-    vl->addWidget(section_label("FEATURES"));
+    vl->addWidget(section_label("高级特性 (Features)"));
 
     // Tag-style checkboxes in a flow grid (2 columns)
     auto make_tag = [](const QString& label) -> QCheckBox* {
@@ -268,16 +273,16 @@ QWidget* CreateAgentPanel::build_form_panel() {
         QCheckBox** ptr;
         const char* label;
     } toggles[] = {
-        {&reasoning_check_, "Reasoning"},
-        {&memory_check_, "Memory"},
-        {&knowledge_check_, "Knowledge"},
-        {&guardrails_check_, "Guardrails"},
-        {&agentic_memory_check_, "Agentic Memory"},
-        {&storage_check_, "Storage"},
-        {&tracing_check_, "Tracing"},
-        {&compression_check_, "Compression"},
-        {&hooks_check_, "Hooks"},
-        {&evaluation_check_, "Evaluation"},
+        {&reasoning_check_, "推理 (Reasoning)"},
+        {&memory_check_, "记忆 (Memory)"},
+        {&knowledge_check_, "知识库 (Knowledge)"},
+        {&guardrails_check_, "护栏 (Guardrails)"},
+        {&agentic_memory_check_, "智能体记忆"},
+        {&storage_check_, "存储 (Storage)"},
+        {&tracing_check_, "追踪 (Tracing)"},
+        {&compression_check_, "压缩 (Compression)"},
+        {&hooks_check_, "钩子 (Hooks)"},
+        {&evaluation_check_, "评估 (Evaluation)"},
     };
 
     auto* tag_row1 = new QHBoxLayout;
@@ -301,24 +306,24 @@ QWidget* CreateAgentPanel::build_form_panel() {
         sl->setContentsMargins(0, 4, 0, 0);
         sl->setSpacing(4);
         auto* kr1 = new QHBoxLayout;
-        kr1->addWidget(field_lbl("Type"));
+        kr1->addWidget(field_lbl("类型"));
         knowledge_type_combo_ = new QComboBox;
         knowledge_type_combo_->addItems({"url", "pdf", "text", "combined"});
         knowledge_type_combo_->setStyleSheet(combo_style());
         kr1->addWidget(knowledge_type_combo_, 1);
         sl->addLayout(kr1);
         knowledge_urls_edit_ = new QPlainTextEdit;
-        knowledge_urls_edit_->setPlaceholderText("URLs (one per line)");
+        knowledge_urls_edit_->setPlaceholderText("URL (每行一个)");
         knowledge_urls_edit_->setFixedHeight(52);
         knowledge_urls_edit_->setStyleSheet(QString("QPlainTextEdit{%1}").arg(input_style()));
         sl->addWidget(knowledge_urls_edit_);
         auto* kr2 = new QHBoxLayout;
-        kr2->addWidget(field_lbl("Vector DB"));
+        kr2->addWidget(field_lbl("向量数据库"));
         knowledge_vectordb_combo_ = new QComboBox;
         knowledge_vectordb_combo_->addItems({"lancedb", "pgvector", "qdrant"});
         knowledge_vectordb_combo_->setStyleSheet(combo_style());
         kr2->addWidget(knowledge_vectordb_combo_, 1);
-        kr2->addWidget(field_lbl("Embedder"));
+        kr2->addWidget(field_lbl("嵌入模型"));
         knowledge_embedder_combo_ = new QComboBox;
         knowledge_embedder_combo_->addItems({"openai", "ollama", "sentence-transformers"});
         knowledge_embedder_combo_->setStyleSheet(combo_style());
@@ -339,9 +344,9 @@ QWidget* CreateAgentPanel::build_form_panel() {
             c->setStyleSheet(QString("QCheckBox{color:%1;font-size:10px;spacing:5px;}").arg(ui::colors::TEXT_PRIMARY()));
             return c;
         };
-        guardrails_pii_check_ = make_sub_chk("PII Detection");
-        guardrails_injection_check_ = make_sub_chk("Injection Prevention");
-        guardrails_compliance_check_ = make_sub_chk("Financial Compliance");
+        guardrails_pii_check_ = make_sub_chk("PII 隐私检测");
+        guardrails_injection_check_ = make_sub_chk("注入攻击防御");
+        guardrails_compliance_check_ = make_sub_chk("金融合规检测");
         sl->addWidget(guardrails_pii_check_);
         sl->addWidget(guardrails_injection_check_);
         sl->addWidget(guardrails_compliance_check_);
@@ -357,12 +362,12 @@ QWidget* CreateAgentPanel::build_form_panel() {
         sl->setContentsMargins(0, 4, 0, 0);
         sl->setSpacing(4);
         auto* mr1 = new QHBoxLayout;
-        mr1->addWidget(field_lbl("DB Path"));
+        mr1->addWidget(field_lbl("数据库路径"));
         memory_db_path_edit_ = new QLineEdit;
         memory_db_path_edit_->setPlaceholderText("agent_memory.db");
         memory_db_path_edit_->setStyleSheet(input_style());
         mr1->addWidget(memory_db_path_edit_, 1);
-        mr1->addWidget(field_lbl("Table"));
+        mr1->addWidget(field_lbl("表名"));
         memory_table_edit_ = new QLineEdit;
         memory_table_edit_->setPlaceholderText("agent_memory");
         memory_table_edit_->setStyleSheet(input_style());
@@ -374,8 +379,8 @@ QWidget* CreateAgentPanel::build_form_panel() {
             c->setStyleSheet(QString("QCheckBox{color:%1;font-size:10px;spacing:5px;}").arg(ui::colors::TEXT_PRIMARY()));
             return c;
         };
-        memory_user_memories_check_ = make_sub_chk("User Memories");
-        memory_session_summary_check_ = make_sub_chk("Session Summary");
+        memory_user_memories_check_ = make_sub_chk("用户记忆");
+        memory_session_summary_check_ = make_sub_chk("会话总结");
         mr2->addWidget(memory_user_memories_check_);
         mr2->addWidget(memory_session_summary_check_);
         mr2->addStretch();
@@ -390,16 +395,16 @@ QWidget* CreateAgentPanel::build_form_panel() {
         auto* sl = new QHBoxLayout(storage_sub_);
         sl->setContentsMargins(0, 4, 0, 0);
         sl->setSpacing(8);
-        sl->addWidget(field_lbl("Type"));
+        sl->addWidget(field_lbl("类型"));
         storage_type_combo_ = new QComboBox;
         storage_type_combo_->addItems({"sqlite", "postgres"});
         storage_type_combo_->setStyleSheet(combo_style());
         sl->addWidget(storage_type_combo_);
-        sl->addWidget(field_lbl("DB Path"));
+        sl->addWidget(field_lbl("数据库路径"));
         storage_db_path_edit_ = new QLineEdit;
         storage_db_path_edit_->setStyleSheet(input_style());
         sl->addWidget(storage_db_path_edit_, 1);
-        sl->addWidget(field_lbl("Table"));
+        sl->addWidget(field_lbl("表名"));
         storage_table_edit_ = new QLineEdit;
         storage_table_edit_->setStyleSheet(input_style());
         sl->addWidget(storage_table_edit_, 1);
@@ -413,7 +418,7 @@ QWidget* CreateAgentPanel::build_form_panel() {
         auto* sl = new QHBoxLayout(agentic_memory_sub_);
         sl->setContentsMargins(0, 4, 0, 0);
         sl->setSpacing(8);
-        sl->addWidget(field_lbl("User ID"));
+        sl->addWidget(field_lbl("用户 ID"));
         agentic_memory_user_id_edit_ = new QLineEdit;
         agentic_memory_user_id_edit_->setStyleSheet(input_style());
         sl->addWidget(agentic_memory_user_id_edit_, 1);
@@ -421,7 +426,7 @@ QWidget* CreateAgentPanel::build_form_panel() {
     vl->addWidget(agentic_memory_sub_);
 
     // ── MCP SERVERS ──────────────────────────────────────────────────────────
-    vl->addWidget(section_label("MCP SERVERS"));
+    vl->addWidget(section_label("MCP 服务器"));
 
     mcp_servers_list_ = new QListWidget;
     mcp_servers_list_->setFixedHeight(72);
@@ -434,7 +439,7 @@ QWidget* CreateAgentPanel::build_form_panel() {
     auto* act = new QHBoxLayout;
     act->setSpacing(6);
 
-    save_btn_ = new QPushButton("SAVE AGENT");
+    save_btn_ = new QPushButton("保存智能体");
     save_btn_->setCursor(Qt::PointingHandCursor);
     save_btn_->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:none;padding:8px 20px;"
                                      "font-size:11px;font-weight:700;letter-spacing:1px;}"
@@ -442,7 +447,7 @@ QWidget* CreateAgentPanel::build_form_panel() {
                                  .arg(ui::colors::AMBER(), ui::colors::BG_BASE(), ui::colors::ORANGE()));
     act->addWidget(save_btn_);
 
-    auto* clr_btn = new QPushButton("CLEAR");
+    auto* clr_btn = new QPushButton("清空");
     clr_btn->setCursor(Qt::PointingHandCursor);
     clr_btn->setStyleSheet(QString("QPushButton{background:transparent;color:%1;border:1px solid %2;"
                                    "padding:8px 14px;font-size:10px;font-weight:600;}"
@@ -482,7 +487,7 @@ QWidget* CreateAgentPanel::build_test_panel() {
         QString("background:%1;border-bottom:1px solid %2;").arg(ui::colors::BG_RAISED(), ui::colors::BORDER_DIM()));
     auto* hl = new QHBoxLayout(hdr);
     hl->setContentsMargins(10, 0, 10, 0);
-    auto* t = new QLabel("LIVE TEST");
+    auto* t = new QLabel("实时预览测试");
     t->setStyleSheet(QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::CYAN()));
     hl->addWidget(t);
     vl->addWidget(hdr);
@@ -493,20 +498,20 @@ QWidget* CreateAgentPanel::build_test_panel() {
     bl->setContentsMargins(10, 10, 10, 10);
     bl->setSpacing(6);
 
-    auto* qlbl = new QLabel("QUERY");
+    auto* qlbl = new QLabel("查询内容");
     qlbl->setStyleSheet(
         QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::TEXT_SECONDARY()));
     bl->addWidget(qlbl);
 
     test_query_edit_ = new QPlainTextEdit;
-    test_query_edit_->setPlaceholderText("Enter test query...");
+    test_query_edit_->setPlaceholderText("输入测试查询内容...");
     test_query_edit_->setFixedHeight(72);
     test_query_edit_->setStyleSheet(
         QString("QPlainTextEdit{background:%1;color:%2;border:1px solid %3;padding:6px;font-size:12px;}")
             .arg(ui::colors::BG_RAISED(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_MED()));
     bl->addWidget(test_query_edit_);
 
-    test_btn_ = new QPushButton("RUN TEST");
+    test_btn_ = new QPushButton("运行测试");
     test_btn_->setCursor(Qt::PointingHandCursor);
     test_btn_->setStyleSheet(QString("QPushButton{background:transparent;color:%1;border:1px solid %1;"
                                      "padding:7px;font-size:10px;font-weight:700;letter-spacing:1px;}"
@@ -520,7 +525,7 @@ QWidget* CreateAgentPanel::build_test_panel() {
     test_status_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::TEXT_TERTIARY()));
     bl->addWidget(test_status_lbl_);
 
-    auto* rlbl = new QLabel("OUTPUT");
+    auto* rlbl = new QLabel("输出结果");
     rlbl->setStyleSheet(QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;padding-top:4px;")
                             .arg(ui::colors::TEXT_SECONDARY()));
     bl->addWidget(rlbl);
@@ -559,12 +564,12 @@ void CreateAgentPanel::setup_connections() {
 
     auto& svc = services::AgentService::instance();
     connect(&svc, &services::AgentService::config_saved, this, [this]() {
-        status_lbl_->setText("Saved successfully");
+        status_lbl_->setText("保存成功");
         status_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:3px 0;").arg(ui::colors::POSITIVE()));
         load_saved_agents();
     });
     connect(&svc, &services::AgentService::config_deleted, this, [this]() {
-        status_lbl_->setText("Agent deleted");
+        status_lbl_->setText("智能体已删除");
         status_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:3px 0;").arg(ui::colors::WARNING()));
         editing_id_.clear();
         load_saved_agents();
@@ -589,15 +594,15 @@ void CreateAgentPanel::setup_connections() {
             return;
         pending_request_id_.clear();
         test_btn_->setEnabled(true);
-        test_btn_->setText("RUN TEST");
+        test_btn_->setText("运行测试");
         if (r.success) {
             test_result_->setPlainText(r.response);
-            test_status_lbl_->setText(QString("Done in %1ms").arg(r.execution_time_ms));
+            test_status_lbl_->setText(QString("执行完毕，耗时 %1ms").arg(r.execution_time_ms));
             test_status_lbl_->setStyleSheet(
                 QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::POSITIVE()));
         } else {
             test_result_->setPlainText("Error: " + r.error);
-            test_status_lbl_->setText("Failed");
+            test_status_lbl_->setText("失败");
             test_status_lbl_->setStyleSheet(
                 QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
         }
@@ -607,15 +612,15 @@ void CreateAgentPanel::setup_connections() {
             return;
         pending_request_id_.clear();
         test_btn_->setEnabled(true);
-        test_btn_->setText("RUN TEST");
+        test_btn_->setText("运行测试");
         if (r.success) {
             test_result_->setPlainText(r.response);
-            test_status_lbl_->setText(QString("Done in %1ms").arg(r.execution_time_ms));
+            test_status_lbl_->setText(QString("执行完毕，耗时 %1ms").arg(r.execution_time_ms));
             test_status_lbl_->setStyleSheet(
                 QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::POSITIVE()));
         } else {
             test_result_->setPlainText("Error: " + r.error);
-            test_status_lbl_->setText("Failed");
+            test_status_lbl_->setText("失败");
             test_status_lbl_->setStyleSheet(
                 QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
         }
@@ -655,14 +660,14 @@ void CreateAgentPanel::load_profile_combo() {
     const QString prev_id = llm_profile_combo_->currentData().toString();
     llm_profile_combo_->blockSignals(true);
     llm_profile_combo_->clear();
-    llm_profile_combo_->addItem("Default (Global)", QString{});
+    llm_profile_combo_->addItem("默认 (全局)", QString{});
 
     const auto pr = LlmProfileRepository::instance().list_profiles();
     const auto profiles = pr.is_ok() ? pr.value() : QVector<LlmProfile>{};
     for (const auto& p : profiles) {
         QString label = p.name;
         if (p.is_default)
-            label += " [default]";
+            label += " [默认]";
         llm_profile_combo_->addItem(label, p.id);
     }
     int restore = 0;
@@ -708,12 +713,12 @@ void CreateAgentPanel::refresh_llm_pill() {
         if (text.length() > 55)
             text = text.left(53) + "..";
         if (profile_id.isEmpty())
-            text += " (inherited)";
+            text += " (继承)";
         llm_resolved_lbl_->setText(text);
         llm_resolved_lbl_->setStyleSheet(
             QString("color:%1;font-size:10px;padding:1px 0 4px 0;").arg(ui::colors::TEXT_TERTIARY()));
     } else {
-        llm_resolved_lbl_->setText("No provider — Settings > LLM Config");
+        llm_resolved_lbl_->setText("无模型提供商 — 请在 设置 > LLM 配置 中设置");
         llm_resolved_lbl_->setStyleSheet(
             QString("color:%1;font-size:10px;padding:1px 0 4px 0;").arg(ui::colors::NEGATIVE()));
     }
@@ -724,8 +729,10 @@ void CreateAgentPanel::load_saved_agents() {
     auto result = AgentConfigRepository::instance().list_all();
     if (result.is_ok()) {
         saved_agents_ = result.value();
-        for (const auto& a : saved_agents_)
-            saved_list_->addItem(QString("%1  [%2]").arg(a.name, a.category));
+        for (const auto& a : saved_agents_) {
+            QString display = ui::Localization::translate_agent_name(a.name);
+            saved_list_->addItem(QString("%1  [%2]").arg(display, a.category));
+        }
         saved_count_->setText(QString::number(saved_agents_.size()));
     }
 }
@@ -811,7 +818,7 @@ void CreateAgentPanel::load_agent_into_form(const AgentConfig& cfg) {
 
     agentic_memory_user_id_edit_->setText(c["agentic_memory_user_id"].toString());
 
-    status_lbl_->setText(QString("Loaded: %1").arg(cfg.name));
+    status_lbl_->setText(QString("已加载: %1").arg(cfg.name));
     status_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:3px 0;").arg(ui::colors::CYAN()));
 }
 
@@ -839,7 +846,7 @@ void CreateAgentPanel::clear_form() {
     memory_session_summary_check_->setChecked(false);
     test_result_->clear();
     test_status_lbl_->clear();
-    status_lbl_->setText("Form cleared");
+    status_lbl_->setText("表单已清空");
     status_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:3px 0;").arg(ui::colors::TEXT_TERTIARY()));
 }
 
@@ -931,7 +938,7 @@ QJsonObject CreateAgentPanel::build_config_json() const {
 void CreateAgentPanel::save_agent() {
     const QString name = name_edit_->text().trimmed();
     if (name.isEmpty()) {
-        status_lbl_->setText("Agent name is required");
+        status_lbl_->setText("必须填写智能体名称");
         status_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:3px 0;").arg(ui::colors::NEGATIVE()));
         return;
     }
@@ -963,16 +970,16 @@ void CreateAgentPanel::test_agent() {
     if (query.isEmpty())
         return;
     test_btn_->setEnabled(false);
-    test_btn_->setText("RUNNING...");
+    test_btn_->setText("正在运行...");
     test_result_->clear();
-    test_status_lbl_->setText("Running...");
+    test_status_lbl_->setText("正在运行...");
     test_status_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::AMBER()));
     pending_request_id_ = services::AgentService::instance().run_agent_streaming(query, build_config_json());
 }
 
 void CreateAgentPanel::export_json() {
     const QString path =
-        QFileDialog::getSaveFileName(this, "Export Agent Config", "agent_config.json", "JSON (*.json)");
+        QFileDialog::getSaveFileName(this, "导出智能体配置", "agent_config.json", "JSON (*.json)");
     if (path.isEmpty())
         return;
     QJsonObject out;
@@ -983,12 +990,12 @@ void CreateAgentPanel::export_json() {
     QFile file(path);
     if (file.open(QIODevice::WriteOnly))
         file.write(QJsonDocument(out).toJson(QJsonDocument::Indented));
-    status_lbl_->setText("Exported: " + path);
+    status_lbl_->setText("已导出至: " + path);
     status_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:3px 0;").arg(ui::colors::POSITIVE()));
 }
 
 void CreateAgentPanel::import_json() {
-    const QString path = QFileDialog::getOpenFileName(this, "Import Agent Config", {}, "JSON (*.json)");
+    const QString path = QFileDialog::getOpenFileName(this, "导入智能体配置", {}, "JSON (*.json)");
     if (path.isEmpty())
         return;
     QFile file(path);
@@ -1002,7 +1009,7 @@ void CreateAgentPanel::import_json() {
     cfg.category = obj["category"].toString("custom");
     cfg.config_json = QString::fromUtf8(QJsonDocument(obj["config"].toObject()).toJson(QJsonDocument::Compact));
     load_agent_into_form(cfg);
-    status_lbl_->setText("Imported from file");
+    status_lbl_->setText("已从文件导入成功");
     status_lbl_->setStyleSheet(QString("color:%1;font-size:10px;padding:3px 0;").arg(ui::colors::CYAN()));
 }
 
@@ -1028,4 +1035,5 @@ void CreateAgentPanel::showEvent(QShowEvent* event) {
     }
 }
 
-} // namespace fincept::screens
+} // namespace screens
+} // namespace fincept

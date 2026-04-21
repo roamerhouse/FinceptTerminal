@@ -1,9 +1,12 @@
-// src/screens/agent_config/SystemViewPanel.cpp
-#include "screens/agent_config/SystemViewPanel.h"
+#include "SystemViewPanel.h"
+#include <QString>
+#include <QLabel>
+#include <QPushButton>
 
 #include "core/logging/Logger.h"
 #include "services/agents/AgentService.h"
 #include "storage/repositories/LlmConfigRepository.h"
+#include "ui/Localization.h"
 #include "ui/theme/Theme.h"
 #include "ui/theme/ThemeManager.h"
 
@@ -14,7 +17,8 @@
 #include <QScrollArea>
 #include <QShowEvent>
 
-namespace fincept::screens {
+namespace fincept {
+namespace screens {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -107,12 +111,12 @@ void SystemViewPanel::build_ui() {
 
     // Header
     auto* header_row = new QHBoxLayout;
-    auto* title = new QLabel("SYSTEM CAPABILITIES");
+    auto* title = new QLabel("系统能力概览");
     title->setStyleSheet(QString("color:%1;font-size:13px;font-weight:700;letter-spacing:2px;").arg(ui::colors::AMBER()));
     header_row->addWidget(title);
     header_row->addStretch();
 
-    auto* refresh_btn = new QPushButton("REFRESH");
+    auto* refresh_btn = new QPushButton("刷新");
     refresh_btn->setCursor(Qt::PointingHandCursor);
     refresh_btn->setStyleSheet(QString("QPushButton { background:transparent;color:%1;border:1px solid %2;"
                                        "padding:4px 12px;font-size:10px;font-weight:600;letter-spacing:1px; }"
@@ -169,17 +173,17 @@ QWidget* SystemViewPanel::build_stats_row() {
         return val;
     };
 
-    agents_count_ = make_stat_card(0, "AGENTS", ui::colors::AMBER);
-    tools_count_ = make_stat_card(1, "TOOLS", ui::colors::CYAN);
-    llms_count_ = make_stat_card(2, "LLMS", ui::colors::POSITIVE);
-    cache_count_ = make_stat_card(3, "CACHED", ui::colors::INFO);
+    agents_count_ = make_stat_card(0, "智能体", ui::colors::AMBER);
+    tools_count_ = make_stat_card(1, "工具", ui::colors::CYAN);
+    llms_count_ = make_stat_card(2, "模型", ui::colors::POSITIVE);
+    cache_count_ = make_stat_card(3, "已缓存", ui::colors::INFO);
 
     return row;
 }
 
 QWidget* SystemViewPanel::build_llm_section() {
     QPushButton* refresh = nullptr;
-    auto* card = make_section_card("CONFIGURED LLM PROVIDERS", &llm_list_layout_, &refresh, "REFRESH");
+    auto* card = make_section_card("已配置模型提供商", &llm_list_layout_, &refresh, "刷新");
     if (refresh) {
         connect(refresh, &QPushButton::clicked, this, [this]() {
             // Clear and reload LLM list
@@ -193,7 +197,7 @@ QWidget* SystemViewPanel::build_llm_section() {
         });
     }
 
-    auto* placeholder = new QLabel("Loading LLM providers...");
+    auto* placeholder = new QLabel("正在加载模型提供商...");
     placeholder->setStyleSheet(QString("color:%1;font-size:11px;font-style:italic;").arg(ui::colors::TEXT_TERTIARY()));
     llm_list_layout_->addWidget(placeholder);
 
@@ -201,9 +205,9 @@ QWidget* SystemViewPanel::build_llm_section() {
 }
 
 QWidget* SystemViewPanel::build_tools_section() {
-    auto* card = make_section_card("AVAILABLE TOOLS", &tools_list_layout_);
+    auto* card = make_section_card("可用工具清单", &tools_list_layout_);
 
-    auto* placeholder = new QLabel("Loading tools...");
+    auto* placeholder = new QLabel("正在加载工具...");
     placeholder->setStyleSheet(QString("color:%1;font-size:11px;font-style:italic;").arg(ui::colors::TEXT_TERTIARY()));
     tools_list_layout_->addWidget(placeholder);
 
@@ -211,12 +215,12 @@ QWidget* SystemViewPanel::build_tools_section() {
 }
 
 QWidget* SystemViewPanel::build_sysinfo_section() {
-    auto* card = make_section_card("SYSTEM INFO", &features_layout_);
+    auto* card = make_section_card("系统信息", &features_layout_);
 
     auto* info_grid = new QGridLayout;
     info_grid->setSpacing(4);
 
-    auto* ver_title = new QLabel("VERSION");
+    auto* ver_title = new QLabel("软件版本");
     ver_title->setStyleSheet(
         QString("color:%1;font-size:9px;font-weight:600;letter-spacing:1px;").arg(ui::colors::TEXT_TERTIARY()));
     version_label_ = new QLabel("--");
@@ -224,7 +228,7 @@ QWidget* SystemViewPanel::build_sysinfo_section() {
     info_grid->addWidget(ver_title, 0, 0);
     info_grid->addWidget(version_label_, 0, 1);
 
-    auto* fw_title = new QLabel("FRAMEWORK");
+    auto* fw_title = new QLabel("核心框架");
     fw_title->setStyleSheet(
         QString("color:%1;font-size:9px;font-weight:600;letter-spacing:1px;").arg(ui::colors::TEXT_TERTIARY()));
     framework_label_ = new QLabel("--");
@@ -256,7 +260,7 @@ void SystemViewPanel::populate_llm_list() {
 
     auto providers = LlmConfigRepository::instance().list_providers();
     if (!providers.is_ok()) {
-        auto* err = new QLabel("Failed to load LLM providers.");
+        auto* err = new QLabel("无法加载模型提供商。");
         err->setStyleSheet(QString("color:%1;font-size:11px;").arg(ui::colors::NEGATIVE()));
         llm_list_layout_->addWidget(err);
         return;
@@ -266,7 +270,7 @@ void SystemViewPanel::populate_llm_list() {
     llms_count_->setText(QString::number(list.size()));
 
     if (list.isEmpty()) {
-        auto* empty = new QLabel("No LLM providers configured. Go to Settings → LLM to add one.");
+        auto* empty = new QLabel("未配置模型提供商。请前往 设置 > LLM 配置 进行添加。");
         empty->setWordWrap(true);
         empty->setStyleSheet(QString("color:%1;font-size:11px;font-style:italic;").arg(ui::colors::TEXT_TERTIARY()));
         llm_list_layout_->addWidget(empty);
@@ -280,7 +284,7 @@ void SystemViewPanel::populate_llm_list() {
         hl->setSpacing(8);
 
         if (p.is_active) {
-            auto* badge = new QLabel("ACTIVE");
+            auto* badge = new QLabel("当前启用");
             badge->setStyleSheet(QString("color:%1;font-size:8px;font-weight:700;background:%2;padding:1px 5px;")
                                      .arg(ui::colors::POSITIVE(), ui::colors::BG_RAISED()));
             hl->addWidget(badge);
@@ -297,7 +301,7 @@ void SystemViewPanel::populate_llm_list() {
         hl->addStretch();
 
         const bool has_key = !p.api_key.isEmpty();
-        auto* key_status = new QLabel(has_key ? "KEY SET" : "NO KEY");
+        auto* key_status = new QLabel(has_key ? "密钥已设置" : "未设置密钥");
         key_status->setStyleSheet(QString("color:%1;font-size:9px;font-weight:600;")
                                       .arg(has_key ? ui::colors::POSITIVE() : ui::colors::NEGATIVE()));
         hl->addWidget(key_status);
@@ -313,7 +317,7 @@ void SystemViewPanel::populate_tools_list(const services::AgentToolsInfo& info) 
     tools_count_->setText(QString::number(info.total_count));
 
     if (info.categories.isEmpty()) {
-        auto* empty = new QLabel("No tools loaded.");
+        auto* empty = new QLabel("未加载任何工具。");
         empty->setStyleSheet(QString("color:%1;font-size:11px;font-style:italic;").arg(ui::colors::TEXT_TERTIARY()));
         tools_list_layout_->addWidget(empty);
         return;
@@ -322,7 +326,7 @@ void SystemViewPanel::populate_tools_list(const services::AgentToolsInfo& info) 
     for (const auto& cat : info.categories) {
         QJsonArray tools = info.tools[cat].toArray();
 
-        auto* cat_lbl = new QLabel(QString("%1  (%2)").arg(cat.toUpper()).arg(tools.size()));
+        auto* cat_lbl = new QLabel(QString("%1  (%2)").arg(ui::Localization::translate_category(cat)).arg(tools.size()));
         cat_lbl->setStyleSheet(QString("color:%1;font-size:10px;font-weight:600;letter-spacing:1px;padding-top:4px;")
                                    .arg(ui::colors::AMBER()));
         tools_list_layout_->addWidget(cat_lbl);
@@ -371,7 +375,7 @@ void SystemViewPanel::setup_connections() {
         }
 
         if (!info.features.isEmpty()) {
-            auto* feat_header = new QLabel("FEATURES");
+            auto* feat_header = new QLabel("已开启功能特性");
             feat_header->setStyleSheet(QString("color:%1;font-size:9px;font-weight:600;"
                                                "letter-spacing:1px;padding-top:8px;")
                                            .arg(ui::colors::TEXT_TERTIARY()));
@@ -428,7 +432,7 @@ void SystemViewPanel::refresh_data() {
         const int agent_cached = svc.cached_agent_count();
         const int resp_cached = stats["response_cache_size"].toInt(0);
         cache_count_->setText(QString::number(agent_cached + resp_cached));
-        cache_count_->setToolTip(QString("Agents: %1  |  Responses: %2").arg(agent_cached).arg(resp_cached));
+        cache_count_->setToolTip(QString("智能体: %1  |  响应缓存: %2").arg(agent_cached).arg(resp_cached));
     }
 
     // Async: tools list + system info (results arrive via signals)
@@ -446,4 +450,5 @@ void SystemViewPanel::showEvent(QShowEvent* event) {
     }
 }
 
-} // namespace fincept::screens
+} // namespace screens
+} // namespace fincept

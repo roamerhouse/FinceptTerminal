@@ -167,7 +167,7 @@ void LoginScreen::build_login_page() {
     auto* hl = new QHBoxLayout(header);
     hl->setContentsMargins(14, 0, 14, 0);
 
-    auto* title = new QLabel("SIGN IN");
+    auto* title = new QLabel("账户登录");
     title->setStyleSheet(QString("color: %1; font-size: 14px; font-weight: 700;"
                                  "background: transparent; letter-spacing: 1px;"
                                  "font-family: 'Consolas','Courier New',monospace;")
@@ -175,7 +175,7 @@ void LoginScreen::build_login_page() {
     hl->addWidget(title);
     hl->addStretch();
 
-    auto* brand = new QLabel("FINCEPT");
+    auto* brand = new QLabel("FINCEPT 终端");
     brand->setStyleSheet(QString("color: %1; font-size: 12px; font-weight: 700;"
                                  "background: transparent; letter-spacing: 0.5px;"
                                  "font-family: 'Consolas','Courier New',monospace;")
@@ -183,25 +183,25 @@ void LoginScreen::build_login_page() {
     hl->addWidget(brand);
     vl->addWidget(header);
 
-    auto* subtitle = new QLabel("Access your terminal account");
+    auto* subtitle = new QLabel("访问您的终端账户");
     subtitle->setStyleSheet(muted_style());
     vl->addWidget(subtitle);
 
     vl->addWidget(make_separator());
 
     // Email
-    auto* email_lbl = new QLabel("EMAIL");
+    auto* email_lbl = new QLabel("电子邮箱");
     email_lbl->setStyleSheet(label_style());
     vl->addWidget(email_lbl);
 
     email_input_ = new QLineEdit;
-    email_input_->setPlaceholderText("user@domain.com");
+    email_input_->setPlaceholderText("用户邮箱@域名.com");
     email_input_->setFixedHeight(34);
     email_input_->setStyleSheet(input_style());
     vl->addWidget(email_input_);
 
     // Password
-    auto* pw_lbl = new QLabel("PASSWORD");
+    auto* pw_lbl = new QLabel("登录密码");
     pw_lbl->setStyleSheet(label_style());
     vl->addWidget(pw_lbl);
 
@@ -212,19 +212,19 @@ void LoginScreen::build_login_page() {
     prl->setSpacing(4);
 
     password_input_ = new QLineEdit;
-    password_input_->setPlaceholderText("enter password");
+    password_input_->setPlaceholderText("请输入密码");
     password_input_->setEchoMode(QLineEdit::Password);
     password_input_->setFixedHeight(34);
     password_input_->setStyleSheet(input_style());
     prl->addWidget(password_input_);
 
-    show_pw_btn_ = new QPushButton("SHOW");
+    show_pw_btn_ = new QPushButton("显示");
     show_pw_btn_->setFixedSize(58, 34);
     show_pw_btn_->setStyleSheet(btn_standard());
     connect(show_pw_btn_, &QPushButton::clicked, this, [this]() {
         bool hidden = password_input_->echoMode() == QLineEdit::Password;
         password_input_->setEchoMode(hidden ? QLineEdit::Normal : QLineEdit::Password);
-        show_pw_btn_->setText(hidden ? "HIDE" : "SHOW");
+        show_pw_btn_->setText(hidden ? "隐藏" : "显示");
     });
     prl->addWidget(show_pw_btn_);
     vl->addWidget(pw_row);
@@ -246,13 +246,13 @@ void LoginScreen::build_login_page() {
     auto* brl = new QHBoxLayout(btn_row);
     brl->setContentsMargins(0, 0, 0, 0);
 
-    auto* forgot_btn = new QPushButton("FORGOT PASSWORD?");
+    auto* forgot_btn = new QPushButton("忘记密码？");
     forgot_btn->setStyleSheet(link_style());
     connect(forgot_btn, &QPushButton::clicked, this, &LoginScreen::navigate_forgot_password);
     brl->addWidget(forgot_btn);
     brl->addStretch();
 
-    login_btn_ = new QPushButton("  SIGN IN  ");
+    login_btn_ = new QPushButton("  立即登录  ");
     login_btn_->setFixedHeight(32);
     login_btn_->setStyleSheet(btn_primary());
     connect(login_btn_, &QPushButton::clicked, this, &LoginScreen::on_login);
@@ -268,11 +268,11 @@ void LoginScreen::build_login_page() {
     rrl->setContentsMargins(0, 0, 0, 0);
     rrl->setAlignment(Qt::AlignCenter);
 
-    auto* no_acct = new QLabel("No account?");
+    auto* no_acct = new QLabel("没有账户？");
     no_acct->setStyleSheet(muted_style());
     rrl->addWidget(no_acct);
 
-    auto* signup_btn = new QPushButton("SIGN UP");
+    auto* signup_btn = new QPushButton("立即注册");
     signup_btn->setStyleSheet(QString("QPushButton { color: %1; background: transparent; border: none;"
                                       "  font-size: 13px; font-weight: 700;"
                                       "  font-family: 'Consolas','Courier New',monospace; }"
@@ -530,7 +530,7 @@ void LoginScreen::set_loading(bool loading) {
     login_btn_->setEnabled(!loading);
     email_input_->setEnabled(!loading);
     password_input_->setEnabled(!loading);
-    login_btn_->setText(loading ? "  SIGNING IN...  " : "  SIGN IN  ");
+    login_btn_->setText(loading ? "  登录中...  " : "  立即登录  ");
 }
 
 } // namespace fincept::screens

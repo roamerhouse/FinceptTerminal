@@ -147,25 +147,25 @@ void CellWidget::build_ui() {
         return btn;
     };
 
-    auto* run_btn = make_tool_btn("RUN", colors::POSITIVE);
+    auto* run_btn = make_tool_btn("运行", colors::POSITIVE);
     connect(run_btn, &QPushButton::clicked, this, [this]() { emit run_requested(cell_id_); });
     tb_layout->addWidget(run_btn);
 
-    auto* type_btn = make_tool_btn("TYPE", colors::CYAN);
+    auto* type_btn = make_tool_btn("类型", colors::CYAN);
     connect(type_btn, &QPushButton::clicked, this, [this]() { emit toggle_type_requested(cell_id_); });
     tb_layout->addWidget(type_btn);
 
-    auto* up_btn = make_tool_btn("UP", colors::TEXT_SECONDARY);
+    auto* up_btn = make_tool_btn("上移", colors::TEXT_SECONDARY);
     connect(up_btn, &QPushButton::clicked, this, [this]() { emit move_up_requested(cell_id_); });
     tb_layout->addWidget(up_btn);
 
-    auto* dn_btn = make_tool_btn("DN", colors::TEXT_SECONDARY);
+    auto* dn_btn = make_tool_btn("下移", colors::TEXT_SECONDARY);
     connect(dn_btn, &QPushButton::clicked, this, [this]() { emit move_down_requested(cell_id_); });
     tb_layout->addWidget(dn_btn);
 
     tb_layout->addStretch();
 
-    auto* del_btn = make_tool_btn("DEL", colors::NEGATIVE);
+    auto* del_btn = make_tool_btn("删除", colors::NEGATIVE);
     connect(del_btn, &QPushButton::clicked, this, [this]() { emit delete_requested(cell_id_); });
     tb_layout->addWidget(del_btn);
 
@@ -240,7 +240,7 @@ void CellWidget::build_ui() {
     output_vbox->setSpacing(0);
 
     // Output header with collapse toggle
-    output_toggle_ = new QPushButton("OUTPUT", output_area_);
+    output_toggle_ = new QPushButton("输出", output_area_);
     output_toggle_->setFixedHeight(22);
     output_toggle_->setCursor(Qt::PointingHandCursor);
     output_toggle_->setStyleSheet(
@@ -253,7 +253,7 @@ void CellWidget::build_ui() {
     connect(output_toggle_, &QPushButton::clicked, this, [this]() {
         output_collapsed_ = !output_collapsed_;
         output_content_->setVisible(!output_collapsed_);
-        output_toggle_->setText(output_collapsed_ ? "OUTPUT [collapsed]" : "OUTPUT");
+        output_toggle_->setText(output_collapsed_ ? "输出 [已折叠]" : "输出");
     });
     output_vbox->addWidget(output_toggle_);
 
@@ -384,7 +384,7 @@ void CellWidget::set_outputs(const QVector<CellOutput>& outputs, int exec_count)
 
     output_area_->setVisible(true);
     output_toggle_->setVisible(true);
-    output_toggle_->setText(QString("OUT [%1]").arg(exec_count));
+    output_toggle_->setText(QString("输出 [%1]").arg(exec_count));
     output_collapsed_ = false;
     output_content_->setVisible(true);
 
@@ -534,7 +534,7 @@ void CellWidget::update_gutter() {
 void CellWidget::render_markdown() {
     QString src = editor_->toPlainText();
     if (src.trimmed().isEmpty()) {
-        md_preview_->setHtml(QString("<p style='color:%1; font-style:italic;'>Empty markdown cell — click to edit</p>")
+        md_preview_->setHtml(QString("<p style='color:%1; font-style:italic;'>空 Markdown 单元格 — 点击编辑</p>")
                                  .arg(colors::TEXT_TERTIARY()));
         md_preview_->setMinimumHeight(48);
         md_preview_->setMaximumHeight(48);
@@ -708,7 +708,7 @@ CellNavigator::CellNavigator(QWidget* parent) : QWidget(parent) {
     auto* header_layout = new QHBoxLayout(header);
     header_layout->setContentsMargins(10, 0, 10, 0);
 
-    auto* title = new QLabel("CELLS", header);
+    auto* title = new QLabel("单元格列表", header);
     title->setStyleSheet(QString("color:%1; font-family:%2; font-size:%3px; font-weight:700; letter-spacing:1px;")
                              .arg(colors::AMBER(), fonts::DATA_FAMILY)
                              .arg(fonts::TINY));
@@ -745,7 +745,7 @@ CellNavigator::CellNavigator(QWidget* parent) : QWidget(parent) {
             return;
 
         QMenu menu(this);
-        auto* rename_action = menu.addAction("Rename Cell");
+        auto* rename_action = menu.addAction("重命名单元格");
         QAction* chosen = menu.exec(list_->viewport()->mapToGlobal(pos));
         if (chosen == rename_action) {
             emit rename_requested(item->data(Qt::UserRole).toString());
@@ -781,7 +781,7 @@ void CellNavigator::rebuild(const QVector<NotebookCell>& cells, const QString& s
         if (preview.isEmpty())
             preview = cell.source.split('\n').first().trimmed();
         if (preview.isEmpty())
-            preview = "(empty)";
+            preview = "(空)";
 
         const QString label = QString("%1  %2  %3%4").arg(i + 1, 2).arg(type_tag, -2).arg(preview, exec_tag);
         auto* item = new QListWidgetItem(label, list_);
@@ -874,7 +874,7 @@ QWidget* CodeEditorScreen::build_toolbar() {
     hl->setContentsMargins(10, 0, 10, 0);
     hl->setSpacing(0);
 
-    auto* title = new QLabel("PYTHON NOTEBOOK", bar);
+    auto* title = new QLabel("PYTHON 笔记本", bar);
     title->setStyleSheet(QString("color:%1; font-family:%2; font-size:%3px; font-weight:700;"
                                  " letter-spacing:1px; padding-right:16px;")
                              .arg(colors::AMBER(), fonts::DATA_FAMILY)
@@ -902,31 +902,31 @@ QWidget* CodeEditorScreen::build_toolbar() {
         return btn;
     };
 
-    auto* new_btn = make_btn("NEW");
+    auto* new_btn = make_btn("新建");
     connect(new_btn, &QPushButton::clicked, this, &CodeEditorScreen::on_new_notebook);
     hl->addWidget(new_btn);
 
-    auto* open_btn = make_btn("OPEN");
+    auto* open_btn = make_btn("打开");
     connect(open_btn, &QPushButton::clicked, this, &CodeEditorScreen::on_open_notebook);
     hl->addWidget(open_btn);
 
-    auto* save_btn = make_btn("SAVE");
+    auto* save_btn = make_btn("保存");
     connect(save_btn, &QPushButton::clicked, this, &CodeEditorScreen::on_save_notebook);
     hl->addWidget(save_btn);
 
     add_sep();
 
-    auto* add_btn = make_btn("+ CELL", colors::CYAN);
+    auto* add_btn = make_btn("+ 单元格", colors::CYAN);
     connect(add_btn, &QPushButton::clicked, this, &CodeEditorScreen::on_add_cell);
     hl->addWidget(add_btn);
 
-    auto* clear_btn = make_btn("CLEAR OUT");
+    auto* clear_btn = make_btn("清空输出");
     connect(clear_btn, &QPushButton::clicked, this, &CodeEditorScreen::on_clear_outputs);
     hl->addWidget(clear_btn);
 
     add_sep();
 
-    auto* run_all_btn = new QPushButton("RUN ALL", bar);
+    auto* run_all_btn = new QPushButton("运行全部", bar);
     run_all_btn->setCursor(Qt::PointingHandCursor);
     run_all_btn->setStyleSheet(QString("QPushButton { background:%1; color:%2; border:none;"
                                        " font-family:%3; font-size:%4px; font-weight:700; padding:4px 14px;"
@@ -940,13 +940,13 @@ QWidget* CodeEditorScreen::build_toolbar() {
 
     hl->addStretch();
 
-    auto* sidebar_btn = make_btn("SIDEBAR");
+    auto* sidebar_btn = make_btn("侧边栏");
     connect(sidebar_btn, &QPushButton::clicked, this, &CodeEditorScreen::on_toggle_sidebar);
     hl->addWidget(sidebar_btn);
 
     add_sep();
 
-    kernel_label_ = new QLabel("KERNEL: IDLE", bar);
+    kernel_label_ = new QLabel("内核: 空闲", bar);
     kernel_label_->setStyleSheet(QString("color:%1; font-family:%2; font-size:10px; font-weight:600;"
                                          " letter-spacing:0.5px; padding:0 8px;")
                                      .arg(colors::POSITIVE(), fonts::DATA_FAMILY));
@@ -968,14 +968,14 @@ QWidget* CodeEditorScreen::build_status_bar() {
     auto* hl = new QHBoxLayout(bar);
     hl->setContentsMargins(10, 0, 10, 0);
 
-    status_label_ = new QLabel("READY", bar);
+    status_label_ = new QLabel("就绪", bar);
     status_label_->setStyleSheet(
         QString("color:%1; font-family:%2; font-size:10px; font-weight:600; letter-spacing:0.5px;")
             .arg(colors::TEXT_SECONDARY(), fonts::DATA_FAMILY));
     hl->addWidget(status_label_);
     hl->addStretch();
 
-    auto* shortcuts = new QLabel("Ctrl+Enter: RUN  |  Shift+Enter: RUN & NEXT  |  Tab: 4 SPACES  |  Ctrl+S: SAVE", bar);
+    auto* shortcuts = new QLabel("Ctrl+Enter: 运行  |  Shift+Enter: 运行并跳转  |  Tab: 4 空格  |  Ctrl+S: 保存", bar);
     shortcuts->setStyleSheet(QString("color:%1; font-family:%2; font-size:10px; letter-spacing:0.3px;")
                                  .arg(colors::TEXT_DIM(), fonts::DATA_FAMILY));
     hl->addWidget(shortcuts);
@@ -995,10 +995,10 @@ void CodeEditorScreen::on_new_notebook() {
     NotebookCell cell;
     cell.id = new_cell_id();
     cell.cell_type = "code";
-    cell.source = "# Fincept Python Notebook\n"
-                  "# Write Python code and press Ctrl+Enter to run\n"
+    cell.source = "# Fincept Python 笔记本\n"
+                  "# 编写 Python 代码并按 Ctrl+Enter 运行\n"
                   "\n"
-                  "print(\"Hello from Fincept Terminal!\")";
+                  "print(\"来自 Fincept Terminal 的问候!\")";
     cells_.append(cell);
 
     selected_cell_id_ = cell.id;
@@ -1130,7 +1130,7 @@ void CodeEditorScreen::on_rename_cell(const QString& cell_id) {
 
     bool ok = false;
     const QString name =
-        QInputDialog::getText(this, "Rename Cell", "Cell name:", QLineEdit::Normal, current_name, &ok).trimmed();
+        QInputDialog::getText(this, "重命名单元格", "单元格名称:", QLineEdit::Normal, current_name, &ok).trimmed();
     if (!ok)
         return;
 
@@ -1193,7 +1193,7 @@ void CodeEditorScreen::on_run_cell(const QString& cell_id) {
     ++execution_counter_;
     int exec_num = execution_counter_;
 
-    kernel_label_->setText("KERNEL: BUSY");
+    kernel_label_->setText("内核: 忙碌");
     kernel_label_->setStyleSheet(QString("color:%1; font-family:%2; font-size:10px; font-weight:600;"
                                          " letter-spacing:0.5px; padding:0 8px;")
                                      .arg(colors::WARNING(), fonts::DATA_FAMILY));
@@ -1248,7 +1248,7 @@ void CodeEditorScreen::on_run_cell(const QString& cell_id) {
             widget->set_running(false);
         }
 
-        self->kernel_label_->setText("KERNEL: IDLE");
+        self->kernel_label_->setText("内核: 空闲");
         self->kernel_label_->setStyleSheet(QString("color:%1; font-family:%2; font-size:10px; font-weight:600;"
                                                    " letter-spacing:0.5px; padding:0 8px;")
                                                .arg(colors::POSITIVE(), fonts::DATA_FAMILY));
@@ -1276,7 +1276,7 @@ void CodeEditorScreen::on_run_all() {
 
 void CodeEditorScreen::on_open_notebook() {
     QString path =
-        QFileDialog::getOpenFileName(this, "Open Notebook", {}, "Jupyter Notebooks (*.ipynb);;All Files (*)");
+        QFileDialog::getOpenFileName(this, "打开笔记本", {}, "Jupyter Notebooks (*.ipynb);;All Files (*)");
     if (path.isEmpty())
         return;
 
@@ -1340,7 +1340,7 @@ void CodeEditorScreen::on_save_notebook() {
 
     QString path = notebook_path_;
     if (path.isEmpty()) {
-        path = QFileDialog::getSaveFileName(this, "Save Notebook", "notebook.ipynb", "Jupyter Notebooks (*.ipynb)");
+        path = QFileDialog::getSaveFileName(this, "保存笔记本", "notebook.ipynb", "Jupyter Notebooks (*.ipynb)");
         if (path.isEmpty())
             return;
     }
@@ -1453,7 +1453,7 @@ void CodeEditorScreen::update_status() {
             ++executed;
     }
 
-    QString info = QString("CELLS: %1 CODE  %2 MD  |  EXECUTED: %3").arg(code_count).arg(md_count).arg(executed);
+    QString info = QString("单元格: %1 代码  %2 MD  |  已运行: %3").arg(code_count).arg(md_count).arg(executed);
     if (!notebook_path_.isEmpty())
         info += "  |  " + QFileInfo(notebook_path_).fileName();
     status_label_->setText(info);

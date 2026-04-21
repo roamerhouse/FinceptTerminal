@@ -21,15 +21,15 @@ struct DetailBtnDef {
 
 // Neutral tab pills — color is reserved for data, not navigation.
 static const DetailBtnDef kDetailButtons[] = {
-    {"SECTORS", portfolio::DetailView::AnalyticsSectors},
-    {"PERF/RISK", portfolio::DetailView::PerfRisk},
-    {"OPTIMIZE", portfolio::DetailView::Optimization},
-    {"QUANTSTATS", portfolio::DetailView::QuantStats},
-    {"REPORTS", portfolio::DetailView::ReportsPme},
-    {"INDICES", portfolio::DetailView::Indices},
-    {"RISK", portfolio::DetailView::RiskMgmt},
-    {"PLANNING", portfolio::DetailView::Planning},
-    {"ECONOMICS", portfolio::DetailView::Economics},
+    {"板块分析", portfolio::DetailView::AnalyticsSectors},
+    {"绩效/风险", portfolio::DetailView::PerfRisk},
+    {"组合优化", portfolio::DetailView::Optimization},
+    {"量化统计", portfolio::DetailView::QuantStats},
+    {"分析报告", portfolio::DetailView::ReportsPme},
+    {"指数对比", portfolio::DetailView::Indices},
+    {"风险管理", portfolio::DetailView::RiskMgmt},
+    {"投资规划", portfolio::DetailView::Planning},
+    {"宏观经济", portfolio::DetailView::Economics},
 };
 
 PortfolioCommandBar::PortfolioCommandBar(QWidget* parent) : QWidget(parent) {
@@ -102,14 +102,14 @@ void PortfolioCommandBar::build_row1(QHBoxLayout* layout) {
     refresh_btn_ = new QPushButton("\u21BB");
     refresh_btn_->setFixedSize(24, 22);
     refresh_btn_->setCursor(Qt::PointingHandCursor);
-    refresh_btn_->setToolTip("Refresh portfolio data");
+    refresh_btn_->setToolTip("刷新投资组合数据");
     refresh_btn_->setObjectName("pfIconBtn");
     connect(refresh_btn_, &QPushButton::clicked, this, &PortfolioCommandBar::refresh_requested);
     layout->addWidget(refresh_btn_);
 
     interval_cb_ = new QComboBox;
     interval_cb_->setFixedHeight(22);
-    interval_cb_->setToolTip("Auto-refresh interval");
+    interval_cb_->setToolTip("自动刷新间隔");
     interval_cb_->addItem("1m", 60000);
     interval_cb_->addItem("5m", 300000);
     interval_cb_->addItem("10m", 600000);
@@ -129,7 +129,7 @@ void PortfolioCommandBar::build_row1(QHBoxLayout* layout) {
 }
 
 void PortfolioCommandBar::build_portfolio_selector() {
-    selector_btn_ = new QPushButton("SELECT PORTFOLIO \u25BE");
+    selector_btn_ = new QPushButton("选择投资组合 \u25BE");
     selector_btn_->setFixedHeight(24);
     selector_btn_->setMinimumWidth(180);
     selector_btn_->setMaximumWidth(260);
@@ -148,7 +148,7 @@ void PortfolioCommandBar::build_portfolio_selector() {
     dd_layout->setSpacing(2);
 
     search_edit_ = new QLineEdit;
-    search_edit_->setPlaceholderText("Search portfolios...");
+    search_edit_->setPlaceholderText("搜索投资组合...");
     search_edit_->setFixedHeight(26);
     search_edit_->setStyleSheet(QString("QLineEdit { background:%1; color:%2; border:1px solid %3;"
                                         "  padding:0 8px; font-size:11px; }"
@@ -189,7 +189,7 @@ void PortfolioCommandBar::build_portfolio_selector() {
     auto* btn_row = new QHBoxLayout;
     btn_row->setSpacing(4);
 
-    auto* create_btn = new QPushButton("+ CREATE NEW");
+    auto* create_btn = new QPushButton("+ 创建新组合");
     create_btn->setFixedHeight(24);
     create_btn->setCursor(Qt::PointingHandCursor);
     create_btn->setStyleSheet(QString("QPushButton { background:%1; color:%3; border:none;"
@@ -203,7 +203,7 @@ void PortfolioCommandBar::build_portfolio_selector() {
     });
     btn_row->addWidget(create_btn);
 
-    auto* delete_btn = new QPushButton("DELETE");
+    auto* delete_btn = new QPushButton("删除组合");
     delete_btn->setFixedHeight(24);
     delete_btn->setCursor(Qt::PointingHandCursor);
     delete_btn->setStyleSheet(QString("QPushButton { background:transparent; color:%1; border:1px solid %1;"
@@ -243,7 +243,7 @@ void PortfolioCommandBar::build_overflow_menu() {
     overflow_btn_->setText("\u22EF"); // horizontal ellipsis
     overflow_btn_->setFixedSize(24, 22);
     overflow_btn_->setCursor(Qt::PointingHandCursor);
-    overflow_btn_->setToolTip("More actions");
+    overflow_btn_->setToolTip("更多操作");
     overflow_btn_->setPopupMode(QToolButton::InstantPopup);
     overflow_btn_->setObjectName("pfOverflowBtn");
 
@@ -256,11 +256,11 @@ void PortfolioCommandBar::build_overflow_menu() {
                                       .arg(ui::colors::BG_SURFACE(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_DIM(),
                                            ui::colors::AMBER_DIM(), ui::colors::AMBER()));
 
-    auto* export_csv = overflow_menu_->addAction("Export CSV");
-    auto* export_json = overflow_menu_->addAction("Export JSON");
-    auto* import_action = overflow_menu_->addAction("Import JSON…");
+    auto* export_csv = overflow_menu_->addAction("导出 CSV");
+    auto* export_json = overflow_menu_->addAction("导出 JSON");
+    auto* import_action = overflow_menu_->addAction("导入 JSON…");
     overflow_menu_->addSeparator();
-    ffn_action_ = overflow_menu_->addAction("FFN Analysis");
+    ffn_action_ = overflow_menu_->addAction("FFN 分析");
     ffn_action_->setCheckable(true);
 
     connect(export_csv, &QAction::triggered, this, &PortfolioCommandBar::export_csv_requested);
@@ -323,9 +323,9 @@ void PortfolioCommandBar::build_trade_cluster(QHBoxLayout* layout) {
         layout->addWidget(out);
     };
 
-    make_trade_btn(buy_btn_, "BUY", ui::colors::POSITIVE(), &PortfolioCommandBar::buy_requested);
-    make_trade_btn(sell_btn_, "SELL", ui::colors::NEGATIVE(), &PortfolioCommandBar::sell_requested);
-    make_trade_btn(div_btn_, "DIV", ui::colors::CYAN(), &PortfolioCommandBar::dividend_requested);
+    make_trade_btn(buy_btn_, "买入", ui::colors::POSITIVE(), &PortfolioCommandBar::buy_requested);
+    make_trade_btn(sell_btn_, "卖出", ui::colors::NEGATIVE(), &PortfolioCommandBar::sell_requested);
+    make_trade_btn(div_btn_, "分红", ui::colors::CYAN(), &PortfolioCommandBar::dividend_requested);
 }
 
 void PortfolioCommandBar::build_detail_tabs(QHBoxLayout* layout) {
@@ -353,8 +353,8 @@ void PortfolioCommandBar::build_tools_cluster(QHBoxLayout* layout) {
         layout->addWidget(out);
     };
 
-    make_tool_btn(ai_btn_, "AI", "#9D4EDD", &PortfolioCommandBar::ai_analyze_requested);
-    make_tool_btn(agent_btn_, "AGENT", "#00D4AA", &PortfolioCommandBar::agent_run_requested);
+    make_tool_btn(ai_btn_, "AI分析", "#9D4EDD", &PortfolioCommandBar::ai_analyze_requested);
+    make_tool_btn(agent_btn_, "助手", "#00D4AA", &PortfolioCommandBar::agent_run_requested);
 }
 
 // ── Styling ──────────────────────────────────────────────────────────────────
@@ -443,7 +443,7 @@ void PortfolioCommandBar::update_selector_label() {
             return;
         }
     }
-    selector_btn_->setText("SELECT PORTFOLIO  \u25BE");
+    selector_btn_->setText("选择投资组合  \u25BE");
 }
 
 // ── Public setters ───────────────────────────────────────────────────────────
@@ -477,7 +477,7 @@ void PortfolioCommandBar::set_summary(const portfolio::PortfolioSummary& s) {
     pnl_label_->setStyleSheet(QString("color:%1; %2").arg(color(s.total_unrealized_pnl), base_css));
 
     day_label_->setText(
-        QString("DAY  %1%2%").arg(s.total_day_change >= 0 ? "+" : "").arg(fmt(s.total_day_change_percent)));
+        QString("今日  %1%2%").arg(s.total_day_change >= 0 ? "+" : "").arg(fmt(s.total_day_change_percent)));
     day_label_->setStyleSheet(QString("color:%1; %2").arg(color(s.total_day_change), base_css));
 
     pos_label_->setText(QString("POS %1  \u25B4%2  \u25BE%3").arg(s.total_positions).arg(s.gainers).arg(s.losers));
@@ -512,7 +512,7 @@ void PortfolioCommandBar::set_has_portfolios(bool has) {
     tabs_container_->setVisible(false);
     tools_cluster_->setVisible(false);
     if (!has) {
-        selector_btn_->setText("NO PORTFOLIOS \u2014 CREATE ONE  \u25BE");
+        selector_btn_->setText("无投资组合 — 点击创建  \u25BE");
     }
 }
 

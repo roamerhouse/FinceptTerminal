@@ -1,11 +1,8 @@
-// LlmProfileRepository.cpp
-
 #include "storage/repositories/LlmProfileRepository.h"
-
 #include "core/logging/Logger.h"
-
 #include <QSqlQuery>
 #include <QUuid>
+#include <QSqlError>
 
 namespace fincept {
 
@@ -51,15 +48,34 @@ Result<LlmProfile> LlmProfileRepository::get_profile(const QString& id) const {
 }
 
 Result<void> LlmProfileRepository::save_profile(const LlmProfile& p) {
-    // Generate id if empty (new profile)
+    LOG_INFO("LlmProfileRepo", "Attempting to save profile: " + p.name);
+    
+    // 补齐字段
+    db().exec("ALTER TABLE llm_profiles ADD COLUMN system_prompt TEXT NOT NULL DEFAULT ''");
+    db().exec("ALTER TABLE llm_profiles ADD COLUMN api_key TEXT NOT NULL DEFAULT ''");
+    db().exec("ALTER TABLE llm_profiles ADD COLUMN base_url TEXT NOT NULL DEFAULT ''");
+
     QString id = p.id.isEmpty() ? QUuid::createUuid().toString(QUuid::WithoutBraces) : p.id;
 
-    return exec_write("INSERT OR REPLACE INTO llm_profiles "
-                      "  (id, name, provider, model_id, api_key, base_url, "
-                      "   temperature, max_tokens, system_prompt, is_default, updated_at) "
-                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))",
-                      {id, p.name, p.provider, p.model_id, p.api_key, p.base_url, p.temperature, p.max_tokens,
-                       p.system_prompt, p.is_default ? 1 : 0});
+    QVariantList params;
+    params << id << p.name << p.provider << p.model_id << p.api_key << p.base_url 
+           << p.temperature << p.max_tokens << p.system_prompt << (p.is_default ? 1 : 0);
+
+    // DEBUG: 故意在这里引入一个未定义变量进行测试
+    // if (TRIGGER_COMPILE_ERROR) return Result<void>::ok(); 
+
+    auto r = exec_write("INSERT OR REPLACE INTO llm_profiles "
+                        "  (id, name, provider, model_id, api_key, base_url, "
+                        "   temperature, max_tokens, system_prompt, is_default) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        params);
+    
+    if (r.is_err()) {
+        LOG_ERROR("LlmProfileRepo", "Save failed with error: " + QString::fromStdString(r.error()));
+    } else {
+        LOG_INFO("LlmProfileRepo", "Save successful for: " + p.name);
+    }
+    return r;
 }
 
 Result<void> LlmProfileRepository::delete_profile(const QString& id) {

@@ -30,7 +30,7 @@ static QString fmt_metric(const QString& key, const QJsonValue& val) {
     if (val.isString())
         return val.toString();
     if (val.isBool())
-        return val.toBool() ? "YES" : "NO";
+        return val.toBool() ? "是" : "否";
     if (!val.isDouble())
         return QString::fromUtf8("\u2014");
 
@@ -165,7 +165,7 @@ QWidget* BacktestingScreen::build_top_bar() {
     hl->setContentsMargins(12, 0, 12, 0);
     hl->setSpacing(8);
 
-    auto* brand = new QLabel("BACKTESTING", bar);
+    auto* brand = new QLabel("策略回测", bar);
     brand->setStyleSheet(QString("color:%1; font-size:%2px; font-weight:700; font-family:%3;"
                                  "padding:4px 12px; background:rgba(217,119,6,0.1);"
                                  "border:1px solid %4;")
@@ -193,7 +193,7 @@ QWidget* BacktestingScreen::build_top_bar() {
     hl->addStretch(1);
 
     // Run button — accent amber style per DESIGN_SYSTEM 5.5
-    run_button_ = new QPushButton("RUN", bar);
+    run_button_ = new QPushButton("运行", bar);
     run_button_->setCursor(Qt::PointingHandCursor);
     run_button_->setStyleSheet(
         QString("QPushButton { background:rgba(217,119,6,0.1); color:%1; font-family:%2; font-size:%3px;"
@@ -213,7 +213,7 @@ QWidget* BacktestingScreen::build_top_bar() {
     hl->addWidget(run_button_);
 
     // Status dot
-    status_dot_ = new QLabel("READY", bar);
+    status_dot_ = new QLabel("就绪", bar);
     status_dot_->setStyleSheet(QString("color:%1; font-size:%2px; font-weight:700; font-family:%3;"
                                        "padding:3px 8px; background:rgba(22,163,74,0.08);"
                                        "border:1px solid rgba(22,163,74,0.25);")
@@ -264,7 +264,7 @@ QWidget* BacktestingScreen::build_left_panel() {
                              .arg(ui::colors::BORDER_DIM());
 
     // ── Commands section ──
-    auto* cmd_title = new QLabel("COMMANDS", content);
+    auto* cmd_title = new QLabel("命令", content);
     cmd_title->setStyleSheet(section_style);
     vl->addWidget(cmd_title);
 
@@ -280,7 +280,7 @@ QWidget* BacktestingScreen::build_left_panel() {
 
     // ── Strategies section ──
     vl->addSpacing(8);
-    auto* strat_title = new QLabel("STRATEGY", content);
+    auto* strat_title = new QLabel("策略", content);
     strat_title->setStyleSheet(section_style);
     vl->addWidget(strat_title);
 
@@ -293,17 +293,17 @@ QWidget* BacktestingScreen::build_left_panel() {
                            .arg(ui::fonts::DATA_FAMILY)
                            .arg(ui::fonts::SMALL);
 
-    auto* cat_lbl = new QLabel("CATEGORY", content);
+    auto* cat_lbl = new QLabel("分类", content);
     cat_lbl->setStyleSheet(label_style);
     vl->addWidget(cat_lbl);
     strategy_category_combo_ = new QComboBox(content);
     strategy_category_combo_->setStyleSheet(combo_style);
-    // Populated dynamically via on_result("get_strategies")
+    strategy_category_combo_->addItem("加载中...");
     connect(strategy_category_combo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             [this](int) { populate_strategies(); });
     vl->addWidget(strategy_category_combo_);
 
-    auto* strat_lbl = new QLabel("STRATEGY", content);
+    auto* strat_lbl = new QLabel("具体策略", content);
     strat_lbl->setStyleSheet(label_style);
     vl->addWidget(strat_lbl);
     strategy_combo_ = new QComboBox(content);
@@ -314,7 +314,7 @@ QWidget* BacktestingScreen::build_left_panel() {
 
     // ── Strategy parameters ──
     vl->addSpacing(4);
-    auto* params_title = new QLabel("PARAMETERS", content);
+    auto* params_title = new QLabel("策略参数", content);
     params_title->setStyleSheet(label_style);
     vl->addWidget(params_title);
 
@@ -348,7 +348,7 @@ QWidget* BacktestingScreen::build_center_panel() {
         QString("background:%1; border-bottom:1px solid %2;").arg(ui::colors::BG_RAISED(), ui::colors::BORDER_DIM()));
     auto* hhl = new QHBoxLayout(header);
     hhl->setContentsMargins(16, 0, 16, 0);
-    auto* title = new QLabel("RESULTS", header);
+    auto* title = new QLabel("结果展示", header);
     title->setStyleSheet(QString("color:%1; font-size:%2px; font-weight:700; font-family:%3; letter-spacing:1px;")
                              .arg(ui::colors::AMBER())
                              .arg(ui::fonts::TINY)
@@ -356,7 +356,7 @@ QWidget* BacktestingScreen::build_center_panel() {
     hhl->addWidget(title);
     hhl->addStretch();
 
-    auto* export_btn = new QPushButton("EXPORT JSON", header);
+    auto* export_btn = new QPushButton("导出 JSON", header);
     export_btn->setCursor(Qt::PointingHandCursor);
     export_btn->setFixedHeight(22);
     export_btn->setStyleSheet(QString("QPushButton { background:transparent; color:%1; border:1px solid %2; "
@@ -371,8 +371,8 @@ QWidget* BacktestingScreen::build_center_panel() {
         if (text.trimmed().isEmpty())
             return;
 
-        QString path = QFileDialog::getSaveFileName(this, "Export Backtest Results", "backtest_results.json",
-                                                    "JSON Files (*.json);;All Files (*)");
+        QString path = QFileDialog::getSaveFileName(this, "导出回测结果", "backtest_results.json",
+                                                    "JSON 文件 (*.json);;所有文件 (*)");
         if (path.isEmpty())
             return;
 
@@ -415,9 +415,9 @@ QWidget* BacktestingScreen::build_center_panel() {
     summary_layout_->setSpacing(12);
 
     // Initial hint
-    auto* hint = new QLabel("Select a provider, command, and strategy, then click RUN to execute.\n\n"
-                            "Supported providers: VectorBT, Backtesting.py, FastTrade, Zipline, BT, Fincept\n"
-                            "Commands: Backtest, Optimize, Walk-Forward, Indicators, ML Labels, CV Splits, Returns");
+    auto* hint = new QLabel("请先选择服务商、命令和策略，然后点击“运行”执行。\n\n"
+                            "支持的服务商: VectorBT, Backtesting.py, FastTrade, Zipline, BT, Fincept\n"
+                            "支持的命令: 回测, 优化, 步进回测 (Walk-Forward), 指标分析, ML 标注, 交叉验证分割, 收益分析");
     hint->setWordWrap(true);
     hint->setStyleSheet(QString("color:%1; font-size:%2px; font-family:%3; line-height:1.6;"
                                 "padding:20px; background:%4; border:1px solid %5;")
@@ -429,11 +429,11 @@ QWidget* BacktestingScreen::build_center_panel() {
     summary_layout_->addWidget(hint);
     summary_layout_->addStretch();
     summary_scroll->setWidget(summary_container_);
-    result_tabs_->addTab(summary_scroll, "SUMMARY");
+    result_tabs_->addTab(summary_scroll, "概览");
 
     // METRICS tab
     metrics_table_ = new QTableWidget(0, 2);
-    metrics_table_->setHorizontalHeaderLabels({"Metric", "Value"});
+    metrics_table_->setHorizontalHeaderLabels({"指标", "数值"});
     metrics_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     metrics_table_->setAlternatingRowColors(true);
     metrics_table_->horizontalHeader()->setStretchLastSection(true);
@@ -450,7 +450,7 @@ QWidget* BacktestingScreen::build_center_panel() {
                                       .arg(ui::colors::BG_RAISED())
                                       .arg(ui::colors::TEXT_SECONDARY())
                                       .arg(ui::colors::ROW_ALT()));
-    result_tabs_->addTab(metrics_table_, "METRICS");
+    result_tabs_->addTab(metrics_table_, "详细指标");
 
     // TRADES tab
     trades_table_ = new QTableWidget(0, 0);
@@ -459,7 +459,7 @@ QWidget* BacktestingScreen::build_center_panel() {
     trades_table_->horizontalHeader()->setStretchLastSection(true);
     trades_table_->verticalHeader()->setVisible(false);
     trades_table_->setStyleSheet(metrics_table_->styleSheet());
-    result_tabs_->addTab(trades_table_, "TRADES");
+    result_tabs_->addTab(trades_table_, "交易记录");
 
     // RAW JSON tab
     raw_json_edit_ = new QTextEdit;
@@ -469,7 +469,7 @@ QWidget* BacktestingScreen::build_center_panel() {
                                       .arg(ui::colors::BG_SURFACE(), ui::colors::TEXT_PRIMARY())
                                       .arg(ui::fonts::DATA_FAMILY)
                                       .arg(ui::fonts::SMALL));
-    result_tabs_->addTab(raw_json_edit_, "RAW JSON");
+    result_tabs_->addTab(raw_json_edit_, "原始数据");
 
     vl->addWidget(result_tabs_, 1);
     return panel;
@@ -532,11 +532,11 @@ QWidget* BacktestingScreen::build_right_panel() {
                            .arg(ui::fonts::SMALL);
 
     // ── MARKET DATA ──
-    auto* mkt_title = new QLabel("MARKET DATA", content);
+    auto* mkt_title = new QLabel("数据配置", content);
     mkt_title->setStyleSheet(section_style);
     vl->addWidget(mkt_title);
 
-    auto* sym_lbl = new QLabel("SYMBOLS", content);
+    auto* sym_lbl = new QLabel("代码列表", content);
     sym_lbl->setStyleSheet(label_style);
     vl->addWidget(sym_lbl);
     symbols_edit_ = new QLineEdit("SPY", content);
@@ -544,7 +544,7 @@ QWidget* BacktestingScreen::build_right_panel() {
     symbols_edit_->setStyleSheet(input_style);
     vl->addWidget(symbols_edit_);
 
-    auto* cap_lbl = new QLabel("INITIAL CAPITAL ($)", content);
+    auto* cap_lbl = new QLabel("初始资金 ($)", content);
     cap_lbl->setStyleSheet(label_style);
     vl->addWidget(cap_lbl);
     capital_spin_ = new QDoubleSpinBox(content);
@@ -556,7 +556,7 @@ QWidget* BacktestingScreen::build_right_panel() {
 
     auto* dates = new QGridLayout;
     dates->setSpacing(8);
-    auto* sd_lbl = new QLabel("START", content);
+    auto* sd_lbl = new QLabel("开始日期", content);
     sd_lbl->setStyleSheet(label_style);
     dates->addWidget(sd_lbl, 0, 0);
     start_date_ = new QDateEdit(QDate::currentDate().addYears(-1), content);
@@ -564,7 +564,7 @@ QWidget* BacktestingScreen::build_right_panel() {
     start_date_->setCalendarPopup(true);
     start_date_->setStyleSheet(input_style);
     dates->addWidget(start_date_, 1, 0);
-    auto* ed_lbl = new QLabel("END", content);
+    auto* ed_lbl = new QLabel("结束日期", content);
     ed_lbl->setStyleSheet(label_style);
     dates->addWidget(ed_lbl, 0, 1);
     end_date_ = new QDateEdit(QDate::currentDate().addDays(-1), content);
@@ -576,11 +576,11 @@ QWidget* BacktestingScreen::build_right_panel() {
 
     // ── EXECUTION SETTINGS ──
     vl->addSpacing(8);
-    auto* exec_title = new QLabel("EXECUTION", content);
+    auto* exec_title = new QLabel("执行设置", content);
     exec_title->setStyleSheet(section_style);
     vl->addWidget(exec_title);
 
-    auto* comm_lbl = new QLabel("COMMISSION (%)", content);
+    auto* comm_lbl = new QLabel("佣金比例 (%)", content);
     comm_lbl->setStyleSheet(label_style);
     vl->addWidget(comm_lbl);
     commission_spin_ = new QDoubleSpinBox(content);
@@ -591,7 +591,7 @@ QWidget* BacktestingScreen::build_right_panel() {
     commission_spin_->setStyleSheet(input_style);
     vl->addWidget(commission_spin_);
 
-    auto* slip_lbl = new QLabel("SLIPPAGE (%)", content);
+    auto* slip_lbl = new QLabel("滑点比例 (%)", content);
     slip_lbl->setStyleSheet(label_style);
     vl->addWidget(slip_lbl);
     slippage_spin_ = new QDoubleSpinBox(content);
@@ -604,11 +604,11 @@ QWidget* BacktestingScreen::build_right_panel() {
 
     // ── ADVANCED ──
     vl->addSpacing(8);
-    auto* adv_title = new QLabel("ADVANCED", content);
+    auto* adv_title = new QLabel("高级设置", content);
     adv_title->setStyleSheet(section_style);
     vl->addWidget(adv_title);
 
-    auto* lev_lbl = new QLabel("LEVERAGE", content);
+    auto* lev_lbl = new QLabel("杠杆倍数", content);
     lev_lbl->setStyleSheet(label_style);
     vl->addWidget(lev_lbl);
     leverage_spin_ = new QDoubleSpinBox(content);
@@ -619,7 +619,7 @@ QWidget* BacktestingScreen::build_right_panel() {
     leverage_spin_->setStyleSheet(input_style);
     vl->addWidget(leverage_spin_);
 
-    auto* sl_lbl = new QLabel("STOP LOSS (%)", content);
+    auto* sl_lbl = new QLabel("止损比例 (%)", content);
     sl_lbl->setStyleSheet(label_style);
     vl->addWidget(sl_lbl);
     stop_loss_spin_ = new QDoubleSpinBox(content);
@@ -627,11 +627,11 @@ QWidget* BacktestingScreen::build_right_panel() {
     stop_loss_spin_->setValue(0);
     stop_loss_spin_->setDecimals(1);
     stop_loss_spin_->setSuffix("%");
-    stop_loss_spin_->setSpecialValueText("None");
+    stop_loss_spin_->setSpecialValueText("无");
     stop_loss_spin_->setStyleSheet(input_style);
     vl->addWidget(stop_loss_spin_);
 
-    auto* tp_lbl = new QLabel("TAKE PROFIT (%)", content);
+    auto* tp_lbl = new QLabel("止盈比例 (%)", content);
     tp_lbl->setStyleSheet(label_style);
     vl->addWidget(tp_lbl);
     take_profit_spin_ = new QDoubleSpinBox(content);
@@ -639,11 +639,11 @@ QWidget* BacktestingScreen::build_right_panel() {
     take_profit_spin_->setValue(0);
     take_profit_spin_->setDecimals(1);
     take_profit_spin_->setSuffix("%");
-    take_profit_spin_->setSpecialValueText("None");
+    take_profit_spin_->setSpecialValueText("无");
     take_profit_spin_->setStyleSheet(input_style);
     vl->addWidget(take_profit_spin_);
 
-    auto* ps_lbl = new QLabel("POSITION SIZING", content);
+    auto* ps_lbl = new QLabel("仓位管理", content);
     ps_lbl->setStyleSheet(label_style);
     vl->addWidget(ps_lbl);
     pos_sizing_combo_ = new QComboBox(content);
@@ -652,7 +652,7 @@ QWidget* BacktestingScreen::build_right_panel() {
         pos_sizing_combo_->addItem(m);
     vl->addWidget(pos_sizing_combo_);
 
-    allow_short_check_ = new QCheckBox("Allow Short Selling", content);
+    allow_short_check_ = new QCheckBox("允许做空", content);
     allow_short_check_->setStyleSheet(
         QString("QCheckBox { color:%1; font-family:%2; font-size:%3px; spacing:6px; }"
                 "QCheckBox::indicator { width:14px; height:14px; border:1px solid %4; background:%5; }"
@@ -665,7 +665,7 @@ QWidget* BacktestingScreen::build_right_panel() {
             .arg(ui::colors::AMBER()));
     vl->addWidget(allow_short_check_);
 
-    auto* bm_lbl = new QLabel("BENCHMARK", content);
+    auto* bm_lbl = new QLabel("基准指数", content);
     bm_lbl->setStyleSheet(label_style);
     vl->addWidget(bm_lbl);
     benchmark_edit_ = new QLineEdit("SPY", content);
@@ -685,11 +685,11 @@ QWidget* BacktestingScreen::build_right_panel() {
         auto* pl = new QVBoxLayout(page);
         pl->setContentsMargins(0, 0, 0, 0);
         pl->setSpacing(4);
-        auto* t = new QLabel("OPTIMIZATION", page);
+        auto* t = new QLabel("参数优化", page);
         t->setStyleSheet(section_style);
         pl->addWidget(t);
 
-        auto* ol = new QLabel("OBJECTIVE", page);
+        auto* ol = new QLabel("优化目标", page);
         ol->setStyleSheet(label_style);
         pl->addWidget(ol);
         opt_objective_combo_ = new QComboBox(page);
@@ -698,7 +698,7 @@ QWidget* BacktestingScreen::build_right_panel() {
             opt_objective_combo_->addItem(o);
         pl->addWidget(opt_objective_combo_);
 
-        auto* ml = new QLabel("METHOD", page);
+        auto* ml = new QLabel("优化方法", page);
         ml->setStyleSheet(label_style);
         pl->addWidget(ml);
         opt_method_combo_ = new QComboBox(page);
@@ -707,7 +707,7 @@ QWidget* BacktestingScreen::build_right_panel() {
             opt_method_combo_->addItem(m);
         pl->addWidget(opt_method_combo_);
 
-        auto* il = new QLabel("MAX ITERATIONS", page);
+        auto* il = new QLabel("最大迭代次数", page);
         il->setStyleSheet(label_style);
         pl->addWidget(il);
         opt_iterations_spin_ = new QSpinBox(page);
@@ -726,11 +726,11 @@ QWidget* BacktestingScreen::build_right_panel() {
         auto* pl = new QVBoxLayout(page);
         pl->setContentsMargins(0, 0, 0, 0);
         pl->setSpacing(4);
-        auto* t = new QLabel("WALK-FORWARD", page);
+        auto* t = new QLabel("步进回测", page);
         t->setStyleSheet(section_style);
         pl->addWidget(t);
 
-        auto* sl = new QLabel("NUMBER OF SPLITS", page);
+        auto* sl = new QLabel("分割份数", page);
         sl->setStyleSheet(label_style);
         pl->addWidget(sl);
         wf_splits_spin_ = new QSpinBox(page);
@@ -739,7 +739,7 @@ QWidget* BacktestingScreen::build_right_panel() {
         wf_splits_spin_->setStyleSheet(input_style);
         pl->addWidget(wf_splits_spin_);
 
-        auto* tl = new QLabel("TRAIN RATIO", page);
+        auto* tl = new QLabel("训练集比例", page);
         tl->setStyleSheet(label_style);
         pl->addWidget(tl);
         wf_train_ratio_spin_ = new QDoubleSpinBox(page);
@@ -760,11 +760,11 @@ QWidget* BacktestingScreen::build_right_panel() {
         auto* pl = new QVBoxLayout(page);
         pl->setContentsMargins(0, 0, 0, 0);
         pl->setSpacing(4);
-        auto* t = new QLabel("INDICATOR", page);
+        auto* t = new QLabel("指标计算", page);
         t->setStyleSheet(section_style);
         pl->addWidget(t);
 
-        auto* il = new QLabel("INDICATOR TYPE", page);
+        auto* il = new QLabel("指标类型", page);
         il->setStyleSheet(label_style);
         pl->addWidget(il);
         indicator_combo_ = new QComboBox(page);
@@ -782,11 +782,11 @@ QWidget* BacktestingScreen::build_right_panel() {
         auto* pl = new QVBoxLayout(page);
         pl->setContentsMargins(0, 0, 0, 0);
         pl->setSpacing(4);
-        auto* t = new QLabel("INDICATOR SIGNALS", page);
+        auto* t = new QLabel("指标信号", page);
         t->setStyleSheet(section_style);
         pl->addWidget(t);
 
-        auto* isl = new QLabel("INDICATOR", page);
+        auto* isl = new QLabel("指标", page);
         isl->setStyleSheet(label_style);
         pl->addWidget(isl);
         ind_signal_indicator_combo_ = new QComboBox(page);
@@ -794,7 +794,7 @@ QWidget* BacktestingScreen::build_right_panel() {
         // Populated dynamically via on_result("get_indicators")
         pl->addWidget(ind_signal_indicator_combo_);
 
-        auto* ml = new QLabel("SIGNAL MODE", page);
+        auto* ml = new QLabel("信号模式", page);
         ml->setStyleSheet(label_style);
         pl->addWidget(ml);
         ind_signal_mode_combo_ = new QComboBox(page);
@@ -813,11 +813,11 @@ QWidget* BacktestingScreen::build_right_panel() {
         auto* pl = new QVBoxLayout(page);
         pl->setContentsMargins(0, 0, 0, 0);
         pl->setSpacing(4);
-        auto* t = new QLabel("ML LABELS", page);
+        auto* t = new QLabel("ML 标注", page);
         t->setStyleSheet(section_style);
         pl->addWidget(t);
 
-        auto* tl = new QLabel("LABEL TYPE", page);
+        auto* tl = new QLabel("标注类型", page);
         tl->setStyleSheet(label_style);
         pl->addWidget(tl);
         labels_type_combo_ = new QComboBox(page);
@@ -826,7 +826,7 @@ QWidget* BacktestingScreen::build_right_panel() {
             labels_type_combo_->addItem(lt);
         pl->addWidget(labels_type_combo_);
 
-        auto* hl = new QLabel("HORIZON", page);
+        auto* hl = new QLabel("时间窗口 (Horizon)", page);
         hl->setStyleSheet(label_style);
         pl->addWidget(hl);
         labels_horizon_spin_ = new QSpinBox(page);
@@ -835,7 +835,7 @@ QWidget* BacktestingScreen::build_right_panel() {
         labels_horizon_spin_->setStyleSheet(input_style);
         pl->addWidget(labels_horizon_spin_);
 
-        auto* thl = new QLabel("THRESHOLD", page);
+        auto* thl = new QLabel("阈值", page);
         thl->setStyleSheet(label_style);
         pl->addWidget(thl);
         labels_threshold_spin_ = new QDoubleSpinBox(page);
@@ -856,11 +856,11 @@ QWidget* BacktestingScreen::build_right_panel() {
         auto* pl = new QVBoxLayout(page);
         pl->setContentsMargins(0, 0, 0, 0);
         pl->setSpacing(4);
-        auto* t = new QLabel("CV SPLITS", page);
+        auto* t = new QLabel("交叉验证分割", page);
         t->setStyleSheet(section_style);
         pl->addWidget(t);
 
-        auto* tl = new QLabel("SPLITTER TYPE", page);
+        auto* tl = new QLabel("分割器类型", page);
         tl->setStyleSheet(label_style);
         pl->addWidget(tl);
         splitter_type_combo_ = new QComboBox(page);
@@ -869,7 +869,7 @@ QWidget* BacktestingScreen::build_right_panel() {
             splitter_type_combo_->addItem(st);
         pl->addWidget(splitter_type_combo_);
 
-        auto* wl = new QLabel("WINDOW LENGTH", page);
+        auto* wl = new QLabel("窗口长度", page);
         wl->setStyleSheet(label_style);
         pl->addWidget(wl);
         splitter_window_spin_ = new QSpinBox(page);
@@ -878,7 +878,7 @@ QWidget* BacktestingScreen::build_right_panel() {
         splitter_window_spin_->setStyleSheet(input_style);
         pl->addWidget(splitter_window_spin_);
 
-        auto* stl = new QLabel("STEP SIZE", page);
+        auto* stl = new QLabel("步长 (Step Size)", page);
         stl->setStyleSheet(label_style);
         pl->addWidget(stl);
         splitter_step_spin_ = new QSpinBox(page);
@@ -897,11 +897,11 @@ QWidget* BacktestingScreen::build_right_panel() {
         auto* pl = new QVBoxLayout(page);
         pl->setContentsMargins(0, 0, 0, 0);
         pl->setSpacing(4);
-        auto* t = new QLabel("RETURNS ANALYSIS", page);
+        auto* t = new QLabel("收益分析", page);
         t->setStyleSheet(section_style);
         pl->addWidget(t);
 
-        auto* tl = new QLabel("ANALYSIS TYPE", page);
+        auto* tl = new QLabel("分析类型", page);
         tl->setStyleSheet(label_style);
         pl->addWidget(tl);
         returns_type_combo_ = new QComboBox(page);
@@ -910,7 +910,7 @@ QWidget* BacktestingScreen::build_right_panel() {
             returns_type_combo_->addItem(rt);
         pl->addWidget(returns_type_combo_);
 
-        auto* wl = new QLabel("ROLLING WINDOW", page);
+        auto* wl = new QLabel("滚动窗口", page);
         wl->setStyleSheet(label_style);
         pl->addWidget(wl);
         returns_window_spin_ = new QSpinBox(page);
@@ -929,11 +929,11 @@ QWidget* BacktestingScreen::build_right_panel() {
         auto* pl = new QVBoxLayout(page);
         pl->setContentsMargins(0, 0, 0, 0);
         pl->setSpacing(4);
-        auto* t = new QLabel("SIGNAL GENERATORS", page);
+        auto* t = new QLabel("信号生成器", page);
         t->setStyleSheet(section_style);
         pl->addWidget(t);
 
-        auto* gl = new QLabel("GENERATOR TYPE", page);
+        auto* gl = new QLabel("生成器类型", page);
         gl->setStyleSheet(label_style);
         pl->addWidget(gl);
         signal_gen_combo_ = new QComboBox(page);
@@ -977,14 +977,14 @@ QWidget* BacktestingScreen::build_status_bar() {
                     .arg(ui::fonts::TINY)
                     .arg(ui::fonts::DATA_FAMILY);
 
-    auto* l1 = new QLabel("PROVIDERS:", bar);
+    auto* l1 = new QLabel("服务商:", bar);
     l1->setStyleSheet(s);
     auto* v1 = new QLabel("6", bar);
     v1->setStyleSheet(bold);
     hl->addWidget(l1);
     hl->addWidget(v1);
 
-    auto* l2 = new QLabel("STRATEGIES:", bar);
+    auto* l2 = new QLabel("可用策略:", bar);
     l2->setStyleSheet(s);
     auto* v2 = new QLabel(QString::number(strategies_.size()), bar);
     v2->setStyleSheet(bold);
@@ -992,7 +992,7 @@ QWidget* BacktestingScreen::build_status_bar() {
     hl->addWidget(v2);
 
     hl->addStretch();
-    status_label_ = new QLabel("READY", bar);
+    status_label_ = new QLabel("就绪", bar);
     status_label_->setStyleSheet(QString("color:%1; font-size:%2px; font-weight:700; font-family:%3;")
                                      .arg(ui::colors::POSITIVE())
                                      .arg(ui::fonts::TINY)
@@ -1046,6 +1046,12 @@ void BacktestingScreen::update_provider_buttons() {
 }
 
 void BacktestingScreen::on_command_changed(int index) {
+    // 映射翻译后的命令
+    static const QMap<QString, QString> CMD_MAP = {
+        {"backtest", "回测"}, {"optimize", "参数优化"}, {"walk_forward", "步进回测"},
+        {"indicator", "指标计算"}, {"indicator_signals", "指标信号"}, {"labels", "ML 标注"},
+        {"splits", "验证分割"}, {"returns", "收益分析"}, {"signals", "信号生成"}
+    };
     const auto& cmds = commands_;
     if (index < 0 || index >= cmds.size())
         return;
@@ -1306,7 +1312,7 @@ void BacktestingScreen::on_run() {
 
     is_running_ = true;
     run_button_->setEnabled(false);
-    set_status_state("EXECUTING...", ui::colors::WARNING, "rgba(217,119,6,0.08)");
+    set_status_state("正在执行...", ui::colors::WARNING, "rgba(217,119,6,0.08)");
 
     auto args = gather_args();
 
@@ -1330,7 +1336,7 @@ void BacktestingScreen::display_result(const QJsonObject& data) {
     auto accent = providers_[active_provider_].color.name();
 
     // ── SUMMARY tab: metric cards ──
-    auto* header = new QLabel("BACKTEST RESULTS", summary_container_);
+    auto* header = new QLabel("回测结果详细信息", summary_container_);
     header->setStyleSheet(QString("color:%1; font-size:%2px; font-weight:700; font-family:%3;"
                                   "letter-spacing:1px;")
                               .arg(accent)
@@ -1408,7 +1414,7 @@ void BacktestingScreen::display_result(const QJsonObject& data) {
     // If result has a status/message, show it
     if (data.contains("status")) {
         auto status = data["status"].toString();
-        auto* status_lbl = new QLabel(QString("Status: %1").arg(status), summary_container_);
+        auto* status_lbl = new QLabel(QString("状态: %1").arg(status == "success" ? "成功" : status), summary_container_);
         status_lbl->setStyleSheet(QString("color:%1; font-size:%2px; font-family:%3; padding:8px;")
                                       .arg(status == "success" ? ui::colors::POSITIVE() : ui::colors::WARNING())
                                       .arg(ui::fonts::SMALL)
@@ -1535,7 +1541,7 @@ void BacktestingScreen::on_result(const QString& provider, const QString& comman
     // Regular command result — update run state and display
     is_running_ = false;
     run_button_->setEnabled(true);
-    set_status_state("READY", ui::colors::POSITIVE, "rgba(22,163,74,0.08)");
+    set_status_state("就绪", ui::colors::POSITIVE, "rgba(22,163,74,0.08)");
     display_result(data);
     LOG_INFO("Backtesting", QString("[%1/%2] Complete").arg(provider, command));
 }
@@ -1568,7 +1574,7 @@ void BacktestingScreen::on_command_options_loaded(const QString& provider, const
 void BacktestingScreen::on_error(const QString& context, const QString& message) {
     is_running_ = false;
     run_button_->setEnabled(true);
-    set_status_state("ERROR", ui::colors::NEGATIVE, "rgba(220,38,38,0.08)");
+    set_status_state("错误", ui::colors::NEGATIVE, "rgba(220,38,38,0.08)");
     display_error(QString("[%1] %2").arg(context, message));
 }
 

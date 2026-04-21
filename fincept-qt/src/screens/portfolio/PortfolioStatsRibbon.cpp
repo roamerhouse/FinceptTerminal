@@ -31,22 +31,22 @@ PortfolioStatsRibbon::PortfolioStatsRibbon(QWidget* parent) : QWidget(parent) {
     primary_layout->setContentsMargins(0, 0, 0, 0);
     primary_layout->setSpacing(0);
 
-    total_value_ = add_hero(primary_layout, "TOTAL VALUE", ui::colors::WARNING);
-    total_value_.container->setToolTip("Current market value of all holdings.\n"
-                                       "Sum of (quantity × current price) for every position.");
+    total_value_ = add_hero(primary_layout, "总资产价值", ui::colors::WARNING);
+    total_value_.container->setToolTip("所有持仓的当前市场价值。\n"
+                                       "计算公式：各持仓（数量 × 当前价格）之和。");
 
-    pnl_ = add_hero(primary_layout, "UNREALIZED P&L", ui::colors::TEXT_PRIMARY);
-    pnl_.container->setToolTip("Unrealized profit or loss across all open positions.\n"
-                               "Calculated as: market value − total cost basis.\n"
-                               "This gain/loss is not realized until you sell.");
+    pnl_ = add_hero(primary_layout, "未实现盈亏", ui::colors::TEXT_PRIMARY);
+    pnl_.container->setToolTip("所有未平仓职位的未实现利润或损失。\n"
+                               "计算公式：市值 - 总成本基础。\n"
+                               "在卖出之前，此收益/亏损不会被实现。");
 
-    day_change_ = add_hero(primary_layout, "DAY CHANGE", ui::colors::TEXT_PRIMARY);
-    day_change_.container->setToolTip("Total portfolio value change today.\n"
-                                      "Weighted sum of each holding's intraday change.");
+    day_change_ = add_hero(primary_layout, "当日盈亏", ui::colors::TEXT_PRIMARY);
+    day_change_.container->setToolTip("今日投资组合总价值变动。\n"
+                                      "各个持仓今日涨跌的加权总和。");
 
-    positions_ = add_hero(primary_layout, "POSITIONS", ui::colors::TEXT_PRIMARY);
-    positions_.container->setToolTip("Number of distinct holdings in this portfolio,\n"
-                                     "split into gainers (▲) and losers (▼) today.");
+    positions_ = add_hero(primary_layout, "持仓分布", ui::colors::TEXT_PRIMARY);
+    positions_.container->setToolTip("此投资组合中不同持仓的数量，\n"
+                                     "分为今日上涨 (▲) 和下跌 (▼) 的品种。");
 
     outer->addWidget(primary_row_);
 
@@ -80,31 +80,31 @@ PortfolioStatsRibbon::PortfolioStatsRibbon(QWidget* parent) : QWidget(parent) {
     chips_layout->setContentsMargins(10, 0, 10, 0);
     chips_layout->setSpacing(6);
 
-    cost_basis_ = add_chip(chips_layout, "COST", ui::colors::CYAN);
+    cost_basis_ = add_chip(chips_layout, "成本", ui::colors::CYAN);
     cost_basis_.container->setToolTip("Total amount invested — sum of (avg buy price × quantity)\n"
                                       "for all current positions. Used to compute P&L.");
 
-    concentration_ = add_chip(chips_layout, "CONC", ui::colors::AMBER);
+    concentration_ = add_chip(chips_layout, "高度集中度", ui::colors::AMBER);
     concentration_.container->setToolTip("Concentration risk: combined weight of the top 3 holdings.\n"
                                          "Values above 50% indicate a concentrated portfolio.\n"
                                          "Lower is generally better for diversification.");
 
-    sharpe_ = add_chip(chips_layout, "SHARPE", ui::colors::CYAN);
+    sharpe_ = add_chip(chips_layout, "夏普比率", ui::colors::CYAN);
     sharpe_.container->setToolTip("Sharpe Ratio: risk-adjusted return over a risk-free rate.\n"
                                   "Formula: (mean daily return − risk-free rate) / std dev × √252.\n"
                                   "Above 1.0 = good, above 2.0 = very good, below 0 = worse than risk-free.");
 
-    beta_ = add_chip(chips_layout, "BETA", ui::colors::WARNING);
+    beta_ = add_chip(chips_layout, "贝塔系数", ui::colors::WARNING);
     beta_.container->setToolTip("Portfolio sensitivity to broad market moves.\n"
                                 "Beta = 1.0: moves with the market. >1.0: more volatile.\n"
                                 "<1.0: less volatile. Negative: inverse correlation.");
 
-    volatility_ = add_chip(chips_layout, "VOL 30D", ui::colors::AMBER);
+    volatility_ = add_chip(chips_layout, "30日波动率", ui::colors::AMBER);
     volatility_.container->setToolTip("Annualized portfolio volatility (std deviation of returns).\n"
                                       "Formula: std dev of daily returns × √252.\n"
                                       "Higher values indicate greater price swings.");
 
-    max_drawdown_ = add_chip(chips_layout, "MDD", ui::colors::NEGATIVE);
+    max_drawdown_ = add_chip(chips_layout, "最大回撤", ui::colors::NEGATIVE);
     max_drawdown_.container->setToolTip("Maximum peak-to-trough decline in portfolio value.\n"
                                         "Measures the worst loss experienced from a high point.\n"
                                         "Lower magnitude = better capital preservation.");
@@ -113,7 +113,7 @@ PortfolioStatsRibbon::PortfolioStatsRibbon(QWidget* parent) : QWidget(parent) {
     var95_.container->setToolTip("Value at Risk at 95% confidence — the maximum expected\n"
                                  "single-day loss 95% of the time based on historical returns.");
 
-    risk_score_ = add_chip(chips_layout, "RISK", ui::colors::NEGATIVE);
+    risk_score_ = add_chip(chips_layout, "风险评分", ui::colors::NEGATIVE);
     risk_score_.container->setToolTip("Composite risk score from 0 (low) to 100 (high).\n"
                                       "Weighted from: volatility, max drawdown, concentration,\n"
                                       "beta, and VaR. Lower is safer.");

@@ -1,5 +1,7 @@
-// src/screens/agent_config/WorkflowsViewPanel.cpp
-#include "screens/agent_config/WorkflowsViewPanel.h"
+#include "WorkflowsViewPanel.h"
+#include <QString>
+#include <QLabel>
+#include <QPushButton>
 
 #include "ai_chat/LlmService.h"
 #include "core/logging/Logger.h"
@@ -14,7 +16,8 @@
 #include <QSplitter>
 #include <QVBoxLayout>
 
-namespace fincept::screens {
+namespace fincept {
+namespace screens {
 
 // ── Workflow catalog definition ───────────────────────────────────────────────
 
@@ -28,26 +31,26 @@ struct WorkflowDef {
 };
 
 static const WorkflowDef kWorkflows[] = {
-    {"stock_analysis", "Stock Analysis", "RESEARCH",
-     "Full analysis of a stock: fundamentals, technicals, sentiment, and analyst targets.", true, false},
-    {"portfolio_rebal", "Portfolio Rebalancing", "PORTFOLIO",
-     "Analyse current holdings, suggest optimal allocation and rebalancing trades.", false, false},
-    {"risk_assessment", "Risk Assessment", "PORTFOLIO",
-     "Compute VaR, CVaR, max drawdown, stress-test scenarios across the portfolio.", false, false},
-    {"execute_multi_query", "Multi-Agent Query", "EXECUTION",
-     "Fan a query out to multiple agents in parallel and aggregate their responses.", false, true},
-    {"macro_scan", "Macro Scanner", "RESEARCH",
-     "Scan macro indicators — CPI, GDP, yield curves — and produce a market brief.", false, false},
-    {"earnings_brief", "Earnings Brief", "RESEARCH",
-     "Pull the latest earnings release for a ticker and generate an analyst brief.", true, false},
-    {"sector_rotation", "Sector Rotation", "RESEARCH",
-     "Identify momentum shifts across sectors and recommend rotation trades.", false, false},
-    {"options_scan", "Options Flow Scan", "TRADING",
-     "Scan unusual options activity and surface directional signals. Symbol optional.", false, false},
-    {"sentiment_scan", "Sentiment Scan", "RESEARCH",
-     "Aggregate news and social sentiment for a ticker over the past 48 hours.", true, false},
-    {"custom_query", "Custom Query", "CUSTOM",
-     "Send a free-form query through the workflow engine with the selected LLM profile.", false, true},
+    {"stock_analysis", "个股分析", "RESEARCH",
+     "对股票进行全面分析：包括基本面、技术面、情绪面及分析师目标价。", true, false},
+    {"portfolio_rebal", "投资组合再平衡", "PORTFOLIO",
+     "分析当前持仓，建议最优配置及再平衡交易建议。", false, false},
+    {"risk_assessment", "风险评估", "PORTFOLIO",
+     "计算投资组合的 VaR、CVaR、最大回撤并进行压力测试。", false, false},
+    {"execute_multi_query", "多智能体查询", "EXECUTION",
+     "将查询并行分发给多个智能体并汇总其回复。", false, true},
+    {"macro_scan", "宏观扫描", "RESEARCH",
+     "扫描宏观指标（如 CPI、GDP、收益率曲线）并生成市场简报。", false, false},
+    {"earnings_brief", "业绩简报", "RESEARCH",
+     "获取个股最新财报并生成分析师简报。", true, false},
+    {"sector_rotation", "板块轮动", "RESEARCH",
+     "识别各板块间的动量转变并推荐轮动交易。", false, false},
+    {"options_scan", "期权异动扫描", "TRADING",
+     "扫描异常期权活动并提取方向性信号。股票代码可选。", false, false},
+    {"sentiment_scan", "情绪扫描", "RESEARCH",
+     "汇总过去 48 小时内个股的新闻及社交媒体情绪。", true, false},
+    {"custom_query", "自定义查询", "CUSTOM",
+     "通过工作流引擎发送自定义查询内容。", false, true},
 };
 
 static constexpr int kWorkflowCount = static_cast<int>(sizeof(kWorkflows) / sizeof(kWorkflows[0]));
@@ -101,7 +104,7 @@ QWidget* WorkflowsViewPanel::build_catalog_panel() {
         QString("background:%1;border-bottom:1px solid %2;").arg(ui::colors::BG_RAISED(), ui::colors::BORDER_DIM()));
     auto* hl = new QHBoxLayout(hdr);
     hl->setContentsMargins(10, 0, 10, 0);
-    auto* t = new QLabel("WORKFLOWS");
+    auto* t = new QLabel("工作流");
     t->setStyleSheet(QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::AMBER()));
     hl->addWidget(t);
     hl->addStretch();
@@ -143,7 +146,7 @@ QWidget* WorkflowsViewPanel::build_catalog_panel() {
     vl->addWidget(catalog_list_, 1);
 
     // Description footer
-    wf_desc_label_ = new QLabel("Select a workflow to configure and run.");
+    wf_desc_label_ = new QLabel("请选择一个工作流进行配置并运行。");
     wf_desc_label_->setWordWrap(true);
     wf_desc_label_->setContentsMargins(10, 6, 10, 8);
     wf_desc_label_->setStyleSheet(QString("color:%1;font-size:10px;background:%2;border-top:1px solid %3;")
@@ -170,7 +173,7 @@ QWidget* WorkflowsViewPanel::build_params_panel() {
         QString("background:%1;border-bottom:1px solid %2;").arg(ui::colors::BG_RAISED(), ui::colors::BORDER_DIM()));
     auto* hl = new QHBoxLayout(hdr);
     hl->setContentsMargins(10, 0, 10, 0);
-    params_title_ = new QLabel("PARAMETERS");
+    params_title_ = new QLabel("参数配置");
     params_title_->setStyleSheet(
         QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::AMBER()));
     hl->addWidget(params_title_);
@@ -183,7 +186,7 @@ QWidget* WorkflowsViewPanel::build_params_panel() {
     bl->setSpacing(8);
 
     // LLM Profile
-    auto* lbl_llm = new QLabel("LLM PROFILE");
+    auto* lbl_llm = new QLabel("LLM 配置文件");
     lbl_llm->setStyleSheet(
         QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::TEXT_SECONDARY()));
     bl->addWidget(lbl_llm);
@@ -195,7 +198,7 @@ QWidget* WorkflowsViewPanel::build_params_panel() {
                 "QComboBox::drop-down{border:none;}"
                 "QComboBox QAbstractItemView{background:%1;color:%2;selection-background-color:%4;}")
             .arg(ui::colors::BG_RAISED(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_MED(), ui::colors::AMBER_DIM()));
-    llm_profile_combo_->addItem("Default (Global)", QString{});
+    llm_profile_combo_->addItem("默认 (全局)", QString{});
     const auto pr = LlmProfileRepository::instance().list_profiles();
     const auto profiles = pr.is_ok() ? pr.value() : QVector<LlmProfile>{};
     for (const auto& prof : profiles)
@@ -212,12 +215,12 @@ QWidget* WorkflowsViewPanel::build_params_panel() {
         auto* sl = new QHBoxLayout(symbol_row_);
         sl->setContentsMargins(0, 0, 0, 0);
         sl->setSpacing(6);
-        auto* lbl = new QLabel("SYMBOL");
+        auto* lbl = new QLabel("股票代码");
         lbl->setStyleSheet(QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;min-width:55px;")
                                .arg(ui::colors::TEXT_SECONDARY()));
         sl->addWidget(lbl);
         symbol_input_ = new QLineEdit;
-        symbol_input_->setPlaceholderText("e.g. AAPL");
+        symbol_input_->setPlaceholderText("例如：AAPL");
         symbol_input_->setMaximumWidth(110);
         symbol_input_->setStyleSheet(
             QString("background:%1;color:%2;border:1px solid %3;padding:3px 6px;font-size:12px;")
@@ -234,12 +237,12 @@ QWidget* WorkflowsViewPanel::build_params_panel() {
         auto* ql = new QVBoxLayout(query_row_);
         ql->setContentsMargins(0, 0, 0, 0);
         ql->setSpacing(4);
-        auto* lbl = new QLabel("QUERY");
+        auto* lbl = new QLabel("查询内容");
         lbl->setStyleSheet(
             QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::TEXT_SECONDARY()));
         ql->addWidget(lbl);
         query_input_ = new QTextEdit;
-        query_input_->setPlaceholderText("Enter query for this workflow...");
+        query_input_->setPlaceholderText("请输入该工作流的查询内容...");
         query_input_->setFixedHeight(90);
         query_input_->setStyleSheet(
             QString("QTextEdit{background:%1;color:%2;border:1px solid %3;padding:6px;font-size:12px;}")
@@ -252,7 +255,7 @@ QWidget* WorkflowsViewPanel::build_params_panel() {
     bl->addStretch();
 
     // Run button
-    run_btn_ = new QPushButton("RUN WORKFLOW");
+    run_btn_ = new QPushButton("运行工作流");
     run_btn_->setCursor(Qt::PointingHandCursor);
     run_btn_->setEnabled(false);
     run_btn_->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:none;padding:9px;"
@@ -288,7 +291,7 @@ QWidget* WorkflowsViewPanel::build_output_panel() {
         QString("background:%1;border-bottom:1px solid %2;").arg(ui::colors::BG_RAISED(), ui::colors::BORDER_DIM()));
     auto* hl = new QHBoxLayout(hdr);
     hl->setContentsMargins(10, 0, 10, 0);
-    output_title_ = new QLabel("OUTPUT");
+    output_title_ = new QLabel("输出");
     output_title_->setStyleSheet(
         QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::TEXT_SECONDARY()));
     hl->addWidget(output_title_);
@@ -304,7 +307,7 @@ QWidget* WorkflowsViewPanel::build_output_panel() {
     bl->setContentsMargins(10, 8, 10, 10);
     bl->setSpacing(6);
 
-    auto* log_lbl = new QLabel("EXECUTION LOG");
+    auto* log_lbl = new QLabel("执行日志");
     log_lbl->setStyleSheet(
         QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;").arg(ui::colors::TEXT_SECONDARY()));
     bl->addWidget(log_lbl);
@@ -320,7 +323,7 @@ QWidget* WorkflowsViewPanel::build_output_panel() {
             .arg(ui::colors::BG_RAISED(), ui::colors::TEXT_SECONDARY(), ui::colors::BORDER_DIM(), ui::colors::BORDER_BRIGHT()));
     bl->addWidget(log_display_);
 
-    auto* res_lbl = new QLabel("RESULT");
+    auto* res_lbl = new QLabel("执行结果");
     res_lbl->setStyleSheet(QString("color:%1;font-size:10px;font-weight:700;letter-spacing:1px;padding-top:4px;")
                                .arg(ui::colors::TEXT_SECONDARY()));
     bl->addWidget(res_lbl);
@@ -362,18 +365,18 @@ void WorkflowsViewPanel::setup_connections() {
         executing_ = false;
         pending_request_id_.clear();
         run_btn_->setEnabled(true);
-        run_btn_->setText("RUN WORKFLOW");
+        run_btn_->setText("运行工作流");
         if (r.success) {
             result_display_->setMarkdown(r.response);
-            const QString msg = QString("Done in %1ms").arg(r.execution_time_ms);
+            const QString msg = QString("执行完毕，耗时 %1ms").arg(r.execution_time_ms);
             output_status_->setText(msg);
             output_status_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::POSITIVE()));
-            log_display_->append(QString("[DONE] %1").arg(msg));
+            log_display_->append(QString("[完成] %1").arg(msg));
         } else {
             result_display_->setPlainText("Error: " + r.error);
-            output_status_->setText("FAILED");
+            output_status_->setText("失败");
             output_status_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::NEGATIVE()));
-            log_display_->append("[ERROR] " + r.error);
+            log_display_->append("[错误] " + r.error);
         }
     });
 
@@ -401,18 +404,18 @@ void WorkflowsViewPanel::setup_connections() {
         executing_ = false;
         pending_request_id_.clear();
         run_btn_->setEnabled(true);
-        run_btn_->setText("RUN WORKFLOW");
+        run_btn_->setText("运行工作流");
         if (r.success) {
             result_display_->setMarkdown(r.response);
-            const QString msg = QString("Done in %1ms").arg(r.execution_time_ms);
+            const QString msg = QString("执行完毕，耗时 %1ms").arg(r.execution_time_ms);
             output_status_->setText(msg);
             output_status_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::POSITIVE()));
-            log_display_->append(QString("[DONE] %1").arg(msg));
+            log_display_->append(QString("[完成] %1").arg(msg));
         } else {
             result_display_->setPlainText("Error: " + r.error);
-            output_status_->setText("FAILED");
+            output_status_->setText("失败");
             output_status_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::NEGATIVE()));
-            log_display_->append("[ERROR] " + r.error);
+            log_display_->append("[错误] " + r.error);
         }
     });
 
@@ -422,9 +425,9 @@ void WorkflowsViewPanel::setup_connections() {
         executing_ = false;
         pending_request_id_.clear();
         run_btn_->setEnabled(true);
-        run_btn_->setText("RUN WORKFLOW");
+        run_btn_->setText("运行工作流");
         result_display_->setPlainText("Error: " + msg);
-        output_status_->setText("ERROR");
+        output_status_->setText("错误");
         output_status_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::NEGATIVE()));
         log_display_->append("[ERROR] " + msg);
     });
@@ -434,9 +437,9 @@ void WorkflowsViewPanel::setup_connections() {
         if (pid.isEmpty()) {
             auto resolved = ai_chat::LlmService::instance().resolve_profile("workflow", {});
             if (!resolved.provider.isEmpty())
-                llm_resolved_lbl_->setText(resolved.provider.toUpper() + " / " + resolved.model_id + " (inherited)");
+                llm_resolved_lbl_->setText(resolved.provider.toUpper() + " / " + resolved.model_id + " (继承)");
             else
-                llm_resolved_lbl_->setText("No provider — Settings > LLM Config");
+                llm_resolved_lbl_->setText("无提供商 — 请前往 设置 > LLM 配置 进行设置");
         } else {
             const auto pr2 = LlmProfileRepository::instance().list_profiles();
             const auto profs = pr2.is_ok() ? pr2.value() : QVector<LlmProfile>{};
@@ -478,7 +481,7 @@ void WorkflowsViewPanel::on_workflow_selected(int row) {
     if (!def)
         return;
 
-    params_title_->setText(QString("%1  —  PARAMETERS").arg(def->label).toUpper());
+    params_title_->setText(QString("%1  —  参数配置").arg(def->label).toUpper());
     wf_desc_label_->setText(def->desc);
 
     symbol_row_->setVisible(def->needs_symbol);
@@ -496,11 +499,11 @@ void WorkflowsViewPanel::run_current_workflow() {
 
     executing_ = true;
     run_btn_->setEnabled(false);
-    run_btn_->setText("RUNNING...");
+    run_btn_->setText("正在运行...");
     result_display_->clear();
     log_display_->clear();
-    output_title_->setText(QString("OUTPUT  —  %1").arg(current_workflow_type_.toUpper()));
-    output_status_->setText("Executing...");
+    output_title_->setText(QString("输出  —  %1").arg(current_workflow_type_.toUpper()));
+    output_status_->setText("正在执行...");
     output_status_->setStyleSheet(QString("color:%1;font-size:10px;").arg(ui::colors::AMBER()));
     log_display_->append(QString("[START] %1").arg(current_workflow_type_));
 
@@ -510,8 +513,8 @@ void WorkflowsViewPanel::run_current_workflow() {
         if (sym.isEmpty()) {
             executing_ = false;
             run_btn_->setEnabled(true);
-            run_btn_->setText("RUN WORKFLOW");
-            params_status_->setText("Symbol is required");
+            run_btn_->setText("运行工作流");
+            params_status_->setText("请输入股票代码");
             params_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
             return;
         }
@@ -523,8 +526,8 @@ void WorkflowsViewPanel::run_current_workflow() {
         if (q.isEmpty()) {
             executing_ = false;
             run_btn_->setEnabled(true);
-            run_btn_->setText("RUN WORKFLOW");
-            params_status_->setText("Query is required");
+            run_btn_->setText("运行工作流");
+            params_status_->setText("请输入查询内容");
             params_status_->setStyleSheet(QString("color:%1;font-size:10px;padding:2px 0;").arg(ui::colors::NEGATIVE()));
             return;
         }
@@ -544,4 +547,5 @@ void WorkflowsViewPanel::showEvent(QShowEvent* event) {
     QWidget::showEvent(event);
 }
 
-} // namespace fincept::screens
+} // namespace screens
+} // namespace fincept
